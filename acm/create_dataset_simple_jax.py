@@ -63,10 +63,10 @@ BASE_DIR = Path('/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23_prior/')
 
 
 
-SUBSAMPLE_FACTOR = 5
+SUBSAMPLE_FACTOR = 7
 n_threads = 1
-max_files=160
-n_workers=8
+max_files=10
+n_workers=1
 
 N_BINS = 25
 R_MIN = 5
