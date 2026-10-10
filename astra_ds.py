@@ -59,15 +59,18 @@ def read_hod_header(path):
     return {k: float(header[k]) for k in HOD_PARAMS + ['Q_PAR', 'Q_PERP']}
 
 
-def load_catalog(path, space='z'):
+def load_catalog(path, space='z', los='z'):
     """
-    Galaxy positions with the line of sight along z, wrapped into [0, L).
+    Galaxy positions wrapped into [0, L), with the line of sight `los` moved to
+    the last axis: (y, z, x) for los = x, (z, x, y) for los = y. Downstream
+    everything (ASTRA, density split, pair counts) then uses los = 'z'.
 
-    X_PERP/Y_PERP/Z_PERP and Z_RSD are already Alcock-Paczynski rescaled in
-    these catalogues: they are used as is, the box is 2000/q_perp in x, y
-    and 2000/q_par (resp. q_perp in real space) in z.
+    X_PERP/Y_PERP/Z_PERP and {X,Y,Z}_RSD are already Alcock-Paczynski rescaled
+    in these catalogues: they are used as is, the box is 2000/q_perp across
+    the line of sight and 2000/q_par (resp. q_perp in real space) along it.
     """
-    columns = ['X_PERP', 'Y_PERP', 'Z_RSD' if space == 'z' else 'Z_PERP']
+    axes = {'x': 'YZX', 'y': 'ZXY', 'z': 'XYZ'}[los]
+    columns = [f'{a}_PERP' for a in axes[:2]] + [f'{axes[2]}_RSD' if space == 'z' else f'{axes[2]}_PERP']
     data, header = fitsio.read(str(path), columns=columns, header=True)
     q_par, q_perp = header['Q_PAR'], header['Q_PERP']
     q_z = q_par if space == 'z' else q_perp
@@ -246,15 +249,17 @@ def stat_names():
     return names
 
 
-def measure_catalog(path, space='z', nside=4, pad=30., sedges=np.arange(0., 151., 5.),
+def measure_catalog(path, space='z', los='z', nside=4, pad=30., sedges=np.arange(0., 151., 5.),
                     nrand_astra=1, nrand_geometry=5, smoothing_radius=10., cellsize=5.,
-                    seed=42, subboxes=None, nthreads=1, keep_sample=2000):
+                    seed=42, subboxes=None, nthreads=1, keep_sample=2000, thin=1):
     """
     Run ASTRA and density split on one HOD catalogue and measure all the
     clustering statistics in each subbox. Returns a dict of arrays.
     """
     t0 = time.time()
-    galaxies, boxsize = load_catalog(path, space=space)
+    galaxies, boxsize = load_catalog(path, space=space, los=los)
+    if thin > 1:   # random subsampling of the galaxies (robustness tests)
+        galaxies = galaxies[np.random.default_rng(seed + 3000).random(len(galaxies)) < 1. / thin]
     ngal = len(galaxies)
     randoms = uniform_randoms(nrand_astra * ngal, boxsize, seed)
     logger.info(f'{path.name}: {ngal} galaxies, box {boxsize.round(2)}, {len(randoms)} randoms')

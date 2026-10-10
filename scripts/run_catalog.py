@@ -3,9 +3,9 @@
 Measure ASTRA-split and density-split clustering in the 64 subboxes of one
 HOD catalogue.
 
-    python scripts/run_catalog.py --cosmo 0 --hod 484 [--space z] [--subboxes 0 1]
+    python scripts/run_catalog.py --cosmo 0 --hod 239 [--space z] [--los z] [--subboxes 0 1]
 
-Output: data/c{cosmo}_hod{hod}_{space}.npz (see astra_ds.measure_catalog).
+Output: data/c{cosmo}_hod{hod}_{space}_los{los}.npz (see astra_ds.measure_catalog).
 """
 
 import os
@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--cosmo', type=int, required=True)
     parser.add_argument('--hod', type=int, required=True)
     parser.add_argument('--space', choices=['z', 'r'], default='z')
+    parser.add_argument('--los', choices=['x', 'y', 'z'], default='z')
     parser.add_argument('--subboxes', type=int, nargs='*', default=None, help='default: all 64')
     parser.add_argument('--nthreads', type=int, default=int(os.environ.get('SLURM_CPUS_PER_TASK', 8)))
     parser.add_argument('--outdir', type=Path, default=ROOT / 'data')
@@ -34,11 +35,11 @@ def main():
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%H:%M:%S')
     path = astra_ds.hod_path(args.cosmo, args.hod)
-    result = astra_ds.measure_catalog(path, space=args.space, subboxes=args.subboxes,
+    result = astra_ds.measure_catalog(path, space=args.space, los=args.los, subboxes=args.subboxes,
                                       nthreads=args.nthreads)
-    result.update(cosmo=args.cosmo, hod=args.hod, space=args.space)
+    result.update(cosmo=args.cosmo, hod=args.hod, space=args.space, los=args.los)
     args.outdir.mkdir(parents=True, exist_ok=True)
-    out = args.outdir / f'c{args.cosmo:03d}_hod{args.hod:03d}_{args.space}{args.tag}.npz'
+    out = args.outdir / f'c{args.cosmo:03d}_hod{args.hod:03d}_{args.space}_los{args.los}{args.tag}.npz'
     np.savez(out, **result)
     logging.info(f'saved {out}')
 

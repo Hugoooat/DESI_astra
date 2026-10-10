@@ -1,69 +1,113 @@
 # astra-ds — ASTRA split vs density split on DESI-like HOD mocks
 
-Environment-dependent galaxy clustering measured on AbacusSummit HOD mocks
-(DESI LRG-like, z = 0.5), comparing two ways of splitting the density field
+Code and paper for *Environment-dependent galaxy clustering from ASTRA
+tessellations: a comparison with density-split clustering on DESI-like mocks*
+(H. Nguyen). The paper source is in [`paper/`](paper/).
+
+We measure environment-dependent clustering on AbacusSummit HOD mocks
+(DESI LRG-like, z = 0.5) and compare two ways of splitting the density field
 into quartiles:
 
-| | ASTRA split | Density split (Paillas et al.) |
+| | ASTRA split | Density split (Paillas et al. 2023) |
 |---|---|---|
-| environment value | `r = (N_data - N_rand)/(N_data + N_rand)` over the Delaunay neighbours in the joint galaxy + random tessellation | Gaussian-smoothed (R = 10 Mpc/h) galaxy density contrast read at the point |
-| evaluated on | the full periodic 2 Gpc/h box (periodic padding of 30 Mpc/h around each subbox) | the full periodic 2 Gpc/h box (FFT smoothing) |
+| environment of a point | `r = (N_data - N_rand)/(N_data + N_rand)` over its Delaunay neighbours in the joint galaxy + random tessellation | Gaussian-smoothed (R = 10 Mpc/h) galaxy density contrast at the point |
+| scale | adaptive (nearest neighbours) | fixed smoothing radius |
+| evaluated on | full periodic 2 Gpc/h box (30 Mpc/h periodic padding around each subbox) | full periodic 2 Gpc/h box (FFT smoothing) |
 
-Both use **the same random points**, so the two classifications can be
-compared point by point.
+Both are evaluated on **the same random points**, so the two classifications
+can be compared point by point.
+
+![ASTRA split vs density split](paper/figures/v2_multipoles_rand.png)
 
 ## What is measured
 
-For each HOD catalogue the 2 Gpc/h box is cut into **64 subboxes of 500 Mpc/h**.
-In each subbox (open volume, Landy–Szalay, line of sight z, ℓ = 0, 2, 4,
-s ∈ [0, 150] Mpc/h in 5 Mpc/h bins):
+Each 2 Gpc/h box is cut into **64 subboxes of 500 Mpc/h**. In each subbox (open
+volume, Landy–Szalay, fixed line of sight, ℓ = 0, 2, 4, s ∈ [0, 150] Mpc/h in
+5 Mpc/h bins):
 
-* `gg` — galaxy 2PCF,
-* `{astra,ds}_{data,rand}_{auto,cross}_q{1..4}` — for each method and each
-  population (galaxies ranked by their environment, or random "query points"
-  ranked by theirs; equal-count quartiles, Q1 = most underdense), the quartile
-  auto-correlation and its cross-correlation with all galaxies.
+* `gg` — galaxy 2PCF;
+* `{astra,ds}_{data,rand}_{auto,cross}_q{1..4}` — for each method and population
+  (galaxies ranked by their environment, or random query points ranked by
+  theirs; equal-count quartiles, Q1 = most underdense): quartile
+  auto-correlation and cross-correlation with all galaxies.
 
-The 64 subboxes of one catalogue give the covariance (one fixed HOD, c000);
-paired subbox differences between the ± cosmologies of the AbacusSummit
-derivative grid give the derivatives.
+* **Covariance**: 64 subboxes × 3 lines of sight of the fiducial c000 catalogue
+  (`hod239`, the draw closest to the centre of the HOD prior), Hartlap-corrected.
+* **Derivatives** w.r.t. ω_b, ω_cdm, n_s, σ₈: paired differences (same subbox,
+  same line of sight, same phase, same randoms) between HOD-matched catalogues
+  of the AbacusSummit derivative grid (`config/hod_selection.json`).
+* **Fisher** forecasts with the derivative-noise bias subtracted.
 
-## Why the previous pipeline (`acm/acm/create_dataset_fisher.py`) was replaced
+## Installation
 
-1. `hod000…hod499` are 500 *different HOD parameter sets* (emulator Latin
-   hypercube), not realisations. Averaging them mixed the HOD scatter (~55 % on
-   ξ₀) into covariances and derivatives (cosmological signal ~1 %): the old
-   derivatives were compatible with noise (median |S/N| < 1 for ω_b, n_s, σ₈).
-   Now: one HOD per cosmology, matched within each ± pair (`select_hods.py`).
-2. Only the central 500 Mpc/h cube was used; now all 64 subboxes.
-3. Pair counts used periodic boundary conditions on a non-periodic cut box;
-   now Landy–Szalay with geometry randoms.
-4. The 2PCF used `los="midpoint"` (radial from the box centre) which erased the
-   quadrupole; now `los="z"`, the RSD axis.
-5. Quartiles were computed jointly on galaxies + randoms (unequal,
-   realisation-dependent counts); now separately, with exactly equal counts.
-6. ASTRA ran a scipy Delaunay on the cut box (edge effects); now on a
-   periodically padded region, and vectorised (~1 s per subbox).
-
-## Usage (NERSC)
+On NERSC everything needed (numpy, scipy, pandas, fitsio, pycorr/Corrfunc,
+matplotlib) is in the DESI environment:
 
 ```bash
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
-python scripts/select_hods.py                      # -> config/hod_selection.json
-sbatch slurm/run_catalog.sbatch 0 239 z            # one catalogue, ~10 min on 1 CPU node
-python scripts/plot_multipoles.py data/c000_hod239_z.npz
-python scripts/derivatives.py                      # once the 8 ± catalogues are done
 ```
 
-Catalogues: `/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23_prior/c{cosmo}_ph000/seed0/hod{NNN}.fits`.
+Elsewhere: `pip install numpy scipy pandas fitsio matplotlib` and
+[pycorr](https://github.com/cosmodesi/pycorr) with Corrfunc.
+
+## Reproducing the paper
+
+```bash
+python scripts/select_hods.py                       # HOD-matched catalogues -> config/hod_selection.json
+
+# measurements: one catalogue x line of sight = one full CPU node, ~8 min
+sbatch slurm/run_catalog.sbatch 0 239 z --los z     # batch queue, or all at once on interactive nodes:
+salloc -N 4 -C cpu -q interactive -t 01:30:00 -A desi bash slurm/run_all_interactive.sh z x y
+
+python scripts/plot_multipoles.py data/c000_hod239_z_losz.npz   # Figs. 1-3
+python scripts/derivatives.py                                    # derivative figures
+python scripts/fisher.py                                         # Fisher tables and figures
+sbatch slurm/robustness.sbatch                                   # robustness tests
+scripts/make_paper_figures.sh && make -C paper                   # paper/main.pdf
+```
+
+The HOD catalogues are read from
+`/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23_prior/c{cosmo}_ph000/seed0/hod{NNN}.fits`.
 Positions `X_PERP, Y_PERP, Z_RSD` (redshift space) or `Z_PERP` (real space) are
-already Alcock–Paczynski rescaled and are used as is.
+already Alcock–Paczynski rescaled and are used as is; other lines of sight
+permute the axes so that the line of sight is always the last one.
 
-## Files
+## Repository layout
 
-* `astra_ds.py` — the whole method (loading, subboxes, ASTRA, density split, clustering)
-* `scripts/select_hods.py` — HOD-matched catalogues for the derivatives
-* `scripts/run_catalog.py` — measure one catalogue → `data/c{cosmo}_hod{hod}_{space}.npz`
-* `scripts/plot_multipoles.py` — ASTRA vs DS multipoles, environment comparison
-* `scripts/derivatives.py` — paired central differences
-* `config/` — cosmology table, HOD selection
+```
+astra_ds.py              the method: loading, subboxes, ASTRA, density split, clustering
+analysis.py              data vectors, covariance, paired derivatives, Fisher
+scripts/
+  select_hods.py         HOD-matched catalogues for the derivatives
+  run_catalog.py         measure one catalogue -> data/c{cosmo}_hod{hod}_{space}_los{los}.npz
+  plot_multipoles.py     ASTRA vs DS multipoles, comparison of the classifications
+  derivatives.py         paired central differences + figures
+  fisher.py              Fisher forecasts: 2PCF vs ASTRA split vs density split
+  robustness.py          padding, number of randoms, thinning
+  make_paper_figures.sh  copy the figures into paper/figures
+slurm/                   batch and interactive job scripts
+config/                  cosmology table, HOD selection
+paper/                   LaTeX source of the paper
+```
+
+## Lessons from a first version of the pipeline
+
+A first version (in the `acm` fork) averaged the statistics over many
+`hodNNN` files and measured them in the central 500 Mpc/h cube only. It is
+documented in Appendix B of the paper; in short:
+
+1. `hod000…hod499` are 500 *different HOD models*, not realisations: their
+   scatter (~55 % on ξ₀) swamped the cosmological signal (~1 %) — the old
+   derivatives were compatible with noise.
+2. Pair counts assumed periodic boundaries in a non-periodic cut box.
+3. The 2PCF used the mid-point line of sight from the box centre, erasing the
+   quadrupole.
+4. Quartiles were computed jointly on galaxies + randoms (unequal, realisation-
+   dependent sizes).
+5. The Delaunay triangulation of the cut box had edge effects.
+6. ASTRA was first run on randoms alone, so the random quartiles carried no
+   information on the galaxies.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
