@@ -187,7 +187,7 @@ class GPHODResponse(HODResponse):
     G is the gradient of the GP at the fiducial HOD.
     """
 
-    def __init__(self, stats, ncomp=8, eps=0.02, **kwargs):
+    def __init__(self, stats, ncomp=8, eps=0.02, loo=True, **kwargs):
         super().__init__(stats, **kwargs)
         self.ncomp = min(ncomp, len(self.hods) - 1)
         self.models = self._fit(self.dh, self.dy)
@@ -195,11 +195,12 @@ class GPHODResponse(HODResponse):
         self.G = np.array([(self._predict(self.models, eps * np.eye(nh)[j])
                             - self._predict(self.models, -eps * np.eye(nh)[j])) / (2 * eps)
                            for j in range(nh)]).T
-        loo = []
-        for k in range(len(self.hods)):
-            keep = np.arange(len(self.hods)) != k
-            loo.append(self.dy[k] - self._predict(self._fit(self.dh[keep], self.dy[keep]), self.dh[k]))
-        self.loo_residual = np.array(loo)
+        if loo:   # leave-one-out validation (slow: refits all the GPs for each catalogue)
+            res = []
+            for k in range(len(self.hods)):
+                keep = np.arange(len(self.hods)) != k
+                res.append(self.dy[k] - self._predict(self._fit(self.dh[keep], self.dy[keep]), self.dh[k]))
+            self.loo_residual = np.array(res)
 
     def _fit(self, dh, dy):
         from sklearn.decomposition import PCA
