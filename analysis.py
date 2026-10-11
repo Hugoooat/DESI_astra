@@ -114,6 +114,66 @@ def paired_derivative(plus, minus, ids_plus, ids_minus, step):
     return (plus[ip] - minus[im]) / step
 
 
+def hod_vector(cosmo, hod):
+    """HOD parameters of a catalogue, normalised to the prior range of the suite ([0, 1])."""
+    import astra_ds
+    sel = selection()
+    lo, hi = np.array(sel['prior_lo']), np.array(sel['prior_hi'])
+    h = astra_ds.read_hod_header(astra_ds.hod_path(cosmo, hod))
+    return (np.array([h[k] for k in astra_ds.HOD_PARAMS]) - lo) / (hi - lo)
+
+
+def calibration_hods():
+    """c000 HOD draws of config/runs_hod_calibration.txt that have been measured."""
+    out = []
+    for line in (CONFIG / 'runs_hod_calibration.txt').read_text().split('\n'):
+        if line.strip():
+            c, h, space, los = line.split()
+            if (DATA / f'c{int(c):03d}_hod{int(h):03d}_{space}_los{los}.npz').exists():
+                out.append(int(h))
+    return out
+
+
+class HODResponse:
+    """
+    Linear response of a data vector to the HOD parameters at the fiducial cosmology,
+
+        d(h) - d(h_fid) = G (h - h_fid),     h normalised to the prior range,
+
+    fitted by least squares on the c000 calibration catalogues. Each catalogue
+    is differenced with the fiducial subbox by subbox (same phase, same randoms)
+    before averaging, so that cosmic variance cancels.
+    """
+
+    def __init__(self, stats, space='z', los=('z',), **dv_kwargs):
+        sel = selection()
+        fid = sel['fiducial']
+        self.h_fid = hod_vector(fid['cosmo'], fid['hod'])
+        meta, fstats, fids = load(fid['cosmo'], fid['hod'], space, los)
+        _, xf = data_vector(meta, fstats, stats, **dv_kwargs)
+        dh, dy = [], []
+        self.hods = calibration_hods()
+        for hod in self.hods:
+            m, st, ids = load(0, hod, space, los)
+            x = data_vector(m, st, stats, **dv_kwargs)[1]
+            dy.append(paired_derivative(x, xf, ids, fids, 1.).mean(0))
+            dh.append(hod_vector(0, hod) - self.h_fid)
+        self.dh, self.dy = np.array(dh), np.array(dy)
+        if len(self.hods) <= self.dh.shape[1]:
+            raise ValueError(f'only {len(self.hods)} calibration catalogues for {self.dh.shape[1]} HOD parameters')
+        self.G = np.linalg.lstsq(self.dh, self.dy, rcond=None)[0].T          # (ndim, nhod)
+        # leave-one-out prediction error, relative to the size of the response
+        loo = []
+        for k in range(len(self.hods)):
+            keep = np.arange(len(self.hods)) != k
+            Gk = np.linalg.lstsq(self.dh[keep], self.dy[keep], rcond=None)[0].T
+            loo.append(self.dy[k] - Gk @ self.dh[k])
+        self.loo_residual = np.array(loo)
+
+    def predict(self, h):
+        return self.G @ (np.asarray(h) - self.h_fid)
+
+
 def precision(samples):
     """Hartlap-corrected inverse covariance from (nsample, ndim) samples."""
     n, p = samples.shape
