@@ -70,13 +70,14 @@ def thinning_test(nbox, factors=(2, 5, 10), seed=42):
     return {f: {k: np.array(v) for k, v in d.items()} for f, d in res.items()}
 
 
-def plot_measurements(meas, sigma, s, out):
+def plot_measurements(meas, sigma, s, out, smin=20.):
+    keep = s >= smin
     fig, axes = plt.subplots(2, len(STATS) // 2, figsize=(3.2 * len(STATS) // 2, 6), sharex=True, sharey=True)
     base = meas['baseline']
     for ax, stat in zip(axes.flat, STATS):
         for name, color in zip(TESTS, ['#1b9e77', '#d95f02', '#7570b3', '#e7298a']):
             diff = (meas[name][stat][:, 0] - base[stat][:, 0]).mean(0) / sigma[stat]
-            ax.plot(s, diff, color=color, lw=1.4, label=name)
+            ax.plot(s[keep], diff[keep], color=color, lw=1.4, label=name)
         ax.axhspan(-0.2, 0.2, color='0.9')
         ax.axhline(0, color='0.5', lw=0.6)
         ax.set_title(stat.replace('_', ' '), fontsize=9)
@@ -85,7 +86,7 @@ def plot_measurements(meas, sigma, s, out):
     for ax in axes[:, 0]:
         ax.set_ylabel(r'$\Delta\xi_0\,/\,\sigma_{\rm subbox}$')
     axes[0, 0].legend(fontsize=8, frameon=False)
-    fig.suptitle('Change of the monopoles w.r.t. the baseline (pad 30, nrand 1, full sample), '
+    fig.suptitle(f'Change of the monopoles w.r.t. the baseline (pad 30, nrand 1, full sample), $s \\geq {smin:g}\\,h^{{-1}}$Mpc, '
                  'in units of the 1-subbox error; grey band: $\\pm0.2\\sigma$', fontsize=10)
     fig.tight_layout()
     fig.savefig(out, dpi=140)
@@ -97,8 +98,16 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--nbox', type=int, default=8)
     parser.add_argument('--nthreads', type=int, default=8)
+    parser.add_argument('--plot-only', action='store_true', help='replot from data/robustness.npz')
     args = parser.parse_args()
     (ROOT / 'plots').mkdir(exist_ok=True)
+    if args.plot_only:
+        d = np.load(A.DATA / 'robustness.npz')
+        meas = {name: {st: d[f'{name}/{st}'] for st in STATS} for name in ['baseline'] + list(TESTS)}
+        meta, fstats, _ = A.load(A.selection()['fiducial']['cosmo'], A.selection()['fiducial']['hod'], los=['z'])
+        sigma = {stat: fstats[stat][:, 0].std(0, ddof=1) for stat in STATS}
+        plot_measurements(meas, sigma, d['s'], ROOT / 'plots' / 'robustness_measurements.png')
+        return
 
     thin = thinning_test(args.nbox)
     print('\nASTRA r of the same galaxies, full vs thinned sample (mean over subboxes)')

@@ -231,14 +231,29 @@ These forecasts are at fixed HOD parameters. They measure the information conten
 \label{sec:robustness}
 % =====================================================================
 
-\todo{Results of \texttt{scripts/robustness.py}: (i) padding $30\to60\Mpch$, (ii) $N_r/N_g = 1\to2$, (iii) thinning by 2 and 5 (shift of the quartile multipoles in units of the one-subvolume error), (iv) stability of $r$ of the same galaxies under thinning by 2, 5, 10 (Spearman correlation, quartile retention).}
+We test the sensitivity of the measurements to the numerical choices on the first 8 subvolumes of the fiducial catalogue (line of sight $z$). Each test is repeated for both methods, and the change of the Q1 and Q4 cross-correlation monopoles is expressed in units of the statistical error of one subvolume (Figure~\ref{fig:robustness}).
+
+\paragraph{Periodic padding.} Increasing the padding around each subvolume from 30 to $60\Mpch$ leaves the ASTRA values of $r$, and therefore all the statistics, unchanged: the Delaunay neighbourhood of every point of the subvolume is already contained in the $30\Mpch$ padding.
+
+\paragraph{Number of randoms.} Doubling the number of random points in the tessellation ($N_r = 2N_g$) shifts the ASTRA Q1 cross-correlations by up to $4\sigma$ and the Q4 ones by up to $2\sigma$ at $s\lesssim 40\Mpch$, while density split, for which the randoms are only query points, changes by less than $0.2\sigma$. In ASTRA the randoms enter the definition of $r$ itself (Eq.~\ref{eq:astra_r}), so the ratio $N_r/N_g$ is a parameter of the statistic and must be kept fixed.
+
+\paragraph{Sampling density.} Randomly thinning the galaxies (and the randoms in the same proportion) by a factor 2 (5) shifts the ASTRA cross-correlations by 7--10 (20--35) $\sigma$ at $s\simeq20$--$40\Mpch$, against $\sim1$ (3--5) $\sigma$ for density split. At the level of individual points, the rank correlation between the $r$ of the same galaxies computed in the full and in the thinned samples is only $0.65$, $0.38$ and $0.24$ for thinning factors of 2, 5 and 10, and only 58\%, 42\% and 36\% of the galaxies of the extreme quartiles keep their quartile.
+
+This is an intrinsic property of the estimator rather than a numerical instability. ASTRA is an \emph{adaptive-scale} statistic: the environment of a point is defined by its Delaunay neighbours, so its effective scale is the typical distance between neighbours, $\propto \bar n^{-1/3}$, and it changes with the sampling density. Thinning the sample enlarges this scale, which explains why the changes are concentrated at $s\lesssim50\Mpch$, whereas density split keeps a fixed smoothing radius. This is not a limitation for the present analysis nor for an application to DESI, since the number density is fixed in the mocks as in the data (and in an emulator trained at that density). It implies however that ASTRA statistics must always be compared, modelled and emulated at the same number density and with the same random-to-galaxy ratio, and that comparisons with density split should be made at equal density, as is the case throughout this paper.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{v2_robustness.png}
+\caption{Change of the Q1 and Q4 cross-correlation monopoles (top: random quartiles, bottom: galaxy quartiles) when the padding is doubled (green), the number of ASTRA randoms is doubled (orange), and the galaxies are thinned by 2 (purple) and 5 (pink), relative to the baseline and in units of the error of one $(500\Mpch)^3$ subvolume, for $s\geq20\Mpch$. Mean over 8 subvolumes of the fiducial catalogue.}
+\label{fig:robustness}
+\end{figure*}
 
 % =====================================================================
 \section{Discussion and limitations}
 \label{sec:discussion}
 % =====================================================================
 
-\paragraph{HOD mismatch in the derivatives.} The emulator catalogues are not HOD-matched across cosmologies. Our selection reduces the mismatch by a factor of two but does not cancel it, so the finite differences contain a residual response to the HOD parameters, smooth in scale and mostly affecting the amplitude. It is expected to matter most for $\sigma_8$, whose effect is also mainly an amplitude. A clean solution is an emulator of the statistics as a function of cosmological \emph{and} HOD parameters, trained on the full Latin hypercube, whose derivatives can be taken at fixed HOD.
+\paragraph{HOD mismatch in the derivatives.} The emulator catalogues are not HOD-matched across cosmologies. Our selection reduces the mismatch by a factor of two but does not cancel it, so the finite differences contain a residual response to the HOD parameters, smooth in scale and mostly affecting the amplitude. It is expected to matter most for $\sigma_8$, whose effect is also mainly an amplitude. In practice the paired differences are measured with high precision (the error of the mean over the 192 paired samples is small), but they are dominated by this HOD response: the implied change of the 2PCF reaches tens of percent at $s\sim20\Mpch$ for a 2\% change in $\omega_b$, and the derivative vectors with respect to $\omega_b$, $n_s$ and $\sigma_8$ are almost collinear (correlation coefficients 0.95--0.99 in the Fisher metric), so that the raw Fisher matrices are close to singular. We therefore calibrate the response of the statistics to the HOD parameters with additional fiducial catalogues and subtract it from the pair differences before computing the forecasts (Section~\ref{sec:fisher}). A clean solution is an emulator of the statistics as a function of cosmological \emph{and} HOD parameters, trained on the full Latin hypercube, whose derivatives can be taken at fixed HOD.
 
 \paragraph{Single phase.} All the cosmologies share one set of initial conditions, so the covariance relies on subvolumes of one box, measured along three correlated lines of sight. Larger sets of independent small boxes would remove both the subvolume approximation and the limit on the size of the data vector imposed by the Hartlap factor.
 
