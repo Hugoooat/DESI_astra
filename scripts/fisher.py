@@ -72,6 +72,8 @@ def compute(vectors, los, smin, smax, rebin, ells):
             derivs[param] = A.paired_derivative(xp, xm, ip, im, step)
         F, noise_frac = A.fisher(derivs, prec)
         Finv = np.linalg.inv(F)
+        if np.any(np.linalg.eigvalsh(F) <= 0):
+            print(f'{name}: Fisher matrix not positive definite (derivatives degenerate / noise-dominated)')
         results[name] = dict(F=F.tolist(), cov=Finv.tolist(), sigma=np.sqrt(np.diag(Finv)).tolist(),
                              sigma_unmarg=(1 / np.sqrt(np.diag(F))).tolist(),
                              noise_frac=noise_frac.tolist(), ndim=cov_samples.shape[1],
@@ -190,10 +192,10 @@ def main():
               'combined': ['2PCF', '2PCF + ASTRA rand', '2PCF + DS rand'],
               'galaxy_quartiles': ['2PCF', 'ASTRA gal', 'DS gal']}
     for gname, names in groups.items():
-        names = [nm for nm in names if nm in results]
+        names = [nm for nm in names if nm in results and np.all(np.linalg.eigvalsh(np.array(results[nm]['F'])) > 0)]
         if len(names) > 1 and len(params) > 1:
             plot_triangle(params, results, names, fiducial, args.volume, ROOT / 'plots' / f'fisher_{gname}_{tag}.png')
-    plot_bars(params, results, [nm for nm in results], args.volume, ROOT / 'plots' / f'fisher_bars_{tag}.png')
+    plot_bars(params, results, [nm for nm in results if np.all(np.isfinite(results[nm]['sigma']))], args.volume, ROOT / 'plots' / f'fisher_bars_{tag}.png')
 
 
 if __name__ == '__main__':
