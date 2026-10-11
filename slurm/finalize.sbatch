@@ -12,7 +12,6 @@ cd /global/homes/h/hugon/home/astra-ds
 set -x
 python -u scripts/build_emulator_dataset.py
 srun -N 1 -n 1 -c 256 python -u scripts/train_emulator.py --nseeds 10 --models-dir models10 --tag _10seeds
-srun -N 1 -n 1 -c 256 python -u scripts/train_emulator.py --nseeds 10 --models-dir models10_plots --tag ''  # figures + default validation file
 cd scripts
 python -u fisher_emulator.py --models-dir ../models10 --validation-tag _10seeds
 python -u compare_methods.py --models-dir ../models10 --validation-tag _10seeds
