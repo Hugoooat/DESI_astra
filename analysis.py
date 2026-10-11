@@ -173,6 +173,57 @@ class HODResponse:
     def predict(self, h):
         return self.G @ (np.asarray(h) - self.h_fid)
 
+    def correction(self, h_plus, h_minus):
+        """Predicted difference of the data vector due to the HOD mismatch of a pair."""
+        return self.predict(h_plus) - self.predict(h_minus)
+
+
+class GPHODResponse(HODResponse):
+    """
+    Non-linear HOD response: the calibration differences are compressed with a
+    PCA and each component is modelled by a Gaussian process (anisotropic RBF
+    kernel, one length scale per HOD parameter) in the normalised HOD space.
+    The linear-model attributes (G, loo_residual) are replaced by the GP ones;
+    G is the gradient of the GP at the fiducial HOD.
+    """
+
+    def __init__(self, stats, ncomp=8, eps=0.02, **kwargs):
+        super().__init__(stats, **kwargs)
+        self.ncomp = min(ncomp, len(self.hods) - 1)
+        self.models = self._fit(self.dh, self.dy)
+        nh = self.dh.shape[1]
+        self.G = np.array([(self._predict(self.models, eps * np.eye(nh)[j])
+                            - self._predict(self.models, -eps * np.eye(nh)[j])) / (2 * eps)
+                           for j in range(nh)]).T
+        loo = []
+        for k in range(len(self.hods)):
+            keep = np.arange(len(self.hods)) != k
+            loo.append(self.dy[k] - self._predict(self._fit(self.dh[keep], self.dy[keep]), self.dh[k]))
+        self.loo_residual = np.array(loo)
+
+    def _fit(self, dh, dy):
+        from sklearn.decomposition import PCA
+        from sklearn.gaussian_process import GaussianProcessRegressor
+        from sklearn.gaussian_process.kernels import RBF, ConstantKernel, WhiteKernel
+        pca = PCA(self.ncomp).fit(dy)
+        z = pca.transform(dy)
+        gps = []
+        for j in range(self.ncomp):
+            kernel = ConstantKernel(1.) * RBF(np.ones(dh.shape[1]), (1e-2, 1e2)) + WhiteKernel(1e-3)
+            gps.append(GaussianProcessRegressor(kernel, normalize_y=True).fit(dh, z[:, j]))
+        # the response vanishes at the fiducial by construction: subtract the GP value there
+        zero = np.array([gp.predict(np.zeros((1, dh.shape[1])))[0] for gp in gps])
+        return pca, gps, zero
+
+    @staticmethod
+    def _predict(models, dh):
+        pca, gps, zero = models
+        z = np.array([gp.predict(np.atleast_2d(dh))[0] for gp in gps]) - zero
+        return pca.inverse_transform(z[None])[0] - pca.inverse_transform(np.zeros((1, len(gps))))[0]
+
+    def predict(self, h):
+        return self._predict(self.models, np.asarray(h) - self.h_fid)
+
 
 def precision(samples):
     """Hartlap-corrected inverse covariance from (nsample, ndim) samples."""

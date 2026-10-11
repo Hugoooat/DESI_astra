@@ -40,7 +40,7 @@ COLORS = {'2PCF': 'k', 'ASTRA rand': '#d95f02', 'DS rand': '#1b9e77', 'ASTRA gal
           'ASTRA rand + auto': '#a6761d', 'DS rand + auto': '#386cb0'}
 
 
-def compute(vectors, los, smin, smax, rebin, ells, hod_correct=False, hod_marg=None):
+def compute(vectors, los, smin, smax, rebin, ells, hod_correct=False, hod_marg=None, hod_model='gp'):
     sel = A.selection()
     table = A.cosmology_table()
     fid = sel['fiducial']
@@ -51,7 +51,7 @@ def compute(vectors, los, smin, smax, rebin, ells, hod_correct=False, hod_marg=N
         try:
             runs[param] = (A.load(p['cosmo'], p['hod'], los=los), A.load(m['cosmo'], m['hod'], los=los),
                            table.loc[p['cosmo'], A.PARAM_COLUMNS[param]] - table.loc[m['cosmo'], A.PARAM_COLUMNS[param]],
-                           A.hod_vector(p['cosmo'], p['hod']) - A.hod_vector(m['cosmo'], m['hod']))
+                           (A.hod_vector(p['cosmo'], p['hod']), A.hod_vector(m['cosmo'], m['hod'])))
         except FileNotFoundError as exc:
             print(f'skip {param}: {exc}')
     params = [p for p in A.PARAMS if p in runs]
@@ -66,15 +66,16 @@ def compute(vectors, los, smin, smax, rebin, ells, hod_correct=False, hod_marg=N
             print(f'{name}: {exc}')
             continue
         dv = dict(ells=ells, smin=smin, smax=smax, rebin=rebin)
-        response = A.HODResponse(stats, **dv) if (hod_correct or hod_marg) else None
+        Response = A.GPHODResponse if hod_model == 'gp' else A.HODResponse
+        response = Response(stats, **dv) if (hod_correct or hod_marg) else None
         derivs = {}
         for param in params:
-            (mp, sp, ip), (mm, sm, im), step, dh = runs[param]
+            (mp, sp, ip), (mm, sm, im), step, (hp, hm) = runs[param]
             xp = A.data_vector(mp, sp, stats, **dv)[1]
             xm = A.data_vector(mm, sm, stats, **dv)[1]
             derivs[param] = A.paired_derivative(xp, xm, ip, im, step)
             if response is not None:   # remove the response to the HOD mismatch of the pair
-                derivs[param] = derivs[param] - response.G @ dh / step
+                derivs[param] = derivs[param] - response.correction(hp, hm) / step
         F, noise_frac = A.fisher(derivs, prec)
         extra = {}
         if response is not None:
@@ -199,14 +200,17 @@ def main():
     parser.add_argument('--hod-marg', type=float, default=None, metavar='SIGMA',
                         help='joint cosmology + HOD Fisher, marginalised over the HOD with a Gaussian prior '
                              'of width SIGMA in prior-range units (0.29 = std of the uniform prior)')
+    parser.add_argument('--hod-model', choices=['gp', 'linear'], default='gp',
+                        help='model of the HOD response fitted on the c000 calibration catalogues')
     parser.add_argument('--tag', default='')
     args = parser.parse_args()
 
     params, results = compute(args.vectors, args.los, args.smin, args.smax, args.rebin, tuple(args.ells),
-                              args.hod_correct or args.hod_marg is not None, args.hod_marg)
+                              args.hod_correct or args.hod_marg is not None, args.hod_marg, args.hod_model)
     report(params, results, args.volume)
     tag = args.tag or (f'smin{args.smin:g}_los{"".join(sorted(args.los))}'
-                       + ('_hodmarg' if args.hod_marg else '_hodcorr' if args.hod_correct else ''))
+                       + ('_hodmarg' if args.hod_marg else '_hodcorr' if args.hod_correct else '')
+                       + (f'_{args.hod_model}' if (args.hod_marg or args.hod_correct) else ''))
     (ROOT / 'plots').mkdir(exist_ok=True)
     (A.DATA / f'fisher_{tag}.json').write_text(json.dumps(
         dict(params=params, args=vars(args), results=results), indent=1, default=str))
