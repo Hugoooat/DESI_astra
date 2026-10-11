@@ -58,8 +58,12 @@ COMBINED = {'2PCF': ['gg'], 'ASTRA': q('astra'), 'DS': q('ds'), 'ASTRA + DS': q(
 class Forecaster:
     """Emulator Fisher for arbitrary lists of statistics and scale cuts (cached emulators and covariance)."""
 
-    def __init__(self, models_dir, validation_tag, hod_prior=0.29, compress=False):
+    def __init__(self, models_dir, validation_tag, hod_prior=0.29, compress=False, regression=None, nboot=50):
         self.compress = compress
+        # optional: cosmological derivatives from scripts/pair_regression.py instead of the emulator
+        # (bootstrap over subboxes replaces the ensemble members); HOD derivatives stay from the emulator
+        self.reg = np.load(regression) if regression else None
+        self.nboot = nboot
         sel = A.selection()
         self.x0 = input_point(sel['fiducial']['cosmo'], sel['fiducial']['hod'])
         self.meta, self.fstats, _ = A.load(sel['fiducial']['cosmo'], sel['fiducial']['hod'])
@@ -73,8 +77,19 @@ class Forecaster:
 
     def jac(self, stat):
         if stat not in self._jac:
-            self._jac[stat] = E.Emulator.load(stat, self.models_dir).jacobian(self.x0, members=True)
-        return self._jac[stat]                                   # (nmembers, ndim, 20)
+            J = E.Emulator.load(stat, self.models_dir).jacobian(self.x0, members=True)   # (nmembers, ndim, 20)
+            if self.reg is not None:
+                d = np.stack([self.reg[f'{p}/{stat}'] for p in PARAMS], axis=-1)      # (nsub, ndim, 4)
+                rng = np.random.default_rng(1)
+                boot = [d[rng.integers(0, len(d), len(d))].mean(0) for _ in range(self.nboot)]
+                Jr = np.repeat(J.mean(0, keepdims=True), self.nboot, axis=0)
+                Jr[:, :, self.ipar] = np.array(boot)
+                # put the full-sample estimate first in place of nothing: members = bootstrap realisations
+                J = Jr
+                self._jac_mean = getattr(self, '_jac_mean', {})
+                self._jac_mean[stat] = d.mean(0)
+            self._jac[stat] = J
+        return self._jac[stat]
 
     def __call__(self, stats, smin=20.):
         s_emu = E.Emulator.load(stats[0], self.models_dir).s
@@ -83,15 +98,21 @@ class Forecaster:
         n, p = samples.shape
         emu_var = np.concatenate([self.val[f'{st}/res'].var(0)[keep] for st in stats])
         J = np.concatenate([self.jac(st)[:, keep] for st in stats], axis=1)   # (nmembers, ndim, 20)
+        # central derivatives: ensemble mean, or for the regression the mean over all subboxes
+        J0 = J.mean(0, keepdims=True)
+        if self.reg is not None:
+            J0 = J0.copy()
+            J0[0][:, self.ipar] = np.concatenate([self._jac_mean[st][keep] for st in stats])
         if self.compress:
             # project on the 16 informative directions t = W^T d, W = C_shrunk^-1 D (lossy if C_shrunk != C,
             # never biased), then estimate the 16x16 covariance of t from the samples
             from sklearn.covariance import LedoitWolf
             Cs = LedoitWolf().fit(samples).covariance_ + np.diag(emu_var)
-            W = np.linalg.solve(Cs, J.mean(0)[:, self.ipar + self.ihod])
+            W = np.linalg.solve(Cs, J0[0][:, self.ipar + self.ihod])
             samples = samples @ W
             emu_cov = W.T @ np.diag(emu_var) @ W
             J = np.einsum('dk,mdi->mki', W, J)
+            J0 = np.einsum('dk,mdi->mki', W, J0)
             n, p = samples.shape
             C = np.cov(samples, rowvar=False) + emu_cov
         else:
@@ -99,7 +120,7 @@ class Forecaster:
         prec = (n - p - 2) / (n - 1) * np.linalg.inv(C)
         out = {'fixed': [], 'marg': []}
         npar = len(PARAMS)
-        for Jm in np.concatenate([J.mean(0, keepdims=True), J]):
+        for Jm in np.concatenate([J0, J]):
             D = Jm[:, self.ipar + self.ihod]
             F = D.T @ prec @ D
             out['fixed'].append(np.sqrt(np.diag(np.linalg.inv(F[:npar, :npar]))))
@@ -118,18 +139,22 @@ def ratio_with_error(fc, va, vb, smin=20., key='marg'):
     ra, rb = fc(va, smin), fc(vb, smin)
     r = rb[key][0] / ra[key][0]
     rm = rb[key][1] / ra[key][1]
-    return r, rm.std(0, ddof=1) / np.sqrt(len(rm)), ra, rb
+    # ensemble members: error of the mean; bootstrap realisations: their scatter is already the error
+    err = rm.std(0, ddof=1) / (1. if fc.reg is not None else np.sqrt(len(rm)))
+    return r, err, ra, rb
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--models-dir', type=Path, default=E.MODELS)
     parser.add_argument('--validation-tag', default='')
+    parser.add_argument('--regression', type=Path, default=None,
+                        help='cosmological derivatives from pair_regression.py (npz) instead of the emulator')
     parser.add_argument('--compress', action='store_true',
                         help='compress each data vector to 16 numbers (4 cosmology + 12 HOD) before the Fisher')
     args = parser.parse_args()
-    fc = Forecaster(args.models_dir, args.validation_tag, compress=args.compress)
-    tag = '_compressed' if args.compress else ''
+    fc = Forecaster(args.models_dir, args.validation_tag, compress=args.compress, regression=args.regression)
+    tag = ('_compressed' if args.compress else '') + ('_regression' if args.regression else '')
     res = {}
 
     # 1, 3, 5: ASTRA vs DS for each type of data vector
@@ -152,7 +177,8 @@ def main():
     for label, v in COMBINED.items():
         r = fc(v)
         res['combined'][label] = dict(sigma=r['marg'][0].tolist(),
-                                      scatter=(r['marg'][1].std(0, ddof=1) / np.sqrt(len(r['marg'][1]))).tolist(),
+                                      scatter=(r['marg'][1].std(0, ddof=1) /
+                                               (1. if fc.reg is not None else np.sqrt(len(r['marg'][1])))).tolist(),
                                       ndim=r['ndim'])
         print(f'{label:20s} ndim {r["ndim_raw"]:3d}  ' + ' '.join(f'{x:.2e}' for x in r['marg'][0]))
 
