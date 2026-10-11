@@ -44,7 +44,7 @@ def work(args):
     return stat, res, sigma, ids, history
 
 
-def plot_validation(out, s):
+def plot_validation(out, s, tag=''):
     groups = [('2PCF', ['gg'], 'k'),
               ('ASTRA rand Q1,Q4 x gal', ['astra_rand_cross_q1', 'astra_rand_cross_q4'], '#d95f02'),
               ('DS rand Q1,Q4 x gal', ['ds_rand_cross_q1', 'ds_rand_cross_q4'], '#1b9e77'),
@@ -72,11 +72,11 @@ def plot_validation(out, s):
     fig.suptitle('Emulator accuracy on 8 held-out cosmologies (median and 68% range); '
                  r'$\sigma_{\rm box}$ = error of the full 2 $h^{-1}$Gpc box', fontsize=10)
     fig.tight_layout()
-    fig.savefig(ROOT / 'plots' / 'emulator_validation.png', dpi=140)
+    fig.savefig(ROOT / 'plots' / f'emulator_validation{tag}.png', dpi=140)
     plt.close(fig)
 
 
-def plot_examples(out, s):
+def plot_examples(out, s, tag='', models_dir=None):
     import emulator as E
     stats = ['gg', 'astra_rand_cross_q1', 'astra_rand_cross_q4', 'ds_rand_cross_q1', 'ds_rand_cross_q4']
     stats = [st for st in stats if st in out]
@@ -85,7 +85,7 @@ def plot_examples(out, s):
     for col, st in enumerate(stats):
         X, Y, ids, _, _ = E.load_dataset(st)
         te = E.split(ids)[2]
-        emu = E.Emulator.load(st)
+        emu = E.Emulator.load(st, models_dir or E.MODELS)
         import torch
         with torch.no_grad():
             pred = emu(X[te][:4]).numpy()
@@ -101,7 +101,7 @@ def plot_examples(out, s):
     axes[1, 0].set_ylabel(r'$s^2\xi_2$')
     fig.suptitle('Emulator (lines) vs measurements (points) for 4 catalogues of held-out cosmologies', fontsize=10)
     fig.tight_layout()
-    fig.savefig(ROOT / 'plots' / 'emulator_examples.png', dpi=140)
+    fig.savefig(ROOT / 'plots' / f'emulator_examples{tag}.png', dpi=140)
     plt.close(fig)
 
 
@@ -127,17 +127,12 @@ def main():
              **{f'{st}/{k}': np.asarray(v) for st, d in out.items() for k, v in d.items()})
     s = E.load_dataset(stats[0])[3]
     (ROOT / 'plots').mkdir(exist_ok=True)
-    if args.tag:
-        (A.DATA / f'emulator_validation{args.tag}.json').write_text(json.dumps(
-            {st: float(np.median(np.abs(d['res'] / d['sigma']))) for st, d in out.items()}, indent=1))
-        print(f'saved {args.models_dir}, data/emulator_validation{args.tag}.*')
-        return
-    plot_validation(out, s)
-    plot_examples(out, s)
+    plot_validation(out, s, args.tag)
+    plot_examples(out, s, args.tag, args.models_dir)
     summary = {st: {'median_abs_res_over_sigma_box': float(np.median(np.abs(d['res'] / d['sigma']))),
                     'p68': float(np.percentile(np.abs(d['res'] / d['sigma']), 68))} for st, d in out.items()}
-    (A.DATA / 'emulator_validation.json').write_text(json.dumps(summary, indent=1))
-    print('saved models/, data/emulator_validation.*, plots/emulator_*.png')
+    (A.DATA / f'emulator_validation{args.tag}.json').write_text(json.dumps(summary, indent=1))
+    print(f'saved {args.models_dir}, data/emulator_validation{args.tag}.*, plots/emulator_*{args.tag}.png')
 
 
 if __name__ == '__main__':
