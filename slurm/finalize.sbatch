@@ -16,4 +16,8 @@ cd scripts
 python -u fisher_emulator.py --models-dir ../models10 --validation-tag _10seeds
 python -u compare_methods.py --models-dir ../models10 --validation-tag _10seeds
 python -u compare_methods.py --models-dir ../models10 --validation-tag _10seeds --compress
+python -u pair_regression.py
+python -u pair_regression.py --separate-g
+python -u pair_regression.py --quadratic
+python -u compare_methods.py --models-dir ../models10 --validation-tag _10seeds --compress --regression ../data/derivatives_regression.npz
 echo "finalize done: $(date)"

@@ -175,6 +175,17 @@ The ASTRA signals are systematically weaker than the density-split ones, by a fa
 \label{sec:fisher}
 % =====================================================================
 
+\paragraph{Methodological path.} Estimating derivatives from this suite turned out to be the main difficulty of the analysis, and we summarise here the successive approaches and why each was replaced or complemented, before describing them in detail.
+\begin{enumerate}
+\item \emph{Averaging HOD files} (first version, Appendix~\ref{app:v1}): the difference of the mean statistics of many HOD files per cosmology was compatible with noise, because the files are different HOD models whose scatter ($\sim55\%$) swamps the cosmological signal ($\sim1\%$).
+\item \emph{Paired finite differences} with one HOD-matched file per cosmology and subvolume-by-subvolume differences: very precise, but dominated by the residual HOD mismatch of the pair, an effect $\sim10$ times larger than the cosmological one; the Fisher matrices are singular.
+\item \emph{Calibration of the HOD response} on 72 additional fiducial catalogues, subtracted from the pairs: a linear model predicts the response with a 45\% error, a Gaussian process with 8\%, which is still not enough when the HOD term is ten times the signal.
+\item \emph{Emulator} of the statistics as a function of cosmology and HOD, differentiated at exactly fixed HOD. It reproduces held-out cosmologies to a fraction of the statistical error and agrees with the HOD-corrected pairs to a few per cent, but an out-of-sample test of its cosmological response shows that the response to $\omega_{\rm cdm}$ is not learnt below $s\simeq70\Mpch$. At fixed $\theta_*$ and $\sigma_8$ a 3\% change of $\omega_{\rm cdm}$ changes the statistics by less than the emulator error, and with 8 HOD draws per cosmology the network must disentangle this small effect from an HOD response an order of magnitude larger.
+\item \emph{Densification} of the training set around the fiducial point (16 additional HOD draws in each cosmology of the derivative grid), to give the emulator many examples of the cosmological response at similar HODs.
+\item \emph{Regression over all the pairs} of the densified grid, a local and linear estimator independent of the emulator, used to test the derivatives.
+\end{enumerate}
+Steps 1--3 are not used for the final forecasts but are kept as diagnostics and cross-checks. If the densified emulator still fails the $\omega_{\rm cdm}$ test, the next steps are to train it directly on the precise pair differences and to reweight the small scales in the loss.
+
 \subsection{Covariance}
 
 The covariance of each data vector is estimated from the fiducial catalogue (\texttt{c000}, \texttt{hod239}, the c000 draw closest to the centre of the HOD prior), using the 64 subvolumes measured along the three lines of sight: $N_s=192$ samples. The three lines of sight are not independent, so this is an approximation commonly used in simulation-based analyses. The inverse covariance is corrected by the Hartlap factor \cite{Hartlap2007}
