@@ -40,7 +40,9 @@ def main():
     result.update(cosmo=args.cosmo, hod=args.hod, space=args.space, los=args.los)
     args.outdir.mkdir(parents=True, exist_ok=True)
     out = args.outdir / f'c{args.cosmo:03d}_hod{args.hod:03d}_{args.space}_los{args.los}{args.tag}.npz'
-    np.savez(out, **result)
+    tmp = out.with_suffix('.tmp.npz')
+    np.savez(tmp, **result)
+    os.replace(tmp, out)   # atomic: a crash while writing never leaves a truncated .npz behind
     logging.info(f'saved {out}')
 
 
