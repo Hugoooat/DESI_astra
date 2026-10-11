@@ -40,7 +40,7 @@ COLORS = {'2PCF': 'k', 'ASTRA rand': '#d95f02', 'DS rand': '#1b9e77', 'ASTRA gal
           'ASTRA rand + auto': '#a6761d', 'DS rand + auto': '#386cb0'}
 
 
-def compute(vectors, los, smin, smax, rebin, ells):
+def compute(vectors, los, smin, smax, rebin, ells, hod_correct=False, hod_marg=None):
     sel = A.selection()
     table = A.cosmology_table()
     fid = sel['fiducial']
@@ -50,7 +50,8 @@ def compute(vectors, los, smin, smax, rebin, ells):
         p, m = pair['plus'], pair['minus']
         try:
             runs[param] = (A.load(p['cosmo'], p['hod'], los=los), A.load(m['cosmo'], m['hod'], los=los),
-                           table.loc[p['cosmo'], A.PARAM_COLUMNS[param]] - table.loc[m['cosmo'], A.PARAM_COLUMNS[param]])
+                           table.loc[p['cosmo'], A.PARAM_COLUMNS[param]] - table.loc[m['cosmo'], A.PARAM_COLUMNS[param]],
+                           A.hod_vector(p['cosmo'], p['hod']) - A.hod_vector(m['cosmo'], m['hod']))
         except FileNotFoundError as exc:
             print(f'skip {param}: {exc}')
     params = [p for p in A.PARAMS if p in runs]
@@ -64,13 +65,29 @@ def compute(vectors, los, smin, smax, rebin, ells):
         except ValueError as exc:
             print(f'{name}: {exc}')
             continue
+        dv = dict(ells=ells, smin=smin, smax=smax, rebin=rebin)
+        response = A.HODResponse(stats, **dv) if (hod_correct or hod_marg) else None
         derivs = {}
         for param in params:
-            (mp, sp, ip), (mm, sm, im), step = runs[param]
-            xp = A.data_vector(mp, sp, stats, ells, smin, smax, rebin)[1]
-            xm = A.data_vector(mm, sm, stats, ells, smin, smax, rebin)[1]
+            (mp, sp, ip), (mm, sm, im), step, dh = runs[param]
+            xp = A.data_vector(mp, sp, stats, **dv)[1]
+            xm = A.data_vector(mm, sm, stats, **dv)[1]
             derivs[param] = A.paired_derivative(xp, xm, ip, im, step)
+            if response is not None:   # remove the response to the HOD mismatch of the pair
+                derivs[param] = derivs[param] - response.G @ dh / step
         F, noise_frac = A.fisher(derivs, prec)
+        extra = {}
+        if response is not None:
+            extra['hod_loo_rel'] = float(np.sqrt((response.loo_residual**2).mean() / (response.dy**2).mean()))
+            extra['ncalib'] = len(response.hods)
+        if hod_marg:
+            # joint Fisher (cosmology + 12 HOD parameters), Gaussian prior of width hod_marg on h
+            M = np.array([derivs[p].mean(0) for p in params] + list(response.G.T))
+            Fj = M @ prec @ M.T
+            Fj[:len(params), :len(params)] = F            # cosmology block with derivative-noise debiasing
+            Fj[len(params):, len(params):] += np.eye(response.G.shape[1]) / hod_marg**2
+            extra['F_joint'] = Fj.tolist()
+            F = np.linalg.inv(np.linalg.inv(Fj)[:len(params), :len(params)])   # marginalised over the HOD
         Finv = np.linalg.inv(F)
         if np.any(np.linalg.eigvalsh(F) <= 0):
             print(f'{name}: Fisher matrix not positive definite (derivatives degenerate / noise-dominated)')
@@ -78,7 +95,7 @@ def compute(vectors, los, smin, smax, rebin, ells):
                              sigma_unmarg=(1 / np.sqrt(np.diag(F))).tolist(),
                              noise_frac=noise_frac.tolist(), ndim=cov_samples.shape[1],
                              nsamples=cov_samples.shape[0], hartlap=hartlap,
-                             nderiv=min(len(d) for d in derivs.values()))
+                             nderiv=min(len(d) for d in derivs.values()), **extra)
     return params, results
 
 
@@ -90,7 +107,8 @@ def report(params, results, volume):
     print(head)
     for name, r in results.items():
         cells = ' '.join(f'{s * scale:9.2e} [{nf:4.0%}]' for s, nf in zip(r['sigma'], r['noise_frac']))
-        print(f'{name:22s} {r["ndim"]:4d} {r["nsamples"]:5d} {r["hartlap"]:7.2f} {cells}')
+        hod = f'  [HOD model: {r["ncalib"]} calib., LOO error {r["hod_loo_rel"]:.0%}]' if 'ncalib' in r else ''
+        print(f'{name:22s} {r["ndim"]:4d} {r["nsamples"]:5d} {r["hartlap"]:7.2f} {cells}{hod}')
 
 
 def ellipse(ax, mean, cov, nsig, **kwargs):
@@ -176,12 +194,19 @@ def main():
     parser.add_argument('--los', nargs='+', default=['x', 'y', 'z'])
     parser.add_argument('--volume', type=float, default=0.125, help='(Gpc/h)^3')
     parser.add_argument('--vectors', nargs='+', default=list(A.DATA_VECTORS))
+    parser.add_argument('--hod-correct', action='store_true',
+                        help='subtract the calibrated HOD response from the pair differences')
+    parser.add_argument('--hod-marg', type=float, default=None, metavar='SIGMA',
+                        help='joint cosmology + HOD Fisher, marginalised over the HOD with a Gaussian prior '
+                             'of width SIGMA in prior-range units (0.29 = std of the uniform prior)')
     parser.add_argument('--tag', default='')
     args = parser.parse_args()
 
-    params, results = compute(args.vectors, args.los, args.smin, args.smax, args.rebin, tuple(args.ells))
+    params, results = compute(args.vectors, args.los, args.smin, args.smax, args.rebin, tuple(args.ells),
+                              args.hod_correct or args.hod_marg is not None, args.hod_marg)
     report(params, results, args.volume)
-    tag = args.tag or f'smin{args.smin:g}_los{"".join(sorted(args.los))}'
+    tag = args.tag or (f'smin{args.smin:g}_los{"".join(sorted(args.los))}'
+                       + ('_hodmarg' if args.hod_marg else '_hodcorr' if args.hod_correct else ''))
     (ROOT / 'plots').mkdir(exist_ok=True)
     (A.DATA / f'fisher_{tag}.json').write_text(json.dumps(
         dict(params=params, args=vars(args), results=results), indent=1, default=str))
