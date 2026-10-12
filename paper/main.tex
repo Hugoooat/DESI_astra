@@ -389,6 +389,8 @@ This is an intrinsic property of the estimator rather than a numerical instabili
 
 \paragraph{Single phase.} All the cosmologies share one set of initial conditions, so the covariance relies on subvolumes of one box, measured along three correlated lines of sight. Larger sets of independent small boxes would remove both the subvolume approximation and the limit on the size of the data vector imposed by the Hartlap factor.
 
+\paragraph{Clean derivatives and an independent covariance.} The limitations above are specific to the emulator suite and can be lifted with existing simulations. (i) The official DESI AbacusHOD LRG mocks at $z=0.5$ \cite{Yuan2022} populate 1786 independent $(500\Mpch)^3$ AbacusSummit small boxes, and the 25 phases of the fiducial base cosmology, with a single best-fit HOD whose parameters lie inside the emulator prior and whose number density matches ours; measuring our statistics on them gives a covariance from 1786 independent volumes of exactly the size of our subvolumes, instead of 192 correlated samples of one box. (ii) The Quijote simulations \cite{Quijote}, used by \cite{Paillas2023} for density-split Fisher forecasts, provide 500 realisations of each $\pm$ variation of $\Omega_m$, $\Omega_b$, $h$, $n_s$, $\sigma_8$ and $M_\nu$ with matched initial conditions, and thousands of fiducial realisations: there the tracer population is the same in all cosmologies, so finite differences have no HOD mismatch and their noise can be averaged over hundreds of pairs. Quijote halos are less realistic tracers than DESI-like LRGs, but they provide a controlled comparison of the information content of ASTRA split and density split, complementary to the DESI-like analysis of this paper.
+
 \paragraph{Towards inference.} The natural next step is a simulation-based inference in the spirit of \cite{CuestaLazaro2024}: a neural-network emulator of the ASTRA-split multipoles trained on the 85 cosmologies $\times$ HOD draws, combined with the covariance of this work in an MCMC exploration of the joint cosmological and HOD parameter space.
 
 % =====================================================================
@@ -467,6 +469,7 @@ A first version of this analysis averaged the statistics of 64 different HOD fil
 \bibitem{Yuan2023} \todo{Reference of the yuan23 HOD prior used for the DESI emulator catalogues.}
 \bibitem{LandySzalay1993} S.~D.~Landy \& A.~S.~Szalay, ApJ 412, 64 (1993).
 \bibitem{Sinha2020} M.~Sinha \& L.~H.~Garrison, \emph{Corrfunc}, MNRAS 491, 3022 (2020).
+\bibitem{Quijote} F.~Villaescusa-Navarro et al., \emph{The Quijote simulations}, ApJS 250, 2 (2020), arXiv:1909.05273.
 \bibitem{Hartlap2007} J.~Hartlap, P.~Simon \& P.~Schneider, A\&A 464, 399 (2007).
 \end{thebibliography}
 
