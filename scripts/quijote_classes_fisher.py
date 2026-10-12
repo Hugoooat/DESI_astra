@@ -67,9 +67,10 @@ def main():
     parser.add_argument('--params', nargs='+', default=['Om', 's8'])
     parser.add_argument('--rebin', type=int, default=2)
     parser.add_argument('--smin', type=float, default=20.)
+    parser.add_argument('--ells', type=int, nargs='+', default=[0, 2])
     parser.add_argument('--tag', default='')
     args = parser.parse_args()
-    QF.REBIN, QF.KEEP = args.rebin, list(args.params)
+    QF.REBIN, QF.KEEP, QF.ELLS = args.rebin, list(args.params), tuple(args.ells)
     QF.STEPS = {p: QF.STEPS[p] for p in ('Om', 'ns', 's8')}
 
     cstats = sorted({s for v in CLASS_VECTORS.values() for s in v} | {'gg'})
@@ -93,7 +94,7 @@ def main():
         print(f'{name:40s} ndim {r["ndim"]:3d} ' +
               '  '.join(f'{p}: {s:.2e} [{x:.2f}]' for p, s, x in zip(args.params, r['sigma'], rel)))
     out = A.DATA / f'quijote_classes_fisher{args.tag}.json'
-    out.write_text(json.dumps({'params': args.params, 'rebin': args.rebin,
+    out.write_text(json.dumps({'params': args.params, 'rebin': args.rebin, 'ells': args.ells,
                                'results': {k: {kk: vv for kk, vv in r.items() if kk != 'cov'} for k, r in res.items()}},
                               indent=1))
     print(f'saved {out}')
