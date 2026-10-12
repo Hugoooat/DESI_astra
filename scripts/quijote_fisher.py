@@ -67,12 +67,13 @@ def load_set(name, stats_needed):
 
 
 REBIN = 2
+ELLS = (0, 2)
 KEEP = None   # parameters kept in the Fisher matrix (None: all)
 
 
 def vec(meta, real, stats, smin):
     st = {k: np.array([real[k]]) for k in stats}
-    return A.data_vector(meta, st, stats, smin=smin, rebin=REBIN)[1][0]
+    return A.data_vector(meta, st, stats, ells=ELLS, smin=smin, rebin=REBIN)[1][0]
 
 
 def compute(sets, meta, stats, smin, nderiv=None, ncov=None):
@@ -122,10 +123,11 @@ def main():
     parser.add_argument('--rebin', type=int, default=2, help='5 Mpc/h bins merged (2: 10 Mpc/h)')
     parser.add_argument('--params', nargs='+', default=None, help='parameters kept (others fixed)')
     parser.add_argument('--no-convergence', action='store_true')
+    parser.add_argument('--ells', type=int, nargs='+', default=[0, 2])
     parser.add_argument('--tag', default='')
     args = parser.parse_args()
-    global REBIN, KEEP, PARAMS
-    REBIN, KEEP = args.rebin, args.params
+    global REBIN, KEEP, PARAMS, ELLS
+    REBIN, KEEP, ELLS = args.rebin, args.params, tuple(args.ells)
     if KEEP:
         PARAMS = KEEP
     stats = sorted({s for v in VECTORS.values() for s in v})

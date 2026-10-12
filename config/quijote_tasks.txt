@@ -1,0 +1,18 @@
+--params Om s8 --rebin 2 --ells 0 2 --no-convergence --tag _p0c0
+--params Om s8 --rebin 4 --ells 0 2 --no-convergence --tag _p0c1
+--params Om s8 --rebin 4 --ells 0 --no-convergence --tag _p0c2
+--params Om s8 Mnu --rebin 2 --ells 0 2 --no-convergence --tag _p1c0
+--params Om s8 Mnu --rebin 4 --ells 0 2 --no-convergence --tag _p1c1
+--params Om s8 Mnu --rebin 4 --ells 0 --no-convergence --tag _p1c2
+--params Om ns s8 --rebin 2 --ells 0 2 --no-convergence --tag _p2c0
+--params Om ns s8 --rebin 4 --ells 0 2 --no-convergence --tag _p2c1
+--params Om ns s8 --rebin 4 --ells 0 --no-convergence --tag _p2c2
+--params Om ns s8 Mnu --rebin 2 --ells 0 2 --no-convergence --tag _p3c0
+--params Om ns s8 Mnu --rebin 4 --ells 0 2 --no-convergence --tag _p3c1
+--params Om ns s8 Mnu --rebin 4 --ells 0 --no-convergence --tag _p3c2
+--params Om Ob h ns s8 --rebin 2 --ells 0 2 --no-convergence --tag _p4c0
+--params Om Ob h ns s8 --rebin 4 --ells 0 2 --no-convergence --tag _p4c1
+--params Om Ob h ns s8 --rebin 4 --ells 0 --no-convergence --tag _p4c2
+--params Om Ob h ns s8 Mnu --rebin 2 --ells 0 2 --no-convergence --tag _p5c0
+--params Om Ob h ns s8 Mnu --rebin 4 --ells 0 2 --no-convergence --tag _p5c1
+--params Om Ob h ns s8 Mnu --rebin 4 --ells 0 --no-convergence --tag _p5c2
