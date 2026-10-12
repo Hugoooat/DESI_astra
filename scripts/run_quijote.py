@@ -64,9 +64,11 @@ def main():
     parser.add_argument('--chunk', type=int, default=0)
     parser.add_argument('--nchunks', type=int, default=1)
     parser.add_argument('--nthreads', type=int, default=int(os.environ.get('SLURM_CPUS_PER_TASK', 8)))
+    parser.add_argument('--classes', action='store_true',
+                        help='ASTRA cosmic-web classes instead of quartiles (outputs in data/quijote_classes)')
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%H:%M:%S')
-    outdir = ROOT / 'data' / 'quijote' / args.set
+    outdir = ROOT / 'data' / ('quijote_classes' if args.classes else 'quijote') / args.set
     outdir.mkdir(parents=True, exist_ok=True)
     boxsize = np.full(3, BOX)
     clustering = None
@@ -76,9 +78,14 @@ def main():
         if out.exists() or not complete(path):
             continue
         pos = read_halos(path)
-        result, clustering = astra_ds.measure_positions(pos, boxsize, f'{args.set}/{i}', nside=1,
-                                                        periodic_clustering=True, nthreads=args.nthreads,
-                                                        keep_sample=0, clustering=clustering)
+        if args.classes:
+            result, clustering = astra_ds.measure_classes(pos, boxsize, f'{args.set}/{i}', nside=1,
+                                                          periodic_clustering=True, nthreads=args.nthreads,
+                                                          clustering=clustering)
+        else:
+            result, clustering = astra_ds.measure_positions(pos, boxsize, f'{args.set}/{i}', nside=1,
+                                                            periodic_clustering=True, nthreads=args.nthreads,
+                                                            keep_sample=0, clustering=clustering)
         result.update(set=args.set, realisation=i)
         tmp = out.with_suffix('.tmp.npz')
         np.savez(tmp, **result)

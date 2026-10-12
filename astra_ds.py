@@ -213,6 +213,16 @@ def quantile_labels(values, rng, nquantiles=N_QUANTILES):
     return labels
 
 
+# ASTRA cosmic-web classes (thresholds of the ASTRA reference implementation)
+CLASS_EDGES = (-0.9, 0., 0.9)
+CLASSES = ('void', 'sheet', 'filament', 'knot')
+
+
+def astra_class_labels(r):
+    """0 void r <= -0.9, 1 sheet (-0.9, 0], 2 filament (0, 0.9], 3 knot r > 0.9."""
+    return np.digitize(r, CLASS_EDGES, right=True)
+
+
 # ---------------------------------------------------------------------------
 # Clustering
 # ---------------------------------------------------------------------------
@@ -410,4 +420,71 @@ def measure_positions(galaxies, boxsize, label='', nside=4, pad=30., sedges=np.a
     result.update({name: np.array(value) for name, value in out.items()})
     result.update({name: np.array(value) for name, value in diag.items()})
     result.update(sample)
+    return result, clustering
+
+
+def class_stat_names():
+    names = ['gg']
+    for pop in POPS:
+        for kind in ('auto', 'cross'):
+            names += [f'astra_{pop}_{kind}_{c}' for c in CLASSES]
+    return names
+
+
+def measure_classes(galaxies, boxsize, label='', nside=4, pad=30., sedges=np.arange(0., 151., 5.),
+                    nrand_astra=1, nrand_geometry=5, seed=42, subboxes=None, nthreads=1,
+                    periodic_clustering=False, clustering=None, min_points=20):
+    """
+    Same as measure_positions, for the ASTRA cosmic-web classes (void, sheet,
+    filament, knot) instead of quartiles: clustering of each class of
+    galaxies and random points, and the fraction of points in each class.
+    Classes with fewer than `min_points` points get NaN statistics.
+    Returns (dict of arrays, clustering).
+    """
+    t0 = time.time()
+    galaxies = np.asarray(galaxies, dtype='f8') % boxsize
+    randoms = uniform_randoms(nrand_astra * len(galaxies), boxsize, seed)
+    corners, size = subbox_corners(boxsize, nside)
+    if clustering is None:
+        if periodic_clustering:
+            clustering = PeriodicClustering(boxsize, sedges, nthreads=nthreads)
+        else:
+            clustering = SubboxClustering(size, sedges, nrand_geometry=int(nrand_geometry * len(galaxies) / nside**3),
+                                          seed=seed + 1000, nthreads=nthreads)
+    if subboxes is None:
+        subboxes = range(len(corners))
+    names = class_stat_names()
+    out = {name: [] for name in names}
+    frac = {pop: [] for pop in POPS}
+    for ibox in subboxes:
+        if nside == 1:
+            _, gal, gal_core = periodic_pad(galaxies, boxsize, pad)
+            _, rand, rand_core = periodic_pad(randoms, boxsize, pad)
+        else:
+            _, gal, gal_core = extract(galaxies, corners[ibox], size, boxsize, pad)
+            _, rand, rand_core = extract(randoms, corners[ibox], size, boxsize, pad)
+        r_gal, r_rand = astra_r(gal, rand)
+        pos = {'data': gal[gal_core], 'rand': rand[rand_core]}
+        labels = {'data': astra_class_labels(r_gal[gal_core]), 'rand': astra_class_labels(r_rand[rand_core])}
+        gal_all = pos['data']
+        s, poles = clustering.multipoles(gal_all)
+        out['gg'].append(poles)
+        RxG = clustering.randoms_x(gal_all)
+        for pop in POPS:
+            frac[pop].append(np.bincount(labels[pop], minlength=len(CLASSES)) / len(labels[pop]))
+            for ic, c in enumerate(CLASSES):
+                xc = pos[pop][labels[pop] == ic]
+                if len(xc) < min_points:
+                    nan = np.full_like(poles, np.nan)
+                    out[f'astra_{pop}_auto_{c}'].append(nan)
+                    out[f'astra_{pop}_cross_{c}'].append(nan)
+                    continue
+                out[f'astra_{pop}_auto_{c}'].append(clustering.multipoles(xc)[1])
+                out[f'astra_{pop}_cross_{c}'].append(clustering.multipoles(xc, gal_all, R1D2=RxG)[1])
+        logger.info(f'{label} subbox {ibox}: fractions rand {np.round(frac["rand"][-1], 3)} '
+                    f'data {np.round(frac["data"][-1], 3)} ({time.time() - t0:.0f}s)')
+    result = {'s': s, 'ells': np.array(clustering.ells), 'sedges': np.asarray(sedges),
+              'subboxes': np.array(list(subboxes)), 'stat_names': np.array(names), 'classes': np.array(CLASSES)}
+    result.update({name: np.array(value) for name, value in out.items()})
+    result.update({f'fraction_{pop}': np.array(v) for pop, v in frac.items()})
     return result, clustering

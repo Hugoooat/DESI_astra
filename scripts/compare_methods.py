@@ -172,6 +172,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--models-dir', type=Path, default=E.MODELS)
     parser.add_argument('--validation-tag', default='')
+    parser.add_argument('--params', nargs='+', default=None,
+                        help='cosmological parameters of the Fisher matrix (default: omega_b omega_cdm n_s sigma8; '
+                             'also alpha_s N_ur w0 wa)')
     parser.add_argument('--cov', choices=['subbox', 'covbox'], default='subbox',
                         help='covariance: 192 subboxes of the fiducial, or the 1786 official small boxes')
     parser.add_argument('--fiducial', default=None, help="'official', or COSMO_HOD (default: c000 hod239)")
@@ -180,9 +183,12 @@ def main():
     parser.add_argument('--compress', action='store_true',
                         help='compress each data vector to 16 numbers (4 cosmology + 12 HOD) before the Fisher')
     args = parser.parse_args()
+    if args.params:
+        global PARAMS
+        PARAMS = list(args.params)
     fc = Forecaster(args.models_dir, args.validation_tag, compress=args.compress, regression=args.regression,
                     cov=args.cov, fiducial=args.fiducial)
-    tag = (f'_{args.cov}' if args.cov != 'subbox' else '') + (f'_fid{args.fiducial}' if args.fiducial else '') + ('_compressed' if args.compress else '') + \
+    tag = (f'_p{len(PARAMS)}' if args.params else '') + (f'_{args.cov}' if args.cov != 'subbox' else '') + (f'_fid{args.fiducial}' if args.fiducial else '') + ('_compressed' if args.compress else '') + \
         (f'_regression_{Path(args.regression).stem.replace("derivatives_regression", "").strip("_") or "lin"}'
          if args.regression else '') + \
         ('' if Path(args.models_dir).name in ('models', 'models10') else f'_{Path(args.models_dir).name}')
