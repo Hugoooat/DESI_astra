@@ -90,7 +90,23 @@ is close to 1 in dense regions and to $-1$ in empty ones. The tessellation of ea
 
 \paragraph{Quartiles.} For each method, points are ranked by $r$ or $\delta_R$ and split into four equal-size quartiles, Q1 (most underdense) to Q4 (most overdense), ties of the discrete $r$ being broken at random. We use two populations, ranked separately: the \emph{random quartiles} (random points, the query points of density split, sampling environments by volume) and the \emph{galaxy quartiles} (galaxies, sampling environments by mass).
 
-\paragraph{Comparison.} The two estimators are strongly but not perfectly correlated (Figure~\ref{fig:env}): the Spearman correlation between $r$ and $\delta_R$ is $0.72$; 63\% of the ASTRA Q1 (Q4) random points are also in the density-split Q1 (Q4), while the intermediate quartiles are largely mixed. ASTRA identifies the same structures but redistributes many points, as expected from an adaptive rather than a fixed scale.
+\paragraph{Comparison.} The two estimators are strongly but not perfectly correlated (Figure~\ref{fig:env}): the Spearman correlation between $r$ and $\delta_R$ is $0.72$; 63\% of the ASTRA Q1 (Q4) random points are also in the density-split Q1 (Q4), while the intermediate quartiles are largely mixed. ASTRA identifies the same structures but redistributes many points, as expected from an adaptive rather than a fixed scale (Figure~\ref{fig:map}).
+
+\paragraph{Response to cosmology.} Figure~\ref{fig:response} shows how the mean environment of each quartile of the Quijote halos shifts when a cosmological parameter is varied, in units of its scatter between realisations. The density-split contrast $\delta_R$ responds strongly (up to $7\sigma$ for $\sigma_8$), and antisymmetrically for the $\pm$ variations; the ASTRA value $r$ hardly moves ($<1\sigma$). This is expected: $r$ is normalised locally by the random points and is nearly insensitive to the overall amplitude of the field. The cosmological information of ASTRA split therefore lies in the clustering of its environments rather than in the values of $r$.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{v2_map.png}
+\caption{Random points of the extreme quartiles (Q1 blue, Q4 red) and galaxies (grey) in a $20\Mpch$ slab of one subvolume of the fiducial catalogue, for ASTRA split (left) and density split (right).}
+\label{fig:map}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_response.png}
+\caption{Shift of the mean environment of each halo quartile (Q1 to Q4 from left to right) for the $+$ (blue) and $-$ (red) variations of each parameter, Quijote, in units of the scatter of one realisation. Left: ASTRA $r$; right: density-split $\delta_R$.}
+\label{fig:response}
+\end{figure*}
 
 \begin{figure*}[t]
 \centering
@@ -122,9 +138,23 @@ The two methods produce qualitatively identical signals (Figure~\ref{fig:multipo
 
 \paragraph{Data vectors.} By default, the cross-correlations of the extreme quartiles Q1 and Q4 with the galaxies, $\ell=0,2$, $20\le s\le150\Mpch$ in $10\Mpch$ bins (52 numbers per method), with or without the 2PCF; variants add the quartile auto-correlations or use the galaxy quartiles.
 
-\paragraph{Covariance.} Measured on the 1786 official small boxes, i.e.\ 1786 independent $(500\Mpch)^3$ volumes treated exactly like our subvolumes. Forecasts are quoted for this volume of $0.125\,(h^{-1}{\rm Gpc})^3$.
+\paragraph{Covariance.} Measured on the 1786 official small boxes, i.e.\ 1786 independent $(500\Mpch)^3$ volumes treated exactly like our subvolumes. Forecasts are quoted for this volume of $0.125\,(h^{-1}{\rm Gpc})^3$. The correlation matrix (Figure~\ref{fig:corr}) shows strong correlations between neighbouring scales, between the Q4 cross-correlations and the 2PCF, and anti-correlations between the Q1 and Q4 blocks. The ASTRA and density-split blocks of the same quartile are very strongly correlated: being measured on the same galaxies, their noise is largely common. This is the origin of their complementarity: when two measurements share most of their noise but respond differently to the parameters, their combination cancels part of that noise and gains much more than independent measurements would.
 
-\paragraph{Derivatives: an emulator.} Because the HOD differs between the cosmologies of the emulator suite, finite differences between them measure mostly the HOD change, not the cosmological one (Section~\ref{sec:choices}). We therefore model each statistic as a function of 8 cosmological ($\omega_b$, $\omega_{\rm cdm}$, $\sigma_8$, $n_s$, $\alpha_s$, $N_{\rm ur}$, $w_0$, $w_a$) and 12 HOD parameters with a neural network, as in SUNBIRD \cite{CuestaLazaro2024}, and take its derivatives at exactly fixed HOD by automatic differentiation. Each statistic has an ensemble of 10 networks (three hidden layers of 256 SiLU units) trained on 999 catalogues of the 85 cosmologies, densified around the fiducial point, with a loss that includes the differences between catalogues of the derivative grid (Appendix~\ref{app:maths}). On 8 cosmologies never seen in training, the emulator reproduces all the statistics to 0.4--0.9 times the statistical error of a $2\,h^{-1}$Gpc box, i.e.\ about ten times below the error of the volume of the forecasts (Figure~\ref{fig:emu}); it also predicts the differences between held-out catalogues of the derivative grid at the noise level of these differences. The emulator error is added to the covariance.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v2_corr.png}
+\caption{Correlation matrix of the 2PCF and of the Q1, Q4 cross-correlations of ASTRA split and density split (1786 official small boxes).}
+\label{fig:corr}
+\end{figure}
+
+\paragraph{Derivatives: an emulator.} Because the HOD differs between the cosmologies of the emulator suite, finite differences between them measure mostly the HOD change, not the cosmological one (Section~\ref{sec:choices}). We therefore model each statistic as a function of 8 cosmological ($\omega_b$, $\omega_{\rm cdm}$, $\sigma_8$, $n_s$, $\alpha_s$, $N_{\rm ur}$, $w_0$, $w_a$) and 12 HOD parameters with a neural network, as in SUNBIRD \cite{CuestaLazaro2024}, and take its derivatives at exactly fixed HOD by automatic differentiation. Each statistic has an ensemble of 10 networks (three hidden layers of 256 SiLU units) trained on 999 catalogues of the 85 cosmologies, densified around the fiducial point, with a loss that includes the differences between catalogues of the derivative grid (Appendix~\ref{app:maths}). On 8 cosmologies never seen in training, the emulator reproduces all the statistics to 0.4--0.9 times the statistical error of a $2\,h^{-1}$Gpc box, i.e.\ about ten times below the error of the volume of the forecasts (Figure~\ref{fig:emu}); it also predicts the differences between held-out catalogues of the derivative grid at the noise level of these differences. The emulator error is added to the covariance. Figure~\ref{fig:derivs} shows the derivatives in units of the statistical error: the two methods respond very similarly to $\omega_{\rm cdm}$ and $n_s$, mostly through the monopole at $s<75\Mpch$; the Q1 (void) cross-correlations respond with the opposite sign to Q4 and to the 2PCF, which is what breaks degeneracies; $\sigma_8$ acts mostly on the quadrupoles at fixed HOD.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_derivatives.png}
+\caption{Change of the monopole (top) and quadrupole (bottom) for a small change of each parameter, in units of the error of one $(500\Mpch)^3$ volume (emulator derivatives at the official fiducial point): 2PCF (black), Q1 (dashed) and Q4 (solid) cross-correlations of ASTRA split (orange) and density split (green).}
+\label{fig:derivs}
+\end{figure*}
 
 \paragraph{Fisher matrices.} For the 4 parameters $(\omega_b, \omega_{\rm cdm}, n_s, \sigma_8)$, marginalised over the 12 HOD parameters with a Gaussian prior of the width of their uniform prior, after compressing each data vector to the 16 numbers that carry its information on the 16 parameters (Appendix~\ref{app:maths}). The uncertainty due to the emulator training is estimated from the scatter of the forecasts of the individual networks.
 
@@ -186,6 +216,22 @@ ASTRA + DS & 0.0041 & 0.015 & 0.12 & 0.15 \\
 \caption{Baseline marginalised $1\sigma$ errors (random-quartile Q1+Q4 cross-correlations, HOD marginalised) for one $(500\Mpch)^3$ volume. These values are comparable to the prior widths and should be read as a comparison of information content, not as realistic constraints.}
 \label{tab:sigma}
 \end{table}
+
+Figure~\ref{fig:triangle} shows the corresponding contours: the environment statistics mainly reduce the $\omega_b$--$\omega_{\rm cdm}$ and $n_s$--$\sigma_8$ degeneracies of the 2PCF. Figure~\ref{fig:quartiles} breaks the information down: the Q4 cross-correlations alone already beat the 2PCF on most parameters, Q1 and Q4 together double the gain, and adding the quartile auto-correlations multiplies it again (up to a factor 6--8 on $\omega_b$), for both methods.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v2_triangle.png}
+\caption{Baseline Fisher contours (68\% and 95\%) for the 2PCF, ASTRA split, density split and their combinations, one $(500\Mpch)^3$ volume, HOD marginalised.}
+\label{fig:triangle}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_quartiles.png}
+\caption{Gain over the 2PCF, $\sigma_{\rm 2PCF}/\sigma$, for the Q1 and Q4 cross-correlations alone, together, and with the quartile auto-correlations, for ASTRA split (orange) and density split (green) (baseline, HOD marginalised).}
+\label{fig:quartiles}
+\end{figure*}
 
 The fiducial point matters at the level of $\pm15\%$: evaluated at four different HODs, the ratio stays between 0.75 and 1.11 for all parameters (Table~\ref{tab:covbox}).
 
@@ -368,6 +414,8 @@ The second term is a positive bias: the noise adds spurious information. It is r
 \item convergence: the forecast is recomputed with $N/2$ pairs.
 \end{enumerate}
 
+\paragraph{Volume.} The forecasts are computed for one $(500\Mpch)^3$ volume, where the absolute errors are comparable to the prior widths; this is the nature of a comparison of information content and is not corrected. The ratios $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ do not depend on the volume as long as the covariance scales as $1/V$ and the emulator error is negligible, which holds at this volume.
+
 \paragraph{Emulator loss.} With outputs standardised by the statistical error of a $2\,h^{-1}$Gpc box $\sigma_{\rm box}$,
 \begin{equation}
 \mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle + \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
@@ -399,7 +447,16 @@ This appendix details the steps of Table~\ref{tab:evolution}.
 
 \paragraph{9. Quijote.} The covariance is converged with 4000 realisations (errors change by $<1\%$ between 2000 and 4000 at fixed derivatives). An automatic convergence test first reported the opposite, because it compared full forecasts in which the derivative noise dominates; the extra processing it triggered was cancelled. About half of the fiducial catalogues of our copy were empty (incomplete download), without consequence given the convergence; all derivative sets are complete. The $\pm$ pairing works (differences of same-index realisations scatter 3--4 times less than of different indices). The derivatives remain noisy because Quijote is designed for matter and halo statistics (power spectrum, bispectrum), while our observables add two sources of noise the pairing cannot cancel: (1) sparse tracers, $\simeq50\,000$ halos per $(h^{-1}{\rm Gpc})^3$, i.e.\ $\simeq12\,000$ per quartile, with large shot noise; (2) the discrete classification, as a small change of cosmology moves halos and random points between quartiles in a way only partly common to the $+$ and $-$ simulations. This noise is amplified by the six-parameter Fisher matrix: $\Omega_b$, $h$, $n_s$ (and $M_\nu$) are strongly degenerate, their weakest combination is constrained by an information comparable to the noise of 500 pairs, and there the derivatives are noise-dominated (Appendix~\ref{app:maths}). Hence the restriction to $(\Omega_m,\sigma_8)$ and $(\Omega_m,n_s,\sigma_8)$, with $\Omega_b$, $h$, $n_s$ fixed by external data (BBN, CMB) as is common; $M_\nu$ would require denser tracers or more derivative simulations.
 
-\paragraph{Additional measurements.} Figure~\ref{fig:realz} compares environments defined in real and redshift space: RSD increase the monopoles by factors 1.3--1.6 at $20$--$60\Mpch$ and create the quadrupoles; relative to its monopole, the ASTRA quadrupole is the larger one. Figure~\ref{fig:multipoles_gal} shows the galaxy quartiles, Figure~\ref{fig:emu_pairs} the emulator derivatives against the HOD-corrected pairs.
+\paragraph{Figures of the first version not reproduced.} The first version included a ``systematic bias'' study, in which the real-space statistics were taken as the truth and the redshift-space ones as biased. Real-space environments are not observable, and here both the measurements and the emulator are in redshift space, so this comparison does not describe a bias of the analysis; the relevant systematic, the emulator error, is included in the covariance. The real/redshift-space comparison is kept as a diagnostic (Figure~\ref{fig:realz}).
+
+\paragraph{Additional measurements.} Figure~\ref{fig:envhist} shows the distributions of $r$ and $\delta_R$ per quartile. Figure~\ref{fig:realz} compares environments defined in real and redshift space: RSD increase the monopoles by factors 1.3--1.6 at $20$--$60\Mpch$ and create the quadrupoles; relative to its monopole, the ASTRA quadrupole is the larger one. Figure~\ref{fig:multipoles_gal} shows the galaxy quartiles, Figure~\ref{fig:emu_pairs} the emulator derivatives against the HOD-corrected pairs.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{v2_env_hist.png}
+\caption{Distribution of the environment of the random points per quartile: ASTRA $r$ (left, discrete values) and density-split $\delta_R$ (right).}
+\label{fig:envhist}
+\end{figure*}
 
 \begin{figure*}[t]
 \centering
