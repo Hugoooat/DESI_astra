@@ -70,7 +70,7 @@ $\sigma_8$ & 0.808 & c112 / c113 & 0.0320 \\
 
 \paragraph{Quijote.} N-body simulations \cite{Quijote} of $1\,h^{-1}$Gpc with 500 realisations of each $\pm$ variation of $\Omega_m$, $\Omega_b$, $h$, $n_s$, $\sigma_8$ (and $M_\nu=0.1,0.2,0.4$\,eV) that share the initial seeds of the fiducial realisations, and thousands of fiducial realisations. We use all Rockstar host halos at $z=0.5$ as tracers, the same population in all cosmologies, so that finite differences are clean, as in the density-split forecasts of \cite{Paillas2023}. Their density ($5\times10^{-5}\,h^3{\rm Mpc}^{-3}$, set by the 100-particle threshold of the catalogues) is ten times lower than that of the LRGs.
 
-\todo{RELECTURE -- densit\'e Quijote : n $\approx 5\times10^{-5}\,h^3$Mpc$^{-3}$, 10 fois plus faible que les LRG ; ASTRA, statistique \`a \'echelle adaptative, y a une \'echelle effective plus grande ($\sim27\Mpch$ au lieu de $\sim13\Mpch$). La comparaison ASTRA vs DS reste valide (m\^emes halos) mais \`a une autre densit\'e : ne pas comparer directement les valeurs absolues entre Quijote et AbacusSummit.}
+Because ASTRA is an adaptive-scale statistic (Section~\ref{sec:robustness}), its effective scale, the distance between neighbours $\propto\bar n^{-1/3}$, is larger in Quijote ($\simeq27\Mpch$) than for the LRGs ($\simeq13\Mpch$). Both methods are measured on the same halos, so the comparison of ASTRA and density split remains like-for-like, but at another density: absolute errors and ratios should not be compared directly between the Quijote and AbacusSummit analyses.
 
 % =====================================================================
 \section{Environment estimators}
@@ -124,6 +124,22 @@ Each $2\,h^{-1}$Gpc box is cut into 64 subvolumes of $500\Mpch$, each treated as
 
 The two methods produce qualitatively identical signals (Figure~\ref{fig:multipoles}): negative Q1--galaxy cross-correlations (the profile of galaxies around underdense regions), positive Q4 ones above the 2PCF, enhanced auto-correlations of the extreme quartiles, and quadrupoles of opposite signs around under- and overdense regions (outflow and infall). The ASTRA signals are weaker, by a factor $\sim1.6$ at the peak of the Q1 and Q4 cross-correlations, consistent with the mixing of the quartiles: ASTRA relies on $\sim15$ neighbours per point and dilutes the contrast between environments. Whether this costs information is a question about signal \emph{and} noise, addressed with the forecasts. Real-space measurements and the galaxy quartiles are shown in Appendix~\ref{app:path}.
 
+Figures~\ref{fig:mp_astra} and~\ref{fig:mp_ds} show all four quartiles of each method in the layout of the density-split analyses \cite{Paillas2023}. The intermediate quartiles Q2 and Q3 have weak cross-correlations of opposite signs, close to the mean field, and auto-correlations 5--6 times below those of the extreme quartiles. For density split the Q1 and Q4 auto-correlations are nearly equal, whereas for ASTRA the Q1 auto-correlation peaks 40\% above the Q4 one: ASTRA's underdense quartile is relatively more clustered with itself, a first sign that its auto-correlations carry distinct information.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_multipoles_astra.png}
+\caption{ASTRA split: monopole and quadrupole of the quartile--galaxy cross-correlations (left) and quartile auto-correlations (right) for the four random quartiles; dashed: galaxy 2PCF. Mean and scatter of 192 subvolumes of the fiducial catalogue.}
+\label{fig:mp_astra}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_multipoles_ds.png}
+\caption{Same as Figure~\ref{fig:mp_astra} for density split.}
+\label{fig:mp_ds}
+\end{figure}
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{v2_multipoles_rand.png}
@@ -138,7 +154,9 @@ The two methods produce qualitatively identical signals (Figure~\ref{fig:multipo
 
 \paragraph{Data vectors.} By default, the cross-correlations of the extreme quartiles Q1 and Q4 with the galaxies, $\ell=0,2$, $20\le s\le150\Mpch$ in $10\Mpch$ bins (52 numbers per method), with or without the 2PCF; variants add the quartile auto-correlations or use the galaxy quartiles.
 
-\paragraph{Covariance.} Measured on the 1786 official small boxes, i.e.\ 1786 independent $(500\Mpch)^3$ volumes treated exactly like our subvolumes. Forecasts are quoted for this volume of $0.125\,(h^{-1}{\rm Gpc})^3$. The correlation matrix (Figure~\ref{fig:corr}) shows strong correlations between neighbouring scales, between the Q4 cross-correlations and the 2PCF, and anti-correlations between the Q1 and Q4 blocks. The ASTRA and density-split blocks of the same quartile are very strongly correlated: being measured on the same galaxies, their noise is largely common. This is the origin of their complementarity: when two measurements share most of their noise but respond differently to the parameters, their combination cancels part of that noise and gains much more than independent measurements would.
+\subsection{Covariance}
+
+Measured on the 1786 official small boxes, i.e.\ 1786 independent $(500\Mpch)^3$ volumes treated exactly like our subvolumes. Forecasts are quoted for this volume of $0.125\,(h^{-1}{\rm Gpc})^3$. The correlation matrix (Figure~\ref{fig:corr}) shows strong correlations between neighbouring scales, between the Q4 cross-correlations and the 2PCF, and anti-correlations between the Q1 and Q4 blocks. The ASTRA and density-split blocks of the same quartile are very strongly correlated: being measured on the same galaxies, their noise is largely common. This is the origin of their complementarity: when two measurements share most of their noise but respond differently to the parameters, their combination cancels part of that noise and gains much more than independent measurements would.
 
 \begin{figure}[t]
 \centering
@@ -147,7 +165,34 @@ The two methods produce qualitatively identical signals (Figure~\ref{fig:multipo
 \label{fig:corr}
 \end{figure}
 
-\paragraph{Derivatives: an emulator.} Because the HOD differs between the cosmologies of the emulator suite, finite differences between them measure mostly the HOD change, not the cosmological one (Section~\ref{sec:choices}). We therefore model each statistic as a function of 8 cosmological ($\omega_b$, $\omega_{\rm cdm}$, $\sigma_8$, $n_s$, $\alpha_s$, $N_{\rm ur}$, $w_0$, $w_a$) and 12 HOD parameters with a neural network, as in SUNBIRD \cite{CuestaLazaro2024}, and take its derivatives at exactly fixed HOD by automatic differentiation. Each statistic has an ensemble of 10 networks (three hidden layers of 256 SiLU units) trained on 999 catalogues of the 85 cosmologies, densified around the fiducial point, with a loss that includes the differences between catalogues of the derivative grid (Appendix~\ref{app:maths}). On 8 cosmologies never seen in training, the emulator reproduces all the statistics to 0.4--0.9 times the statistical error of a $2\,h^{-1}$Gpc box, i.e.\ about ten times below the error of the volume of the forecasts (Figure~\ref{fig:emu}); it also predicts the differences between held-out catalogues of the derivative grid at the noise level of these differences. The emulator error is added to the covariance. Figure~\ref{fig:derivs} shows the derivatives in units of the statistical error: the two methods respond very similarly to $\omega_{\rm cdm}$ and $n_s$, mostly through the monopole at $s<75\Mpch$; the Q1 (void) cross-correlations respond with the opposite sign to Q4 and to the 2PCF, which is what breaks degeneracies; $\sigma_8$ acts mostly on the quadrupoles at fixed HOD.
+\subsection{Neural-network emulator}
+\label{sec:emulator}
+
+\paragraph{Why an emulator.} Because the HOD differs between the cosmologies of the emulator suite, finite differences between them measure mostly the HOD change, not the cosmological one (Section~\ref{sec:choices}). As in SUNBIRD \cite{CuestaLazaro2024}, we therefore model each statistic as a smooth function of the cosmological and HOD parameters, and take its derivatives at exactly fixed HOD.
+
+\paragraph{Inputs and outputs.} The inputs are the 8 cosmological parameters varied in AbacusSummit ($\omega_b$, $\omega_{\rm cdm}$, $\sigma_8$, $n_s$, $\alpha_s$, $N_{\rm ur}$, $w_0$, $w_a$; $h$ and $A_s$ follow from $\theta_*$ and $\sigma_8$) and the 12 HOD parameters, rescaled to $[0,1]$ over the prior. The output of one network is one statistic, the monopole and quadrupole for $20\le s\le150\Mpch$ in $10\Mpch$ bins (26 numbers), measured on the full box as the mean of the 64 subvolumes, standardised by its mean and by the statistical error of the full box $\sigma_{\rm box}$. There is one network per statistic: 33 statistics (2PCF, 16 ASTRA and 16 density-split quartile statistics).
+
+\paragraph{Architecture and training.} Fully-connected networks with three hidden layers of 256 units and SiLU activations, smooth so that their derivatives are well behaved, trained with Adam and early stopping on a validation set. With the standardisation above the loss is a $\chi^2$ per bin, to which we add a term on the differences between catalogues of the derivative grid, which forces the network to reproduce how the statistics change between nearby points of parameter space (Appendix~\ref{app:maths}). Each statistic has an ensemble of 10 networks with different initialisations; the prediction is the ensemble mean, and the scatter between members measures the uncertainty due to training.
+
+\paragraph{Training set.} 999 catalogues of the 85 cosmologies: 8 HOD draws per cosmology, 72 additional fiducial catalogues spanning the HOD prior, and 16 draws close to the fiducial HOD in c000 and in each of the 14 cosmologies of the derivative grid, where the derivatives are evaluated. Validation and test sets are 8 cosmologies each, never seen in training.
+
+\paragraph{Validation.} On the test cosmologies, the emulator reproduces all the statistics to 0.4--0.9 $\sigma_{\rm box}$, i.e.\ about ten times below the error of the volume of the forecasts (Figure~\ref{fig:emu}); the emulator error is added to the covariance. Accurate predictions do not guarantee accurate derivatives, so we also test the predicted \emph{differences} between held-out catalogues of the derivative grid: they are reproduced at the noise level of these differences. A learning curve shows that the error has reached a plateau set by the sampling noise of single catalogues (Appendix~\ref{app:path}).
+
+\paragraph{Derivatives.} Figure~\ref{fig:derivs} shows the derivatives of the 2PCF and of the Q1, Q4 cross-correlations in units of the statistical error: the two methods respond very similarly to $\omega_{\rm cdm}$ and $n_s$, mostly through the monopole at $s<75\Mpch$; the Q1 (void) cross-correlations respond with the opposite sign to Q4 and to the 2PCF, which is what breaks degeneracies; $\sigma_8$ acts mostly on the quadrupoles at fixed HOD. Figures~\ref{fig:der_astra} and~\ref{fig:der_ds} show the derivatives of the four quartiles in the layout of the first version: the response is ordered from Q1 to Q4 for $\omega_{\rm cdm}$ and $n_s$, the extreme quartiles responding most; for $\sigma_8$ at fixed HOD the monopole responses are below $1\sigma$ for density split and the information comes from the quadrupoles.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_derivatives_astra.png}
+\caption{ASTRA split: derivatives of the quartile--galaxy cross monopoles with respect to the logarithm of each parameter, in units of the error of one $(500\Mpch)^3$ volume (emulator, official fiducial point).}
+\label{fig:der_astra}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_derivatives_ds.png}
+\caption{Same as Figure~\ref{fig:der_astra} for density split.}
+\label{fig:der_ds}
+\end{figure}
 
 \begin{figure*}[t]
 \centering
@@ -156,7 +201,9 @@ The two methods produce qualitatively identical signals (Figure~\ref{fig:multipo
 \label{fig:derivs}
 \end{figure*}
 
-\paragraph{Fisher matrices.} For the 4 parameters $(\omega_b, \omega_{\rm cdm}, n_s, \sigma_8)$, marginalised over the 12 HOD parameters with a Gaussian prior of the width of their uniform prior, after compressing each data vector to the 16 numbers that carry its information on the 16 parameters (Appendix~\ref{app:maths}). The uncertainty due to the emulator training is estimated from the scatter of the forecasts of the individual networks.
+\subsection{Fisher matrices}
+
+For the 4 parameters $(\omega_b, \omega_{\rm cdm}, n_s, \sigma_8)$, marginalised over the 12 HOD parameters with a Gaussian prior of the width of their uniform prior, after compressing each data vector to the 16 numbers that carry its information on the 16 parameters (Appendix~\ref{app:maths}). The uncertainty due to the emulator training is estimated from the scatter of the forecasts of the individual networks.
 
 \begin{figure}[t]
 \centering
@@ -233,6 +280,54 @@ Figure~\ref{fig:triangle} shows the corresponding contours: the environment stat
 \label{fig:quartiles}
 \end{figure*}
 
+\paragraph{Individual quartiles.} Figures~\ref{fig:q_astra} and~\ref{fig:q_ds} show, as in the density-split analyses, the constraints of each quartile alone and of the four together. No single quartile beats the 2PCF by much, and the intermediate quartiles, Q3 in particular, are the least constraining; the gain comes from their combination, which is several times tighter than any single quartile, because the quartiles respond to the parameters with different signs and scale dependences (Figures~\ref{fig:der_astra}, \ref{fig:der_ds}) and break each other's degeneracies. Figures~\ref{fig:c_astra} and~\ref{fig:c_ds} compare the 2PCF, the void-like (Q1) and cluster-like (Q4) quartiles, all quartiles, and all quartiles with the 2PCF.
+
+\paragraph{Auto-correlations.} Adding the quartile auto-correlations to the cross-correlations tightens the constraints of both methods by factors 1.5--3 (Figure~\ref{fig:autocross}); with them, ASTRA split and density split give nearly identical contours.
+
+\paragraph{Scale cuts.} Figure~\ref{fig:smin} shows the errors as a function of the minimum scale. All statistics lose information as small scales are removed, the environment statistics staying 0.2--0.5 dex below the 2PCF up to $s_{\min}=70\Mpch$ (beyond, the 2PCF has fewer bins than parameters). ASTRA and density split stay within 0.1 dex of each other at all scale cuts, their ranking changing with $s_{\min}$, and their combination keeps its 0.2--0.4 dex advantage.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_quartiles_astra.png}
+\caption{Constraints (68\% and 95\%) from individual and combined ASTRA-split quartiles (cross-correlations) and from the 2PCF (dashed), baseline, one $(500\Mpch)^3$ volume, HOD marginalised. Axes span $\pm3\sigma$ of the 2PCF.}
+\label{fig:q_astra}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_quartiles_ds.png}
+\caption{Same as Figure~\ref{fig:q_astra} for density split.}
+\label{fig:q_ds}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_constraints_astra.png}
+\caption{ASTRA split: constraints from the 2PCF, the Q1 and Q4 cross-correlations, all quartiles, and all quartiles with the 2PCF (baseline).}
+\label{fig:c_astra}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_constraints_ds.png}
+\caption{Same as Figure~\ref{fig:c_astra} for density split.}
+\label{fig:c_ds}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_autocross.png}
+\caption{Q1+Q4 cross-correlations only (dashed) and with the quartile auto-correlations (solid), for ASTRA split (orange) and density split (green), baseline.}
+\label{fig:autocross}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v1style_smin.png}
+\caption{Marginalised errors as a function of the minimum scale $s_{\min}$ (Q1+Q4 cross-correlations, baseline).}
+\label{fig:smin}
+\end{figure}
+
 The fiducial point matters at the level of $\pm15\%$: evaluated at four different HODs, the ratio stays between 0.75 and 1.11 for all parameters (Table~\ref{tab:covbox}).
 
 \begin{table}[h]
@@ -296,15 +391,23 @@ halo, cross & $\Omega_m,n_s,\sigma_8$ & 1.16--1.20 & 1.17--1.23 & 1.54--1.70 \\
 \label{fig:qsubsets}
 \end{figure*}
 
-\subsection{Inference with the emulator}
+\subsection{Inference with the emulator (MCMC)}
+\label{sec:mcmc}
 
-We sampled the 20-parameter posterior with the emulator (\texttt{emcee}, uniform priors) on data it has not seen: subvolumes of 2 catalogues of each of the 8 test cosmologies and 8 subvolumes of the official base box (120 chains). The posteriors are unbiased and calibrated or slightly conservative (the truth is within $1\sigma$ in 70--100\% of the runs). They are however barely narrower than the priors (Figure~\ref{fig:mcmc}): one $(500\Mpch)^3$ volume with 12 free HOD parameters constrains only $\omega_{\rm cdm}$ and $\sigma_8$, by 10--15\%, and the statistics differ by a few per cent. For a full $2\,h^{-1}$Gpc box the limitation is the opposite: the emulator error equals the statistical error. Distinguishing the statistics through inference requires both a large volume and an emulator error well below the statistical error of that volume (Section~\ref{sec:discussion}).
+Fisher forecasts assume Gaussian posteriors and are local. To test the full pipeline as it would be applied to data, we sampled the posterior of the 20 parameters (8 cosmological, 12 HOD) with the emulator as the model: Gaussian likelihood with the official covariance rescaled to the data volume plus the emulator error, uniform priors over the training range, \texttt{emcee} with 64 walkers and 8000 steps (Appendix~\ref{app:maths}). The data are measurements the emulator has never seen: one subvolume of each of 2 catalogues of the 8 test cosmologies, and 8 subvolumes of the official base box of the fiducial cosmology, each analysed with the 2PCF, ASTRA split, density split and their combinations (120 chains). The posteriors are unbiased and calibrated or slightly conservative (the truth is within $1\sigma$ in 70--100\% of the runs). They are however barely narrower than the priors (Figures~\ref{fig:mcmc} and~\ref{fig:mcmc_off}): one $(500\Mpch)^3$ volume with 12 free HOD parameters constrains only $\omega_{\rm cdm}$ and $\sigma_8$, by 10--15\%, and the statistics differ by a few per cent. For a full $2\,h^{-1}$Gpc box the limitation is the opposite: the emulator error equals the statistical error. Distinguishing the statistics through inference requires both a large volume and an emulator error well below the statistical error of that volume (Section~\ref{sec:discussion}).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{v2_mcmc_widths.png}
 \caption{Emulator inference on held-out cosmologies (one $(500\Mpch)^3$ volume): posterior width relative to the prior width, median of 16 runs.}
 \label{fig:mcmc}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v2_mcmc_official.png}
+\caption{Posteriors of four cosmological parameters for one $(500\Mpch)^3$ subvolume of the official mock (fiducial cosmology, dotted lines), with 12 free HOD parameters: at this volume the posteriors fill most of the prior range.}
+\label{fig:mcmc_off}
 \end{figure}
 
 % =====================================================================
@@ -492,14 +595,14 @@ This appendix details the steps of Table~\ref{tab:evolution}.
 \bibitem{Paillas2023} E.~Paillas et al., \emph{Constraining $\nu\Lambda$CDM with density-split clustering}, MNRAS 522, 606 (2023), arXiv:2209.04310.
 \bibitem{Paillas2024} E.~Paillas et al., \emph{Cosmological constraints from density-split clustering in the BOSS CMASS galaxy sample}, arXiv:2309.16541 (2024).
 \bibitem{CuestaLazaro2024} C.~Cuesta-Lazaro et al., \emph{SUNBIRD: a simulation-based model for full-shape density-split clustering}, MNRAS (2024), arXiv:2309.16539.
-\bibitem{ASTRA} \todo{ASTRA reference (Forero-Romero et al.).}
+\bibitem{ASTRA} J.~E.~Forero-Romero, A.~Palomino, F.~L.~G\'omez-Cort\'es \& X.-D.~Li, \emph{Cosmic web classification through stochastic topological ranking}, RASTI (accepted), arXiv:2404.01124 (2024).
 \bibitem{Maksimova2021} N.~A.~Maksimova et al., \emph{AbacusSummit: a massive set of high-accuracy, high-resolution N-body simulations}, MNRAS 508, 4017 (2021), arXiv:2110.11398.
 \bibitem{Yuan2022} S.~Yuan et al., \emph{AbacusHOD: a highly efficient extended multitracer HOD framework}, MNRAS 510, 3301 (2022), arXiv:2110.11412.
-\bibitem{Yuan2023} \todo{Reference of the yuan23 HOD prior used for the DESI emulator catalogues.}
+\bibitem{Yuan2023} S.~Yuan et al., \emph{The DESI One-Percent Survey: exploring the halo occupation distribution of luminous red galaxies and quasi-stellar objects with AbacusSummit}, MNRAS 530, 947 (2024), arXiv:2306.06314.
 \bibitem{LandySzalay1993} S.~D.~Landy \& A.~S.~Szalay, ApJ 412, 64 (1993).
 \bibitem{Sinha2020} M.~Sinha \& L.~H.~Garrison, \emph{Corrfunc}, MNRAS 491, 3022 (2020).
 \bibitem{Quijote} F.~Villaescusa-Navarro et al., \emph{The Quijote simulations}, ApJS 250, 2 (2020), arXiv:1909.05273.
-\bibitem{CoultonWandelt2023} W.~R.~Coulton \& B.~D.~Wandelt, \emph{How to estimate Fisher information matrices from simulations}, arXiv:2305.08994 (2023). \todo{v\'erifier le titre et le num\'ero arXiv}
+\bibitem{CoultonWandelt2023} W.~R.~Coulton \& B.~D.~Wandelt, \emph{How to estimate Fisher information matrices from simulations}, arXiv:2305.08994 (2023).
 \bibitem{Hartlap2007} J.~Hartlap, P.~Simon \& P.~Schneider, A\&A 464, 399 (2007).
 \end{thebibliography}
 
