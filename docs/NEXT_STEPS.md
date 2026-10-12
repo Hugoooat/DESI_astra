@@ -36,9 +36,9 @@ paramètre par paramètre dépend des choix d'analyse à 10–40 %.
 
 | Amélioration | Coût | Ce que ça apporte | Statut |
 |---|---|---|---|
-| Courbe d'apprentissage de l'émulateur (25/50/75/100 % des catalogues) | ~1 h de nœud, aucune simulation | dit si plus de catalogues réduirait l'erreur de l'émulateur | **en cours** |
-| Ne mesurer que les statistiques utiles (2PCF + Q1/Q4, sans ℓ=4) | code, ~3× plus rapide par catalogue | rend l'agrandissement du jeu d'entraînement ~3× moins cher | à faire si la courbe d'apprentissage le justifie |
-| Agrandir le jeu d'entraînement **par paliers** (ex. +4 HOD/cosmologie = 340 catalogues, puis réévaluer) | ~15–45 h-nœud par palier | erreur d'émulateur plus faible → MCMC discriminant sur un volume type DESI | à décider après la courbe |
+| Courbe d'apprentissage de l'émulateur (25/50/75/100 % des catalogues) | ~1 h de nœud, aucune simulation | dit si plus de catalogues réduirait l'erreur de l'émulateur | **fait : plateau à ≈0.5 σ_box dès 50–75 %, doubler le jeu gagnerait ≲10 % → pas d'agrandissement** |
+| Ne mesurer que les statistiques utiles (2PCF + Q1/Q4, sans ℓ=4) | code, ~3× plus rapide par catalogue | rend l'agrandissement du jeu d'entraînement ~3× moins cher | inutile pour l'instant (plateau) ; utile si de nouveaux catalogues (graines) arrivent |
+| Agrandir le jeu d'entraînement **par paliers** | ~15–45 h-nœud par palier | — | **abandonné** : la courbe d'apprentissage montre un plateau fixé par le bruit de tirage d'un seul catalogue par HOD ; il faut plusieurs graines par HOD (question 1 à Jaime) |
 | Fisher et MCMC sur un volume type DESI avec l'émulateur amélioré | minutes | contraintes réalistes, pas seulement une comparaison d'information | après l'amélioration de l'émulateur |
 | Catalogues HOD générés avec **la même HOD dans toutes les cosmologies** (AbacusHOD) | dépend de l'accès aux sous-échantillons | dérivées propres et réalistes, plusieurs graines par point | bloqué (voir questions à Jaime) |
 | Quijote : M_ν, Ω_b, h | plus de simulations de dérivées ou traceurs plus denses | contraintes sur M_ν | non faisable avec les données actuelles |
