@@ -85,7 +85,8 @@ def main():
         meta, st, ids = A.load(*k, los=['z'])
         sub[k] = {name: A.data_vector(meta, st, [name])[1] for name in stats}
     out = {'i': np.array([row[a] for a, _ in pairs]), 'j': np.array([row[b] for _, b in pairs]),
-           'holdout': np.array([row[k] for k in holdout]), 'holdout_ids': np.array(holdout)}
+           'holdout': np.array([row[k] for k in holdout], dtype=int),
+           'holdout_ids': np.array(holdout, dtype=int).reshape(-1, 2)}
     for name in stats:
         diff = np.array([sub[a][name] - sub[b][name] for a, b in pairs])        # (npairs, nsub, ndim)
         out[f'delta/{name}'] = diff.mean(1)

@@ -135,7 +135,7 @@ def train(stat, nseeds=3, epochs=4000, lr=1e-3, weight_decay=1e-6, patience=500,
     if not holdout:
         tr = tr | va
     if pairs is not None:
-        tr[pairs['holdout']] = False
+        tr[np.asarray(pairs['holdout'], dtype=int)] = False
     xmin, xmax = X[tr].min(0), X[tr].max(0)
     ymean, ysigma = Y[tr].mean(0), statistical_error(stat)
     tx = lambda m: torch.as_tensor((X[m] - xmin) / (xmax - xmin))
