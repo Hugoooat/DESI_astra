@@ -1,0 +1,507 @@
+\documentclass[11pt,twocolumn]{article}
+
+\usepackage[a4paper,margin=0.6in]{geometry}
+\usepackage{amsmath,amssymb,graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\graphicspath{{figures/}{./}}
+
+\lstset{basicstyle=\ttfamily\small,backgroundcolor=\color{gray!8},frame=single,breaklines=true,columns=fullflexible}
+
+% Visible marker for the parts that wait for results (remove before submission)
+\newcommand{\todo}[1]{\par\noindent\fcolorbox{red}{yellow!20}{\parbox{0.95\linewidth}{\small\textbf{TODO:} #1}}\par}
+
+\newcommand{\Mpch}{\,h^{-1}\mathrm{Mpc}}
+
+\title{Environment-dependent galaxy clustering from ASTRA tessellations:\\
+a comparison with density-split clustering on DESI-like mocks}
+\author{Hugo Nguyen}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The large-scale distribution of galaxies contains cosmological information that is only partially captured by two-point statistics. Density-split clustering, which measures the clustering of regions ranked by their smoothed local density, has been shown to recover a significant part of this non-Gaussian information. In this work we study an alternative definition of the local environment based on ASTRA, a parameter-free estimator built on the Delaunay tessellation of the galaxies together with a uniform random catalogue. Using AbacusSummit halo occupation distribution (HOD) mocks reproducing the clustering of DESI luminous red galaxies at $z=0.5$, we measure the monopole and quadrupole of the auto- and cross-correlation functions of ASTRA environment quartiles, and compare them with the standard density-split statistics measured on exactly the same random points. Covariance matrices are estimated from 192 subvolumes of $(500\Mpch)^3$ of the fiducial simulation, and derivatives with respect to $\omega_b$, $\omega_{\rm cdm}$, $n_s$ and $\sigma_8$ from paired differences of HOD-matched simulations of the AbacusSummit derivative grid. We use these products to compare the Fisher information of ASTRA split, density split and the galaxy two-point correlation function.
+Because the HOD is sampled independently in each cosmology of the suite, finite differences are dominated by the HOD mismatch; we obtain the derivatives from a neural-network emulator trained on 999 catalogues, including the differences between catalogues of the derivative grid, and cross-check them with a regression over all the pairs of the grid. With both estimators, ASTRA split is as constraining as density split, or slightly more (by up to 20\% on $\sigma_8$, $\omega_b$ and $n_s$), and the two are complementary: their combination improves on either by 25--35\%. Absolute forecasts remain uncertain by a factor of 2--6 depending on the parameter, which we trace to the sampling noise of the HOD catalogues.
+\end{abstract}
+
+% =====================================================================
+\section{Introduction}
+% =====================================================================
+
+The large-scale distribution of galaxies is one of the most powerful probes of modern cosmology. Measurements of galaxy clustering constrain the expansion history of the Universe, the growth rate of structure, the matter density, and the properties of dark energy and neutrinos. Current spectroscopic surveys such as DESI provide galaxy samples of unprecedented volume and statistical precision, creating new opportunities to test the standard cosmological model and its extensions.
+
+In most analyses, cosmological information is compressed into two-point statistics, namely the correlation function in configuration space or the power spectrum in Fourier space. These observables are optimal for Gaussian random fields and remain extremely successful on large scales. However, the late-time matter distribution becomes strongly non-Gaussian through non-linear gravitational evolution, halo formation and redshift-space distortions (RSD). As a result, part of the available cosmological information is not captured by two-point summaries alone.
+
+This limitation has motivated a wide range of complementary statistics: higher-order correlation functions, marked statistics, counts-in-cells, void statistics, and methods based on an explicit segmentation of the cosmic web into nodes, filaments, walls and underdense regions. By conditioning clustering measurements on environment, these methods access information on the local geometry of structure formation and can break parameter degeneracies that remain in standard analyses.
+
+Among them, density-split clustering \cite{Paillas2023, Paillas2024} has shown strong promise: random query points are ranked by the smoothed galaxy density around them, split into quantiles, and the auto-correlation of each quantile and its cross-correlation with the galaxies are measured. Combined with a simulation-based emulator \cite{CuestaLazaro2024}, these statistics improve the constraints on $\Lambda$CDM parameters by factors of several with respect to the two-point function.
+
+In this work we investigate an alternative environment estimator based on the ASTRA algorithm, which classifies points of the cosmic web from the Delaunay tessellation of the galaxies together with a uniform random catalogue \cite{ASTRA}. Unlike density split, ASTRA does not rely on a smoothing scale: the environment of a point is defined by its nearest neighbours in the tessellation, i.e.\ by an adaptive, local scale. Our goal is to determine whether ASTRA-defined environment quartiles carry cosmological information beyond the galaxy two-point correlation function, and how they compare to density split when both are measured on the same mocks, with the same random points and the same clustering estimators.
+
+The analysis uses three sets of simulations, each chosen for what the others cannot provide (Section~\ref{sec:sims}): the AbacusSummit emulator suite of DESI-like LRG mocks, on which the environment estimators, the clustering measurements and the emulator are built; the official DESI AbacusHOD LRG mocks, which provide an independent covariance; and the Quijote simulations, which provide clean finite-difference derivatives. The paper is organised as follows. Section~\ref{sec:sims} presents the simulations and the choices made for each of them, Section~\ref{sec:env} the two environment estimators and their comparison, Section~\ref{sec:clustering} the clustering measurements, Section~\ref{sec:fisher} the covariance, derivatives and Fisher forecasts on the AbacusSummit suite, including the successive approaches that the instability of the derivatives led us to, Section~\ref{sec:quijote} the Fisher forecasts with Quijote, and Section~\ref{sec:robustness} the robustness tests. We discuss limitations and perspectives in Section~\ref{sec:discussion}.
+
+% =====================================================================
+\section{Simulations and mock catalogues}
+\label{sec:sims}
+% =====================================================================
+
+We use the HOD galaxy catalogues built for the DESI emulator programme on top of the AbacusSummit $N$-body suite \cite{Maksimova2021}. Each simulation evolves $6912^3$ particles in a periodic box of $2\,h^{-1}{\rm Gpc}$; we use the $z=0.5$ snapshot. Halos are populated with galaxies with the AbacusHOD model \cite{Yuan2022} for luminous red galaxies (LRG), whose 12 parameters (central and satellite occupation, velocity bias, environment-based assembly bias) are sampled in the prior of \cite{Yuan2023}. Every catalogue contains $4\times10^6$ galaxies, i.e.\ $\bar n = 5\times10^{-4}\,h^3{\rm Mpc}^{-3}$.
+
+The catalogues are stored as \texttt{c\{cosmo\}\_ph000/seed0/hod\{NNN\}.fits}. Two properties of this suite drive our methodology:
+\begin{itemize}
+\item \textbf{One phase per cosmology.} All cosmologies share the initial conditions \texttt{ph000}; there is a single HOD seed.
+\item \textbf{One HOD draw per file.} The 500 files \texttt{hod000}--\texttt{hod499} of a cosmology have \emph{different} HOD parameters (a Latin hypercube for emulator training), and the parameters behind a given index differ from one cosmology to another.
+\end{itemize}
+Consequently, different HOD files cannot be used as independent realisations of the same model. The scatter between HOD draws reaches $\sim55\%$ of the amplitude of the density-split monopoles, against $\sim1\%$ for the cosmological response we want to measure. We therefore estimate the covariance from subvolumes of a single catalogue, and derivatives from HOD-matched pairs (Section~\ref{sec:fisher}).
+
+\paragraph{Cosmologies.} Besides the fiducial Planck 2018 $\Lambda$CDM cosmology (\texttt{c000}), we use the AbacusSummit linear derivative grid (Table~\ref{tab:cosmo}). Each pair varies one parameter around the fiducial, with $h$ and $A_s$ adjusted to keep the angular size of the sound horizon $\theta_*$ and, for \texttt{c100}--\texttt{c105}, $\sigma_8$ fixed. Derivatives with respect to $\omega_b$, $\omega_{\rm cdm}$ and $n_s$ are therefore taken at fixed $\sigma_8$.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Parameter & fiducial & $+$ / $-$ & step $\theta_+-\theta_-$ \\
+\midrule
+$\omega_b$ & 0.02237 & c100 / c101 & 0.00089 \\
+$\omega_{\rm cdm}$ & 0.1200 & c102 / c103 & 0.0079 \\
+$n_s$ & 0.9649 & c104 / c105 & 0.0200 \\
+$\sigma_8$ & 0.808 & c112 / c113 & 0.0320 \\
+\bottomrule
+\end{tabular}
+\caption{AbacusSummit cosmologies used for the derivatives.}
+\label{tab:cosmo}
+\end{table}
+
+\paragraph{Positions.} We place the line of sight along one axis of the box ($z$ by default, $x$ and $y$ for the covariance). Redshift-space positions are \texttt{X\_PERP}, \texttt{Y\_PERP}, \texttt{Z\_RSD}; real-space positions use \texttt{Z\_PERP}. These columns already include the Alcock--Paczynski rescaling of the fiducial cosmology ($q_\perp$, $q_\parallel$, stored in the headers), so the box is $2000/q_\perp$ across and $2000/q_\parallel$ along the line of sight.
+
+\subsection{Official DESI AbacusHOD LRG mocks}
+\label{sec:official}
+
+The emulator suite contains a single phase per cosmology, so its only source of covariance is the 64 subvolumes of one box, measured along three correlated lines of sight (192 samples). This limits the length of the data vectors (Hartlap factor) and makes the forecasts that include the quartile auto-correlations or a single environment unstable (Section~\ref{sec:fisher}). We therefore also use the official DESI AbacusHOD LRG mocks at $z=0.5$ \cite{Yuan2022} (\texttt{AbacusHOD\_mocks/v1}), generated with one best-fit HOD (model \texttt{velbias}, fitted to early DESI LRG clustering):
+\begin{itemize}
+\item the 1786 AbacusSummit \emph{small} boxes (\texttt{c000}, phases 3000+), of side $500\Mpch$ and independent initial conditions;
+\item the 25 \emph{base} boxes of \texttt{c000} (phases 0--24), of side $2\,h^{-1}$Gpc.
+\end{itemize}
+Choices. (i) Each small box is treated exactly like one subvolume of the main analysis: periodic images for the tessellation, density field smoothed on the periodic box, and the \emph{open} Landy--Szalay estimator with geometry randoms for the clustering, so that the covariance corresponds to the same measurement. A known difference is that a periodic small box has no modes larger than its side, whereas a subvolume of a larger box is affected by them (super-sample covariance); the comparison of the small-box and base-box covariances (64 subvolumes $\times$ 25 phases) measures this effect. (ii) Positions are used as provided, the $z$ coordinate already including redshift-space distortions; only the $z$ line of sight is available. (iii) The best-fit HOD lies inside the prior of the emulator suite and its number density ($62\,900$ galaxies per small box) matches that of our catalogues ($62\,500$ per subvolume), which matters for ASTRA (Section~\ref{sec:robustness}). We therefore take it as the fiducial point of the emulator forecasts and inference, with this covariance. These mocks contain a single cosmology: they do not provide derivatives.
+
+\subsection{Quijote simulations}
+\label{sec:quijote_sims}
+
+The derivatives cannot be estimated cleanly from the emulator suite, because the HOD differs between the cosmologies (Section~\ref{sec:fisher}). The Quijote simulations \cite{Quijote}, used by \cite{Paillas2023} for density-split Fisher forecasts, provide what is missing: for each parameter, 500 pairs of simulations with $\pm$ variations of $\Omega_m$ ($\pm0.01$), $\Omega_b$ ($\pm0.002$), $h$ ($\pm0.02$), $n_s$ ($\pm0.02$), $\sigma_8$ ($\pm0.015$), and simulations with $M_\nu = 0.1, 0.2, 0.4$\,eV, all sharing the initial seeds of the corresponding fiducial realisations, plus thousands of fiducial realisations for the covariance (we use 8000 complete $z=0.5$ catalogues). Each is a periodic box of $1\,h^{-1}$Gpc with $512^3$ particles.
+
+Choices. (i) Tracers: all Rockstar host halos (no subhalos), as provided at $z=0.5$ (at least 100 particles). Their number density, $n\simeq5\times10^{-5}\,h^3{\rm Mpc}^{-3}$, is ten times lower than that of the LRG mocks and cannot be raised with these catalogues; since ASTRA is an adaptive-scale statistic, its effective scale is therefore larger in Quijote ($\bar n^{-1/3}\simeq27\Mpch$ instead of $13\Mpch$). Both methods are measured on the same halos, so the comparison of ASTRA and density split remains like-for-like, at a different density. (ii) Redshift space along $z$: $z_s = z + v_z/[aH(a)]$ with the $\Omega_m$ of each simulation. (iii) The whole box is one volume, with periodic images for the tessellation and the natural estimator of a periodic box (analytic random pairs) for the clustering; density split uses the same smoothing ($R_s=10\Mpch$) as for the LRGs. (iv) Derivatives are paired central differences averaged over the realisations shared by the $+$ and $-$ sets; for $M_\nu$, the three-point forward difference $(-3f_0+4f_{0.1}-f_{0.2})/0.2$ with the Zel'dovich-initialised fiducial set (\texttt{fiducial\_ZA}) for $M_\nu=0$, as is standard for Quijote. Because the tracers are the same halos in all simulations, these derivatives have no HOD mismatch. The price is realism: halos are not DESI LRGs, so Quijote serves as a controlled comparison of the information content of the two methods, complementary to the DESI-like AbacusSummit analysis.
+
+% =====================================================================
+\section{Environment estimators}
+\label{sec:env}
+% =====================================================================
+
+Both estimators are evaluated on the \emph{full periodic box}, and on the same set of $N_r = N_g = 4\times10^6$ uniform random points (fixed seed, drawn in the unit cube and rescaled to the box, so that the random points are identical in all cosmologies up to the AP rescaling).
+
+\subsection{ASTRA split}
+
+The galaxies and random points are joined into a single catalogue and Delaunay-triangulated. For every point (galaxy or random) we count the numbers $N_{\rm data}$ and $N_{\rm rand}$ of galaxies and randoms among its Delaunay neighbours and define
+\begin{equation}
+r = \frac{N_{\rm data}-N_{\rm rand}}{N_{\rm data}+N_{\rm rand}} \in [-1,1].
+\label{eq:astra_r}
+\end{equation}
+A point surrounded by galaxies ($r\to1$) lies in a dense region, a point surrounded by randoms ($r\to-1$) in an underdense one. In the original ASTRA classification, fixed thresholds on $r$ define voids, sheets, filaments and knots; here we only use $r$ as a continuous environment variable.
+
+The triangulation is computed independently in each subvolume (Section~\ref{sec:clustering}) on a region padded by $30\Mpch$ on each side, with periodic wrapping across the faces of the simulation box, and $r$ is kept only for the points inside the subvolume. This removes the edge effects of a non-periodic triangulation (missing neighbours, elongated boundary simplices). The mean inter-point separation of the joint catalogue is $\simeq 10\Mpch$, so that the padding contains several layers of neighbours; we verify the convergence in Section~\ref{sec:robustness}.
+
+\subsection{Density split}
+
+As a reference we use the standard density split \cite{Paillas2023}. The galaxies are assigned to a periodic mesh of $5\Mpch$ cells with a cloud-in-cell scheme, the overdensity field is smoothed with a Gaussian kernel of radius $R_s = 10\Mpch$ by FFT, and the smoothed density contrast $\delta_R$ is read (CIC) at the position of every galaxy and random point.
+
+\subsection{Environment quartiles}
+
+For each method, each subvolume and each population, points are ranked by their environment value ($r$ or $\delta_R$) and split into four quartiles of exactly equal size, Q1 (most underdense) to Q4 (most overdense). Because $r$ is a ratio of small integers, many points share the same value; ties are broken at random. We consider two populations:
+\begin{itemize}
+\item \textbf{random quartiles}: the random points, ranked by their environment. They play the role of the query points of density split, and sample the environments by volume;
+\item \textbf{galaxy quartiles}: the galaxies, ranked by their own environment. They sample the environments by mass.
+\end{itemize}
+Galaxies and randoms are ranked separately, so that the quartile thresholds of one population do not depend on the other.
+
+\subsection{Comparison of the two classifications}
+
+Figure~\ref{fig:env} compares the two estimators on the fiducial catalogue. They are strongly but not perfectly correlated: the Spearman rank correlation between $r$ and $\delta_R$ is $\rho = 0.719\pm0.005$ for random points and $0.713\pm0.005$ for galaxies (scatter over subvolumes). The extreme quartiles are the most consistent: 63\% of the ASTRA Q1 (Q4) random points are also in the density-split Q1 (Q4), whereas the intermediate quartiles are largely mixed, and less than 2\% of the points move between the two extremes. ASTRA therefore identifies the same large-scale structures as density split, but redistributes a large fraction of the points, as expected from an estimator based on an adaptive (nearest-neighbour) rather than a fixed smoothing scale.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{v2_environment.png}
+\caption{Comparison of the ASTRA and density-split environments on the fiducial catalogue (\texttt{c000}, \texttt{hod239}, line of sight $z$). Left and middle: probability that a point of a given ASTRA quartile falls in each density-split quartile, for galaxies and for random points (average over the 64 subvolumes). Right: ASTRA $r$ against the smoothed density contrast $\delta_{R=10}$ for a random sample of galaxies (small vertical jitter added to the discrete $r$ values).}
+\label{fig:env}
+\end{figure*}
+
+% =====================================================================
+\section{Clustering measurements}
+\label{sec:clustering}
+% =====================================================================
+
+\subsection{Subvolumes and estimator}
+
+Each $2\,h^{-1}{\rm Gpc}$ box is divided into $4^3=64$ non-overlapping cubic subvolumes of $500\Mpch$ (about $62\,500$ galaxies each). Each subvolume is treated as an independent survey with open boundaries: correlation functions are measured with the Landy--Szalay estimator \cite{LandySzalay1993},
+\begin{equation}
+\xi(s,\mu) = \frac{D_1D_2 - D_1R - RD_2 + RR}{RR},
+\end{equation}
+using a uniform catalogue of $5\times$ the number of galaxies to describe the geometry (the same for all subvolumes, so that $RR$ is computed once). Pair counts are computed with \texttt{pycorr}/\texttt{Corrfunc} \cite{Sinha2020} in 30 bins of $5\Mpch$ in $s\in[0,150]\Mpch$ and 120 bins in $\mu\in[-1,1]$, with $\mu$ defined with respect to the fixed line of sight, and projected on the Legendre multipoles $\ell=0,2,4$.
+
+\subsection{Statistics}
+
+For each method $m\in\{$ASTRA, DS$\}$, population $p\in\{$random, galaxy$\}$ and quartile Q$_i$ we measure
+\begin{itemize}
+\item the quartile--galaxy cross-correlation $\xi^{\rm QG}_{i,\ell}(s)$, between the points of Q$_i$ and all galaxies;
+\item the quartile auto-correlation $\xi^{\rm QQ}_{i,\ell}(s)$;
+\end{itemize}
+together with the galaxy two-point correlation function $\xi^{\rm GG}_\ell(s)$ (2PCF). For random quartiles, $\xi^{\rm QG}$ is the analogue of the density-split cross-correlation function and $\xi^{\rm QQ}$ of the density-split auto-correlation function \cite{Paillas2023}.
+
+\subsection{Results on the fiducial cosmology}
+
+Figure~\ref{fig:multipoles_rand} shows the multipoles of the random-quartile statistics for both methods, and Figure~\ref{fig:multipoles_gal} those of the galaxy quartiles.
+
+The two methods produce qualitatively identical signals. The Q1--galaxy cross-correlation is negative at small separations, the profile of galaxies around underdense regions, and the Q4--galaxy cross-correlation is positive and above the galaxy 2PCF, the profile around overdense regions. Both auto-correlations of the extreme quartiles are strongly enhanced with respect to the galaxy 2PCF. The quadrupoles have opposite signs for Q1 and Q4: around underdense regions, peculiar velocities point outwards and stretch the void profile along the line of sight, while around overdense regions infall compresses it. The intermediate quartiles Q2--Q3 carry a weak signal, close to the mean field.
+
+The ASTRA signals are systematically weaker than the density-split ones, by a factor $\sim1.6$ at the peak of the Q1 and Q4 cross-correlations ($s^2\xi_0 \simeq -90$ and $+90\,h^{-2}{\rm Mpc}^2$, against $-145$ and $+145$ for density split). This is consistent with the partial mixing of the quartiles (Figure~\ref{fig:env}): the ASTRA estimator is noisier at fixed point, since it relies on $\sim15$ neighbours only, which dilutes the contrast between environments. The relevant question is however not the amplitude of the signal but its information content relative to its noise, which we address with the Fisher analysis.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_multipoles_rand.png}
+\caption{Monopole (top) and quadrupole (bottom) of the random-quartile statistics on the fiducial catalogue, for ASTRA split and density split: quartile--galaxy cross-correlations (two left columns) and quartile auto-correlations (two right columns), from Q1 (most underdense, blue) to Q4 (most overdense, red). The dashed line is the galaxy 2PCF. Lines and bands are the mean and $1\sigma$ scatter over the 64 subvolumes of $(500\Mpch)^3$; panels of the same statistic share the same scale.}
+\label{fig:multipoles_rand}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_multipoles_gal.png}
+\caption{Same as Figure~\ref{fig:multipoles_rand} for the galaxy quartiles.}
+\label{fig:multipoles_gal}
+\end{figure*}
+
+\todo{Real-space (r-split) measurements and comparison with redshift space (Fig.~3 of the previous version), once the real-space runs are done.}
+
+% =====================================================================
+\section{Covariance, derivatives and Fisher forecasts}
+\label{sec:fisher}
+% =====================================================================
+
+\paragraph{Methodological path.} Estimating derivatives from this suite turned out to be the main difficulty of the analysis, and we summarise here the successive approaches and why each was replaced or complemented, before describing them in detail.
+\begin{enumerate}
+\item \emph{Averaging HOD files} (first version, Appendix~\ref{app:v1}): the difference of the mean statistics of many HOD files per cosmology was compatible with noise, because the files are different HOD models whose scatter ($\sim55\%$) swamps the cosmological signal ($\sim1\%$).
+\item \emph{Paired finite differences} with one HOD-matched file per cosmology and subvolume-by-subvolume differences: measured with small statistical errors once averaged over the 192 paired samples, but dominated by the residual HOD mismatch of the pair, an effect $\sim10$ times larger than the cosmological one; the Fisher matrices are singular.
+\item \emph{Calibration of the HOD response} on 72 additional fiducial catalogues, subtracted from the pairs: a linear model predicts the response with a 45\% error, a Gaussian process with 8\%, which is still not enough when the HOD term is ten times the signal.
+\item \emph{Emulator} of the statistics as a function of cosmology and HOD, differentiated at exactly fixed HOD. It reproduces held-out cosmologies to a fraction of the statistical error and agrees with the HOD-corrected pairs to a few per cent, but an out-of-sample test of its cosmological response shows that the response to $\omega_{\rm cdm}$ is not learnt below $s\simeq70\Mpch$. At fixed $\theta_*$ and $\sigma_8$ a 3\% change of $\omega_{\rm cdm}$ changes the statistics by less than the emulator error, and with 8 HOD draws per cosmology the network must disentangle this small effect from an HOD response an order of magnitude larger.
+\item \emph{Densification} of the training set around the fiducial point (16 additional HOD draws in each cosmology of the derivative grid), to give the emulator many examples of the cosmological response at similar HODs.
+\item \emph{Regression over all the pairs} of the densified grid, a local and linear estimator independent of the emulator, used to test the derivatives.
+\item \emph{Training on catalogue differences.} Densification alone did not make the emulator derivatives stable (the Fisher errors obtained with individual networks of the ensemble scattered by 70--170\%, and the ASTRA/DS comparison changed between trainings). We therefore added to the training loss the differences between catalogues of the derivative grid, which forces the network to reproduce the structure of the cosmological and HOD responses near the fiducial point, and tested an extra weighting of the small scales.
+\end{enumerate}
+Steps 1--3 are not used for the final forecasts but are kept as diagnostics and cross-checks. The final AbacusSummit forecasts use the emulator of step 7 and are compared with the regression of step 6. These forecasts agree on the relative comparison of ASTRA split and density split, but their absolute values differ between the two estimators by factors of 2--6, the ranking for $\omega_{\rm cdm}$ is undecided, and the variants with auto-correlations are unstable. We traced these limitations to two properties of the emulator suite: a single HOD realisation per point (the galaxy sampling noise of each catalogue is comparable to the cosmological signal) and a single phase (the covariance relies on one box). This motivated the last step:
+\begin{enumerate}
+\setcounter{enumi}{7}
+\item \emph{External simulations}: an independent covariance from the 1786 official small-box mocks, and clean derivatives from Quijote (Sections~\ref{sec:official}, \ref{sec:quijote_sims} and \ref{sec:quijote}).
+\end{enumerate}
+
+\subsection{Covariance}
+
+The covariance of each data vector is estimated from the fiducial catalogue (\texttt{c000}, \texttt{hod239}, the c000 draw closest to the centre of the HOD prior), using the 64 subvolumes measured along the three lines of sight: $N_s=192$ samples. The three lines of sight are not independent, so this is an approximation commonly used in simulation-based analyses. The inverse covariance is corrected by the Hartlap factor \cite{Hartlap2007}
+\begin{equation}
+\hat C^{-1} = \frac{N_s - N_d - 2}{N_s - 1}\, C^{-1},
+\end{equation}
+where $N_d$ is the size of the data vector. To keep this factor reasonable we restrict the data vectors to $\ell=0,2$, $20 \le s \le 150\Mpch$ in bins of $10\Mpch$ (13 bins per multipole) and, by default, to the cross-correlations of the extreme quartiles Q1 and Q4 ($N_d = 52$ per method, 78 with the 2PCF; Hartlap factors 0.72 and 0.59).
+
+\subsection{Finite differences: the HOD-mismatch problem}
+
+The AbacusSummit derivative grid provides, for each parameter, two simulations differing only by a small change of that parameter and sharing the same initial conditions. A natural estimate of the derivatives is the paired finite difference: for each parameter we select one HOD file in each of the two cosmologies of the pair, minimising the distance between the two HOD parameter vectors (Table~\ref{tab:hods}), and difference the statistics subvolume by subvolume and line of sight by line of sight before averaging, so that the cosmic variance common to the two simulations largely cancels. This cancellation is only partial: each HOD catalogue is an independent draw of the galaxies populating the halos, so the galaxy sampling noise is not shared, and the difference of two full-box measurements with different HODs has an error comparable to that of a single box (1.05 times, median over the pairs of the grid). The precision of the paired derivatives comes from the average over the 192 paired samples.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Parameter & HOD files & $|\Delta h|$ & random pairs \\
+\midrule
+fiducial & c000\_hod239 & -- & -- \\
+$\omega_b$ & c100\_hod448 / c101\_hod694 & 0.63 & 1.38 \\
+$\omega_{\rm cdm}$ & c102\_hod589 / c103\_hod841 & 0.58 & 1.38 \\
+$n_s$ & c104\_hod308 / c105\_hod735 & 0.65 & 1.37 \\
+$\sigma_8$ & c112\_hod230 / c113\_hod204 & 0.65 & 1.39 \\
+\bottomrule
+\end{tabular}
+\caption{HOD catalogues of the finite-difference pairs. $|\Delta h|$ is the Euclidean distance between the two HOD parameter vectors normalised to the prior range (12 parameters); the last column gives the median for random pairs.}
+\label{tab:hods}
+\end{table}
+
+Averaged over the 192 samples, these differences have small statistical errors, but they are not cosmological derivatives: because the HOD files of the two cosmologies differ, each difference is dominated by the response to the HOD mismatch, which is 10--15 times larger than the response to the cosmological parameter. The derivative vectors with respect to $\omega_b$, $n_s$ and $\sigma_8$ are then almost collinear and the Fisher matrices are not positive definite. We tried to calibrate and subtract the HOD response with 72 additional fiducial catalogues spanning the HOD parameters of the pairs. A linear model of the response predicts left-out catalogues with a 45\% error, and a Gaussian-process model (one GP per principal component of the data vector, anisotropic kernel) with an 8\% error. Since the HOD term is an order of magnitude larger than the cosmological one, even an 8\% error leaves a residual comparable to the signal, and the corrected Fisher matrices remain unstable. We therefore model the statistics jointly as a function of the cosmological and HOD parameters with an emulator.
+
+The finite differences are nevertheless not discarded. They play three roles in this work: (i) they diagnose the limitation of an emulator suite for derivatives, and quantify it (an HOD response ten times larger than the cosmological one), a pitfall that is generic to suites in which the HOD is sampled independently in each cosmology; (ii) once corrected for the HOD response, they provide a check of the emulator derivatives that does not rely on a neural network (Section~\ref{sec:emulator}); (iii) with several HOD draws in each cosmology of the derivative grid, they become an independent estimator of the derivatives, by regression over all the pairs (Section~\ref{sec:regression}).
+
+\subsection{Emulator}
+\label{sec:emulator}
+
+Following SUNBIRD \cite{CuestaLazaro2024}, we train one fully-connected neural network per statistic, mapping 8 cosmological parameters ($\omega_b$, $\omega_{\rm cdm}$, $\sigma_8$, $n_s$, $\alpha_s$, $N_{\rm ur}$, $w_0$, $w_a$; $h$ and $A_s$ are fixed by $\theta_*$ and $\sigma_8$ in AbacusSummit) and the 12 HOD parameters to the monopole and quadrupole of that statistic, measured in the full box (mean of the 64 subvolumes) for $20\le s\le150\Mpch$ in bins of $10\Mpch$. The networks have three hidden layers of 256 units with SiLU activations, smooth so that the emulator can be differentiated, and are trained with a mean-squared loss on outputs standardised by the statistical error of the full box, i.e.\ the loss is a $\chi^2$ per bin. Each statistic is modelled by an ensemble of 10 networks with different initialisations; the prediction is the ensemble mean and the scatter between members measures the training noise.
+
+The training set contains 999 catalogues from the 85 cosmologies: 8 HOD draws per cosmology, the 72 fiducial calibration catalogues, and 16 additional draws close to the fiducial HOD for c000 and each cosmology of the derivative grid, where the derivatives are evaluated. Validation and test sets are made of 8 cosmologies each, never seen during training; the validation set controls early stopping.
+
+\paragraph{Accuracy.} On the test cosmologies the emulator reproduces all 33 statistics with a median error of 0.4--0.9 times the statistical error of the full $(2\,h^{-1}{\rm Gpc})^3$ box, i.e.\ about ten times below the error of the $(500\Mpch)^3$ subvolumes used in the forecasts (Figure~\ref{fig:emu_validation}); the emulator error is nevertheless added to the covariance.
+
+\paragraph{Cosmological response.} The accuracy of the predictions does not guarantee that of their derivatives. We test the latter by training the emulator without the 14 cosmologies of the derivative grid and comparing its prediction of the $\pm$ pair differences, HOD mismatch included, to the simulations (Figure~\ref{fig:loco}). The response to $\sigma_8$ and $n_s$ is reproduced to 10--20\%, the response to $\omega_b$ to 30--45\% with the correct shape, but the response to $\omega_{\rm cdm}$ is not captured below $s\simeq70\Mpch$: its effect at fixed $\theta_*$ and $\sigma_8$ is small and is not learnt away from the training points. This test therefore led us to densify the training set around the fiducial point, where the derivatives are evaluated: for c000 and each of the 14 cosmologies of the derivative grid we added the 16 HOD draws closest to the fiducial HOD (240 catalogues), so that the emulator sees the response to each cosmological parameter for many similar galaxy--halo connections. Densification alone, however, did not stabilise the derivatives: the Fisher errors computed with the individual networks of the ensemble scattered by 70--170\% for the 2PCF and for $\omega_{\rm cdm}$ and $n_s$, so that even the ensemble mean kept a $\sim50\%$ uncertainty, and the ASTRA/density-split comparison changed sign between trainings. (The out-of-sample test above is unchanged by construction, since it excludes the grid cosmologies.) As an independent check, the derivatives of the full emulator at fixed HOD agree with the GP-corrected pair differences to 1--3\% for $n_s$ and $\omega_{\rm cdm}$, 5--6\% for $\sigma_8$ and 8--13\% for $\omega_b$ (Figure~\ref{fig:emu_pairs}).
+
+\paragraph{Training on catalogue differences.} To constrain the response of the emulator near the fiducial point directly, we add to the loss the $\chi^2$ of the predicted \emph{differences} between catalogues,
+\begin{equation}
+\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle + \lambda \Big\langle \frac{\big[(f(x_i) - f(x_j)) - (y_i - y_j)\big]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
+\end{equation}
+over 2544 pairs: all the pairs $(c_+, h_i), (c_-, h_j)$ of the seven $\pm$ pairs of the derivative grid with HODs within 1 prior range of the fiducial, and pairs of catalogues of the same cosmology (HOD response). Here $\sigma_{ij}$ is the error of the difference estimated from the 64 paired subvolumes, $\lambda=1$ and $\epsilon=0.05\,\sigma_{\rm box}$. As noted above, $\sigma_{ij}$ is close to $\sigma_{\rm box}$: the differences are not much more precise than the individual measurements, because the galaxy sampling noise is not shared. The difference term helps nevertheless, because it constrains the \emph{structure} of the differences: the network must reproduce how the statistics change between two nearby points of parameter space, not only their values, which is exactly what the derivatives require. We also tested an additional weight $(25\Mpch/s)^\alpha$, $\alpha=1$, on the small scales.
+
+We validate the three variants (no difference term, difference term, difference term with small-scale weighting) on 56 local catalogues (4 per grid cosmology) excluded from training, by predicting the differences of all the held-out $\pm$ pairs (Table~\ref{tab:local}, Figure~\ref{fig:local}). The difference term halves the error for $\omega_b$ and $\sigma_8$ and reduces it for all parameters but $\omega_{\rm cdm}$, which was already reproduced to 11\% near the fiducial; the residuals reach the noise level of the measured differences ($\simeq1\sigma_{\rm box}$) for $\omega_b$, $\omega_{\rm cdm}$, $n_s$ and $\sigma_8$, so the data do not allow a more stringent test. The small-scale weight brings a marginal additional gain on these differences but makes the forecasts that include the quartile auto-correlations unstable, so we use the difference term without it.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lccccccc}
+\toprule
+ & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\alpha_s$ & $w_0$ & $w_0,w_a$ & $\sigma_8$ \\
+\midrule
+no difference term & 21 & 11 & 35 & 14 & 17 & 17 & 13 \\
+difference term & 10 & 11 & 27 & 10 & 12 & 10 & 7 \\
++ small-scale weight & 8 & 11 & 26 & 9 & 11 & 8 & 7 \\
+\bottomrule
+\end{tabular}
+\caption{Median relative error (\%) of the emulator prediction of the differences between held-out local catalogues of the $\pm$ pairs of the derivative grid.}
+\label{tab:local}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{v2_validate_local.png}
+\caption{Median relative error of the emulator prediction of held-out pair differences of the derivative grid, for the three training variants.}
+\label{fig:local}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{v2_emulator_validation.png}
+\caption{Emulator accuracy on 8 held-out cosmologies: median and 68\% range of the absolute difference between emulator and measurement, in units of the statistical error of the full $2\,h^{-1}$Gpc box, for the 2PCF and the Q1, Q4 cross-correlations of ASTRA split and density split. The dashed line is the error of one $(500\Mpch)^3$ subvolume.}
+\label{fig:emu_validation}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_derivatives_loco.png}
+\caption{Out-of-sample test of the cosmological response: monopole of the $\pm$ pair differences in the simulations (grey band: mean $\pm$ error over the 192 paired samples) and predicted by an emulator trained without the cosmologies of the derivative grid (red).}
+\label{fig:loco}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_emulator_vs_pairs.png}
+\caption{Cosmological derivatives at fixed HOD from the emulator (red) and from the pair differences corrected with the GP calibration of the HOD response (blue), with the raw pair differences in the simulations (grey) and as predicted by the emulator (dashed).}
+\label{fig:emu_pairs}
+\end{figure*}
+
+\subsection{Derivatives from a regression over pairs}
+\label{sec:regression}
+
+As an alternative to the emulator, we estimate the derivatives locally from the derivative grid alone. For a pair of cosmologies $c_\pm$, all the catalogues of each cosmology within a distance $r_{\max}$ of the fiducial HOD $h_0$ (in prior-range units; the 16 draws of the densification, the pair draw and the emulator draws) are fitted with a first-order expansion in the HOD parameters,
+\begin{equation}
+\boldsymbol d_{c}(h) = \boldsymbol a_{c} + G\,(h - h_0), \qquad c = c_+, c_-,
+\end{equation}
+with a response $G$ shared by the two cosmologies, and the derivative is $(\boldsymbol a_{c_+} - \boldsymbol a_{c_-})/(\theta_+ - \theta_-)$: the difference between the two cosmologies at exactly the fiducial HOD. The fit is performed subvolume by subvolume (the catalogues share the initial conditions and random points, so that part of the cosmic variance cancels in the intercept differences) and the error on the derivatives is obtained by bootstrapping the subvolumes. Two properties make this estimator robust despite the sparse sampling of the 12-dimensional HOD space (the 16 closest draws lie at 0.6--0.9 of the prior range from $h_0$): the intercepts are interpolated in the middle of draws surrounding $h_0$, and curvature in $h$ that is common to the two cosmologies cancels in the difference. We assess the remaining modelling error with the leave-one-out prediction error of the fit and by comparing with fits using separate responses $G_\pm$ for the two cosmologies or diagonal quadratic terms. This estimator relies on a linear model and on the derivative grid only, while the emulator is a non-linear model of the whole suite: agreement between the two is a strong test of the derivatives.
+
+\paragraph{Reduced HOD space.} With 12 HOD parameters and $\sim18$ catalogues per cosmology, the fit is poorly conditioned: the leave-one-out error is 0.8--1.0 times the scatter of the measurements between HODs, and fits with separate responses or quadratic terms do not perform better. We therefore restrict the regression to the most important directions of the HOD space, determined independently of the derivative grid from the 72 fiducial calibration catalogues: the right singular vectors of the linear HOD response of the statistics, each weighted by its statistical error. The singular values are $1, 0.054, 0.014, 0.013, \dots$: \emph{the clustering statistics respond essentially to a single combination of the 12 HOD parameters}, plausibly the large-scale galaxy bias, the others being 20 to 100 times weaker. Keeping 3 or 4 directions, the leave-one-out error is 0.7--0.9 times the HOD scatter, at the level of the measurement noise, and the two choices give the same forecasts within 5\%. We use 3 directions.
+
+\subsection{Fisher matrix}
+
+The derivatives $D = \partial\boldsymbol d/\partial(\boldsymbol\theta, \boldsymbol h)$ are obtained by automatic differentiation of the emulator at the fiducial point (\texttt{c000} cosmology, \texttt{hod239} HOD), for the 4 cosmological parameters $\boldsymbol\theta = (\omega_b, \omega_{\rm cdm}, n_s, \sigma_8)$ and the 12 HOD parameters $\boldsymbol h$. The covariance is the sum of the subvolume covariance and of the (diagonal) emulator error. The Fisher matrix
+\begin{equation}
+F = D^T \hat C^{-1} D + P_h
+\end{equation}
+includes a Gaussian prior $P_h$ on the HOD parameters, of width $0.29$ times the prior range (the standard deviation of the uniform prior); the cosmological errors are marginalised over the HOD by inverting the full $16\times16$ matrix. We also quote errors at fixed HOD. All errors are given for the volume of one subvolume, $0.125\,(h^{-1}{\rm Gpc})^3$; the uncertainty due to the emulator training is estimated from the scatter of the Fisher errors computed with each ensemble member, divided by $\sqrt{10}$.
+
+\paragraph{Compression.} With $N_s = 192$ covariance samples, the Hartlap factor penalises long data vectors (0.31 for $N_d=130$) and prevents a fair comparison of combined statistics. We therefore compress each data vector to the 16 numbers $\boldsymbol t = W^T\boldsymbol d$, $W = \tilde C^{-1}D$, where $\tilde C$ is a Ledoit--Wolf shrinkage estimate of the covariance, and estimate the $16\times16$ covariance of $\boldsymbol t$ from the 192 samples (Hartlap factor 0.91). This compression is lossless if $\tilde C = C$ and otherwise loses information without biasing the forecast.
+
+\subsection{Results: ASTRA split vs density split}
+
+Table~\ref{tab:ratio} compares the two methods at equal data-vector type, HOD marginalised and after compression, with the derivatives of the final emulator and of the reduced pair regression, which rely on different assumptions; Table~\ref{tab:sigma} gives the corresponding errors. Figures~\ref{fig:ratios} and~\ref{fig:combined} show the emulator results for all the data-vector variants and scale cuts.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llcccc}
+\toprule
+quartiles & derivatives & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+random & emulator & $1.02(15)$ & $1.30(11)$ & $1.11(9)$ & $1.12(6)$ \\
+random & regression & $1.09(11)$ & $0.94(4)$ & $1.07(11)$ & $1.16(9)$ \\
+galaxy & emulator & $0.80(9)$ & $0.91(8)$ & $0.92(7)$ & $0.96(2)$ \\
+galaxy & regression & $1.08(16)$ & $1.15(10)$ & $1.10(13)$ & $1.00(12)$ \\
+\bottomrule
+\end{tabular}
+\caption{Ratio $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ of the marginalised errors for the Q1+Q4 quartile--galaxy cross-correlations ($\ell=0,2$, $s\ge20\Mpch$, HOD marginalised); values above 1 favour ASTRA split. In parentheses: uncertainty on the last digits from the emulator ensemble or from the bootstrap of the subvolumes.}
+\label{tab:ratio}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+data vector & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+2PCF & 0.023 / 0.0026 & 0.018 / 0.0067 & 0.20 / 0.077 & 0.25 / 0.083 \\
+ASTRA & 0.011 / 0.0018 & 0.015 / 0.0071 & 0.11 / 0.051 & 0.13 / 0.081 \\
+DS & 0.011 / 0.0019 & 0.019 / 0.0067 & 0.12 / 0.054 & 0.14 / 0.094 \\
+ASTRA + DS & 0.0075 / 0.0014 & 0.013 / 0.0052 & 0.090 / 0.039 & 0.11 / 0.061 \\
+2PCF + ASTRA + DS & 0.0066 / 0.0011 & 0.010 / 0.0042 & 0.081 / 0.032 & 0.10 / 0.052 \\
+\bottomrule
+\end{tabular}
+\caption{Marginalised $1\sigma$ errors for $V=0.125\,(h^{-1}{\rm Gpc})^3$ (random quartiles, compressed data vectors, HOD marginalised), with emulator / regression derivatives.}
+\label{tab:sigma}
+\end{table}
+
+\paragraph{Robust results.} The following conclusions hold for both derivative estimators. (i) ASTRA split and density split carry comparable information: the ratios of their errors lie between 0.8 and 1.3, and for the random quartiles ASTRA split is as constraining as or slightly more constraining than density split on $\omega_b$, $n_s$ and $\sigma_8$ (by 0--20\%, the $\sigma_8$ ratio being above unity for both estimators). (ii) The two methods are complementary: combining them improves on the better of the two by 25--35\%, and the combination 2PCF + ASTRA + density split is the most constraining in all cases. (iii) Marginalising over the HOD degrades the constraints by less than $\sim30\%$ for both methods, the most affected parameter being $n_s$.
+
+\paragraph{Results that are not robust.} (i) For $\omega_{\rm cdm}$ the two estimators disagree on the ranking (ratio 1.30 with the emulator, 0.94 with the regression). (ii) The data-vector variants including the quartile auto-correlations, and those restricted to a single environment (voids or clusters), give ratios that change strongly between estimators and trainings; we do not draw conclusions from them. (iii) The absolute errors differ between the two estimators by a factor $\sim2$ for $\omega_{\rm cdm}$, $n_s$ and $\sigma_8$ and $\sim6$ for $\omega_b$ (Table~\ref{tab:sigma}), and so does the gain with respect to the 2PCF (a factor $\sim2$ with the emulator; 1.5 on $\omega_b$ and $n_s$ but none on $\sigma_8$ and $\omega_{\rm cdm}$ with the regression). The regression is likely too optimistic (residual HOD contamination of its intercepts) and the emulator too conservative (training noise smoothing small slopes); the absolute numbers should therefore be read as uncertain by these factors, while the relative comparisons, which are consistent between estimators, are the main result.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_compare_ratios.png}
+\caption{Ratio $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ for several data-vector types (final emulator, compressed data vectors, HOD marginalised). Orange: ASTRA split more constraining; green: density split more constraining. Error bars: uncertainty of the ensemble mean.}
+\label{fig:ratios}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_compare_combined.png}
+\caption{Top: marginalised errors of the 2PCF, ASTRA split, density split and their combinations. Bottom: dependence on the minimum scale $s_{\min}$. Final emulator, compressed data vectors, HOD marginalised, $V = 0.125\,(h^{-1}{\rm Gpc})^3$.}
+\label{fig:combined}
+\end{figure*}
+
+% =====================================================================
+\section{Fisher forecasts with Quijote}
+\label{sec:quijote}
+
+\todo{RELECTURE -- densit\'e Quijote : n $\approx 5\times10^{-5}\,h^3$Mpc$^{-3}$ (seuil de 100 particules des catalogues Rockstar), 10 fois plus faible que les LRG ; ASTRA, statistique \`a \'echelle adaptative, y a donc une \'echelle effective plus grande ($\sim27\Mpch$ au lieu de $\sim13\Mpch$). \`A expliciter clairement dans le texte final : la comparaison ASTRA vs DS reste valide car mesur\'ee sur les m\^emes halos, mais elle se fait \`a une autre densit\'e que l'analyse AbacusSummit (ne pas comparer directement les valeurs absolues entre les deux parties).}
+
+\todo{Quijote results (\texttt{scripts/quijote\_fisher.py}): marginalised errors on $(\Omega_m, \Omega_b, h, n_s, \sigma_8, M_\nu)$ for the 2PCF, ASTRA split, density split and combinations; ratios $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ (random/galaxy quartiles, autos, voids/clusters); convergence with the number of derivative pairs and of fiducial realisations; comparison with the AbacusSummit relative results.}
+
+% =====================================================================
+\section{Robustness tests}
+\label{sec:robustness}
+% =====================================================================
+
+We test the sensitivity of the measurements to the numerical choices on the first 8 subvolumes of the fiducial catalogue (line of sight $z$). Each test is repeated for both methods, and the change of the Q1 and Q4 cross-correlation monopoles is expressed in units of the statistical error of one subvolume (Figure~\ref{fig:robustness}).
+
+\paragraph{Periodic padding.} Increasing the padding around each subvolume from 30 to $60\Mpch$ leaves the ASTRA values of $r$, and therefore all the statistics, unchanged: the Delaunay neighbourhood of every point of the subvolume is already contained in the $30\Mpch$ padding.
+
+\paragraph{Number of randoms.} Doubling the number of random points in the tessellation ($N_r = 2N_g$) shifts the ASTRA Q1 cross-correlations by up to $4\sigma$ and the Q4 ones by up to $2\sigma$ at $s\lesssim 40\Mpch$, while density split, for which the randoms are only query points, changes by less than $0.2\sigma$. In ASTRA the randoms enter the definition of $r$ itself (Eq.~\ref{eq:astra_r}), so the ratio $N_r/N_g$ is a parameter of the statistic and must be kept fixed.
+
+\paragraph{Sampling density.} Randomly thinning the galaxies (and the randoms in the same proportion) by a factor 2 (5) shifts the ASTRA cross-correlations by 7--10 (20--35) $\sigma$ at $s\simeq20$--$40\Mpch$, against $\sim1$ (3--5) $\sigma$ for density split. At the level of individual points, the rank correlation between the $r$ of the same galaxies computed in the full and in the thinned samples is only $0.65$, $0.38$ and $0.24$ for thinning factors of 2, 5 and 10, and only 58\%, 42\% and 36\% of the galaxies of the extreme quartiles keep their quartile.
+
+This is an intrinsic property of the estimator rather than a numerical instability. ASTRA is an \emph{adaptive-scale} statistic: the environment of a point is defined by its Delaunay neighbours, so its effective scale is the typical distance between neighbours, $\propto \bar n^{-1/3}$, and it changes with the sampling density. Thinning the sample enlarges this scale, which explains why the changes are concentrated at $s\lesssim50\Mpch$, whereas density split keeps a fixed smoothing radius. This is not a limitation for the present analysis nor for an application to DESI, since the number density is fixed in the mocks as in the data (and in an emulator trained at that density). It implies however that ASTRA statistics must always be compared, modelled and emulated at the same number density and with the same random-to-galaxy ratio, and that comparisons with density split should be made at equal density, as is the case throughout this paper.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{v2_robustness.png}
+\caption{Change of the Q1 and Q4 cross-correlation monopoles (top: random quartiles, bottom: galaxy quartiles) when the padding is doubled (green), the number of ASTRA randoms is doubled (orange), and the galaxies are thinned by 2 (purple) and 5 (pink), relative to the baseline and in units of the error of one $(500\Mpch)^3$ subvolume, for $s\geq20\Mpch$. Mean over 8 subvolumes of the fiducial catalogue.}
+\label{fig:robustness}
+\end{figure*}
+
+% =====================================================================
+\section{Discussion and limitations}
+\label{sec:discussion}
+% =====================================================================
+
+\paragraph{HOD mismatch in the derivatives.} The emulator catalogues are not HOD-matched across cosmologies. Our selection reduces the mismatch by a factor of two but does not cancel it, so the finite differences contain a residual response to the HOD parameters, smooth in scale and mostly affecting the amplitude. It is expected to matter most for $\sigma_8$, whose effect is also mainly an amplitude. In practice the paired differences are measured with high precision (the error of the mean over the 192 paired samples is small), but they are dominated by this HOD response: the implied change of the 2PCF reaches tens of percent at $s\sim20\Mpch$ for a 2\% change in $\omega_b$, and the derivative vectors with respect to $\omega_b$, $n_s$ and $\sigma_8$ are almost collinear (correlation coefficients 0.95--0.99 in the Fisher metric), so that the raw Fisher matrices are close to singular. Subtracting a calibrated HOD response was not accurate enough (Section~\ref{sec:fisher}), which led us to the emulator. A clean solution is an emulator of the statistics as a function of cosmological \emph{and} HOD parameters, trained on the full Latin hypercube, whose derivatives can be taken at fixed HOD.
+
+\paragraph{Single phase.} All the cosmologies share one set of initial conditions, so the covariance relies on subvolumes of one box, measured along three correlated lines of sight. Larger sets of independent small boxes would remove both the subvolume approximation and the limit on the size of the data vector imposed by the Hartlap factor.
+
+\todo{RELECTURE -- densit\'e Quijote : n $\approx 5\times10^{-5}\,h^3$Mpc$^{-3}$ (seuil de 100 particules des catalogues Rockstar), 10 fois plus faible que les LRG ; ASTRA, statistique \`a \'echelle adaptative, y a donc une \'echelle effective plus grande ($\sim27\Mpch$ au lieu de $\sim13\Mpch$). \`A expliciter clairement dans le texte final : la comparaison ASTRA vs DS reste valide car mesur\'ee sur les m\^emes halos, mais elle se fait \`a une autre densit\'e que l'analyse AbacusSummit (ne pas comparer directement les valeurs absolues entre les deux parties).}
+
+\paragraph{Clean derivatives and an independent covariance.} The limitations above are specific to the emulator suite and can be lifted with existing simulations. (i) The official DESI AbacusHOD LRG mocks at $z=0.5$ \cite{Yuan2022} populate 1786 independent $(500\Mpch)^3$ AbacusSummit small boxes, and the 25 phases of the fiducial base cosmology, with a single best-fit HOD whose parameters lie inside the emulator prior and whose number density matches ours; measuring our statistics on them gives a covariance from 1786 independent volumes of exactly the size of our subvolumes, instead of 192 correlated samples of one box. (ii) The Quijote simulations \cite{Quijote}, used by \cite{Paillas2023} for density-split Fisher forecasts, provide 500 realisations of each $\pm$ variation of $\Omega_m$, $\Omega_b$, $h$, $n_s$, $\sigma_8$ and $M_\nu$ with matched initial conditions, and thousands of fiducial realisations: there the tracer population is the same in all cosmologies, so finite differences have no HOD mismatch and their noise can be averaged over hundreds of pairs. Quijote halos are less realistic tracers than DESI-like LRGs, but they provide a controlled comparison of the information content of ASTRA split and density split, complementary to the DESI-like analysis of this paper.
+
+\paragraph{Towards inference.} The natural next step is a simulation-based inference in the spirit of \cite{CuestaLazaro2024}: a neural-network emulator of the ASTRA-split multipoles trained on the 85 cosmologies $\times$ HOD draws, combined with the covariance of this work in an MCMC exploration of the joint cosmological and HOD parameter space.
+
+% =====================================================================
+\section{Conclusions}
+% =====================================================================
+
+We have compared ASTRA split, an environment estimator built on the Delaunay tessellation of galaxies and random points, with standard density split, measuring both on the same AbacusSummit LRG mocks, with the same random points and estimators.
+\begin{itemize}
+\item The two classifications are strongly but not perfectly correlated (Spearman $\rho\simeq0.72$); ASTRA produces weaker quartile contrasts but carries comparable cosmological information, slightly more than density split for $\sigma_8$, $\omega_b$ and $n_s$ in our forecasts, and the two are complementary.
+\item ASTRA is an adaptive-scale statistic: its effective scale is set by the sampling density, to which it is far more sensitive than density split; it must be modelled at fixed number density and random-to-galaxy ratio.
+\item Emulator suites in which the HOD is drawn independently in each cosmology do not allow naive finite differences: the HOD mismatch dominates by an order of magnitude. A joint cosmology--HOD emulator trained also on catalogue differences, validated on held-out pairs and cross-checked against a regression over the derivative grid, yields consistent relative forecasts; the absolute forecasts are limited by the galaxy sampling noise of single HOD realisations.
+\end{itemize}
+Natural next steps are several HOD realisations (seeds) per point to beat down the sampling noise, independent small boxes for the covariance, and a full simulation-based inference with the emulator.
+
+% =====================================================================
+\appendix
+\section{Reproducibility}
+\label{app:repro}
+% =====================================================================
+
+All the measurements and figures of this paper are produced by the code at \todo{GitHub URL}, run on the NERSC Perlmutter CPU nodes with the \texttt{cosmodesi} environment:
+\begin{lstlisting}[language=bash]
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+python scripts/select_hods.py          # Table 2
+sbatch slurm/run_catalog.sbatch 0 239 z --los z
+python scripts/plot_multipoles.py data/c000_hod239_z_losz.npz
+python scripts/derivatives.py
+python scripts/fisher.py
+python scripts/robustness.py
+\end{lstlisting}
+Measuring one catalogue (64 subvolumes, ASTRA and density split, 33 statistics) takes $\simeq 8$ minutes on one 128-core node. The HOD catalogues are read from \texttt{/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23\_prior/}.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lc}
+\toprule
+Setting & Value \\
+\midrule
+Subvolumes & $4^3$ of $500\Mpch$ \\
+ASTRA padding & $30\Mpch$ (periodic) \\
+ASTRA randoms & $N_r = N_g$ \\
+DS smoothing & Gaussian, $R_s = 10\Mpch$ \\
+DS mesh & $5\Mpch$, CIC \\
+Quartiles & 4, equal counts \\
+Geometry randoms & $5\,N_g$ per subvolume \\
+$s$ bins & $[0,150]\Mpch$, $\Delta s = 5\Mpch$ \\
+$\mu$ bins & 120 in $[-1,1]$ \\
+Multipoles & $\ell = 0, 2, 4$ \\
+Seed & 42 \\
+\bottomrule
+\end{tabular}
+\caption{Numerical settings of the measurements.}
+\label{tab:config}
+\end{table}
+
+\section{Differences with a first version of the pipeline}
+\label{app:v1}
+
+A first version of this analysis averaged the statistics of 64 different HOD files per cosmology to build ``covariance'' and ``derivative'' sets, and measured them in the central $500\Mpch$ cube of each box. We document here why it was abandoned, as these pitfalls are generic to emulator suites:
+\begin{enumerate}
+\item the HOD files are different HOD models, not realisations: their scatter ($\sim55\%$) dominated the cosmological differences ($\sim1\%$), and the finite differences were compatible with noise (median $|S/N|<1$ per bin for $\omega_b$, $n_s$, $\sigma_8$);
+\item pair counts assumed periodic boundary conditions in a non-periodic cut box;
+\item the 2PCF used the mid-point line of sight from the centre of the box instead of the axis along which the RSD were applied, which erased the quadrupole;
+\item quartiles were computed jointly on galaxies and randoms, giving unequal and realisation-dependent quartile sizes;
+\item the Delaunay triangulation was computed on the cut box without periodic padding;
+\item ASTRA was first applied to the random catalogue alone (randoms against other randoms), so that the random quartiles carried no information on the galaxy field and their correlations were consistent with zero.
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{Paillas2023} E.~Paillas et al., \emph{Constraining $\nu\Lambda$CDM with density-split clustering}, MNRAS 522, 606 (2023), arXiv:2209.04310.
+\bibitem{Paillas2024} E.~Paillas et al., \emph{Cosmological constraints from density-split clustering in the BOSS CMASS galaxy sample}, arXiv:2309.16541 (2024).
+\bibitem{CuestaLazaro2024} C.~Cuesta-Lazaro et al., \emph{SUNBIRD: a simulation-based model for full-shape density-split clustering}, MNRAS (2024), arXiv:2309.16539.
+\bibitem{ASTRA} \todo{ASTRA reference (Forero-Romero et al.).}
+\bibitem{Maksimova2021} N.~A.~Maksimova et al., \emph{AbacusSummit: a massive set of high-accuracy, high-resolution N-body simulations}, MNRAS 508, 4017 (2021), arXiv:2110.11398.
+\bibitem{Yuan2022} S.~Yuan et al., \emph{AbacusHOD: a highly efficient extended multitracer HOD framework}, MNRAS 510, 3301 (2022), arXiv:2110.11412.
+\bibitem{Yuan2023} \todo{Reference of the yuan23 HOD prior used for the DESI emulator catalogues.}
+\bibitem{LandySzalay1993} S.~D.~Landy \& A.~S.~Szalay, ApJ 412, 64 (1993).
+\bibitem{Sinha2020} M.~Sinha \& L.~H.~Garrison, \emph{Corrfunc}, MNRAS 491, 3022 (2020).
+\bibitem{Quijote} F.~Villaescusa-Navarro et al., \emph{The Quijote simulations}, ApJS 250, 2 (2020), arXiv:1909.05273.
+\bibitem{Hartlap2007} J.~Hartlap, P.~Simon \& P.~Schneider, A\&A 464, 399 (2007).
+\end{thebibliography}
+
+\end{document}
