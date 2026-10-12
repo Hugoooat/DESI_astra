@@ -29,7 +29,7 @@ a comparison with density-split clustering on DESI-like mocks}
 
 \begin{abstract}
 The large-scale distribution of galaxies contains cosmological information that is only partially captured by two-point statistics. Density-split clustering, which measures the clustering of regions ranked by their smoothed local density, has been shown to recover a significant part of this non-Gaussian information. In this work we study an alternative definition of the local environment based on ASTRA, a parameter-free estimator built on the Delaunay tessellation of the galaxies together with a uniform random catalogue. Using AbacusSummit halo occupation distribution (HOD) mocks reproducing the clustering of DESI luminous red galaxies at $z=0.5$, we measure the monopole and quadrupole of the auto- and cross-correlation functions of ASTRA environment quartiles, and compare them with the standard density-split statistics measured on exactly the same random points. Covariance matrices are estimated from 192 subvolumes of $(500\Mpch)^3$ of the fiducial simulation, and derivatives with respect to $\omega_b$, $\omega_{\rm cdm}$, $n_s$ and $\sigma_8$ from paired differences of HOD-matched simulations of the AbacusSummit derivative grid. We use these products to compare the Fisher information of ASTRA split, density split and the galaxy two-point correlation function.
-Because the HOD is sampled independently in each cosmology of the suite, finite differences are dominated by the HOD mismatch; we obtain the derivatives from a neural-network emulator trained on 999 catalogues, including the differences between catalogues of the derivative grid, and cross-check them with a regression over all the pairs of the grid. With both estimators, ASTRA split is as constraining as density split, or slightly more (by up to 20\% on $\sigma_8$, $\omega_b$ and $n_s$), and the two are complementary: their combination improves on either by 25--35\%. Absolute forecasts remain uncertain by a factor of 2--6 depending on the parameter, which we trace to the sampling noise of the HOD catalogues.
+Because the HOD is sampled independently in each cosmology of the suite, finite differences are dominated by the HOD mismatch; we obtain the derivatives from a neural-network emulator trained on 999 catalogues, cross-checked with a regression over the derivative grid, and measure the covariance on 1786 independent boxes of the official DESI mocks. We complement this DESI-like analysis with clean finite-difference forecasts on Quijote halos. ASTRA split and density split carry comparable information, the ratio of their marginalised errors lying between 0.75 and 1.2 with the independent covariance, and they are complementary: their combination improves on either by 25--35\%. The ranking for individual parameters depends on the data vector and on analysis choices at the 10--40\% level; in Quijote, ASTRA split is more constraining on $\sigma_8$ by a factor 1.5--2 when its quartile auto-correlations or tracer quartiles are used. We document the methodological pitfalls met along the way (HOD mismatch of emulator suites, single-box covariances, derivative noise of environment statistics) and how we addressed them.
 \end{abstract}
 
 % =====================================================================
@@ -185,7 +185,16 @@ The ASTRA signals are systematically weaker than the density-split ones, by a fa
 \label{fig:multipoles_gal}
 \end{figure*}
 
-\todo{Real-space (r-split) measurements and comparison with redshift space (Fig.~3 of the previous version), once the real-space runs are done.}
+\subsection{Real space and redshift space}
+
+To isolate the effect of redshift-space distortions, we also measured the fiducial catalogue (and the eight catalogues of the derivative pairs) in real space, the environments being then defined from the real-space positions (r-split) instead of the redshift-space ones (z-split), along the three lines of sight. Figure~\ref{fig:realz} compares the two. Redshift-space distortions increase the monopoles at $20$--$60\Mpch$ by a factor 1.6 for the galaxy 2PCF and by 1.3--1.5 for the Q1 and Q4 cross-correlations of both methods, and create quadrupoles that are absent in real space, as expected: positive around underdense regions (outflows stretch the void profile along the line of sight) and negative around overdense ones (infall). In absolute value the quadrupoles of density split are 1.6--1.7 times larger than those of ASTRA split, following their larger monopoles; relative to the monopole, however, the ASTRA quadrupole is the larger one ($|\xi_2|/|\xi_0| \simeq 0.8$ for ASTRA vs $0.6$ for density split for Q1, $1.0$ vs $0.8$ for Q4, at $20$--$60\Mpch$ in redshift space): the ASTRA environments are less contrasted but their redshift-space anisotropy is relatively stronger. Real-space environments are not observable, so all the forecasts of this paper use z-split; the real-space measurements are kept as a diagnostic.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_real_vs_redshift.png}
+\caption{Environments and clustering defined in redshift space (solid) or in real space (dashed) for the fiducial catalogue: galaxy 2PCF (left) and the Q1 (centre) and Q4 (right) random-quartile cross-correlations of ASTRA split (orange) and density split (green). Top: monopole, bottom: quadrupole. Bands: error of the mean over $3\times64$ subvolumes.}
+\label{fig:realz}
+\end{figure*}
 
 % =====================================================================
 \section{Covariance, derivatives and Fisher forecasts}
@@ -379,13 +388,99 @@ ASTRA + DS & 0.0075 / 0.0014 & 0.013 / 0.0052 & 0.090 / 0.039 & 0.11 / 0.061 \\
 \label{fig:combined}
 \end{figure*}
 
+\subsection{Official covariance and fiducial point}
+\label{sec:abacus_covbox}
+
+The forecasts above use the covariance of the 192 subvolumes of the fiducial catalogue, which all come from a single box. Replacing it by the covariance of the 1786 independent official small boxes (Section~\ref{sec:official}) changes the comparison (Table~\ref{tab:covbox}): with the same emulator derivatives, density split becomes as constraining as or more constraining than ASTRA split, including for $\sigma_8$ (ratio 0.95 instead of 1.12 for the random cross-correlations). The 192 correlated samples underestimated some of the covariances of the ASTRA statistics relative to density split; the independent covariance is the more reliable one, and we adopt it as the baseline. To test the dependence on the fiducial point at which the derivatives are evaluated, we repeat the forecast at four HODs: \texttt{hod239} of the emulator suite, the official best fit, and two other draws of the fiducial cosmology.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+fiducial HOD & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+\texttt{hod239} & 0.84(12) & 1.07(16) & 0.99(11) & 0.95(6) \\
+official best fit & 0.86(11) & 1.01(4) & 0.86(7) & 0.85(7) \\
+\texttt{hod212} & 0.75(8) & 1.02(13) & 1.02(12) & 0.89(6) \\
+\texttt{hod795} & 0.82(7) & 0.99(11) & 1.08(23) & 1.11(9) \\
+\bottomrule
+\end{tabular}
+\caption{$\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ for the random-quartile cross-correlations with the covariance of the 1786 official small boxes (emulator derivatives, HOD marginalised, compressed), for four fiducial HODs.}
+\label{tab:covbox}
+\end{table}
+
+With the official covariance, the ratio stays between 0.75 and 1.11 for all fiducial points and parameters: density split is 10--25\% more constraining on $\omega_b$, the two methods are equivalent on $\omega_{\rm cdm}$ and $n_s$, and on $\sigma_8$ the ratio scatters around unity (0.85--1.11) with the fiducial HOD.
+
+\subsection{Inference with the emulator}
+\label{sec:mcmc}
+
+We also sampled the posterior of the 8 cosmological and 12 HOD parameters with the emulator (\texttt{emcee}), with uniform priors over the training range, the official covariance and the emulator error, to test the inference and its calibration on data the emulator has not seen: one subvolume of each of 2 catalogues of the 8 test cosmologies, and 8 subvolumes of the official base box of the fiducial cosmology, for the 2PCF, ASTRA split, density split and their combinations (120 chains).
+
+The posteriors are unbiased: the truth lies within $1\sigma$ of the posterior mean in 70--100\% of the runs, depending on the parameter (68\% expected), i.e. the posteriors are calibrated or slightly conservative. They are however hardly narrower than the priors (Figure~\ref{fig:mcmc}): for a single $(500\Mpch)^3$ volume with 12 free HOD parameters, the data constrain only $\omega_{\rm cdm}$ and $\sigma_8$ beyond the prior, by 10--15\%, and the differences between statistics are of a few per cent. A first set of runs on the full $(2\,h^{-1}{\rm Gpc})^3$ box was limited the other way: the emulator error (0.4--0.9 times the statistical error of that volume) was as large as the statistical error, and masked the differences between the statistics. Discriminating between the statistics with the inference therefore requires a large volume \emph{and} an emulator error well below the statistical error of that volume; with the present training set this is not the case, and the comparison of the methods rests on the Fisher forecasts. The inference pipeline is nevertheless validated and ready for a larger training set.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{v2_mcmc_widths.png}
+\caption{Emulator inference on held-out cosmologies, one $(500\Mpch)^3$ subvolume, official covariance: width of the marginalised posterior relative to the width of the uniform prior, median over 16 runs, for the 2PCF, ASTRA split, density split and their combinations.}
+\label{fig:mcmc}
+\end{figure*}
+
 % =====================================================================
 \section{Fisher forecasts with Quijote}
 \label{sec:quijote}
 
 \todo{RELECTURE -- densit\'e Quijote : n $\approx 5\times10^{-5}\,h^3$Mpc$^{-3}$ (seuil de 100 particules des catalogues Rockstar), 10 fois plus faible que les LRG ; ASTRA, statistique \`a \'echelle adaptative, y a donc une \'echelle effective plus grande ($\sim27\Mpch$ au lieu de $\sim13\Mpch$). \`A expliciter clairement dans le texte final : la comparaison ASTRA vs DS reste valide car mesur\'ee sur les m\^emes halos, mais elle se fait \`a une autre densit\'e que l'analyse AbacusSummit (ne pas comparer directement les valeurs absolues entre les deux parties).}
 
-\todo{Quijote results (\texttt{scripts/quijote\_fisher.py}): marginalised errors on $(\Omega_m, \Omega_b, h, n_s, \sigma_8, M_\nu)$ for the 2PCF, ASTRA split, density split and combinations; ratios $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ (random/galaxy quartiles, autos, voids/clusters); convergence with the number of derivative pairs and of fiducial realisations; comparison with the AbacusSummit relative results.}
+\subsection{Problems and choices}
+
+\paragraph{Covariance.} With 4000 fiducial realisations the covariance is converged: at fixed derivatives the marginalised errors change by less than 1\% between 2000 and 4000 realisations, and by less than 6\% between 1000 and 4000. An automatic convergence test that we first ran over night reported the opposite, because it compared the full forecasts, in which the noise of the derivatives (below) dominates the change; the processing of the remaining fiducial realisations that it triggered was cancelled once the two effects were separated. (About half of the 15\,517 fiducial catalogues of our copy were empty, an incomplete download that has no consequence given this convergence; all the derivative sets are complete.)
+
+\paragraph{Pairing.} We verified that the $\pm$ realisations of a given index share their initial conditions: the scatter of the differences between realisations of the same index is 3--4 times smaller than between different indices, for the 2PCF as for the quartile statistics.
+
+\paragraph{Noise of the derivatives.} Even paired, the derivatives remain noisy. Quijote is designed for statistics of the matter and halo fields (power spectrum, bispectrum, ...). Our observables add two sources of noise that the pairing cannot cancel:
+\begin{enumerate}
+\item \emph{Sparse tracers.} With $\simeq50\,000$ host halos per $(h^{-1}{\rm Gpc})^3$, each quartile contains only $\simeq12\,000$ halos (or random points), and the shot noise of the quartile statistics is large.
+\item \emph{Discrete classification.} A small change of cosmology moves halos and random points from one quartile to another. This re-classification is only partly common to the $+$ and $-$ simulations, even with identical initial conditions, and adds a noise that does not cancel in the difference.
+\end{enumerate}
+This noise is mostly amplified by the six-parameter Fisher matrix. $\Omega_b$, $h$ and $n_s$ (and $M_\nu$) are strongly degenerate in the clustering of halos: their weakest combination is constrained by a very small amount of information, of the same order as the noise left in the average of 500 derivative pairs, so that along this direction the derivatives are dominated by noise. Formally, writing the estimated derivatives $\hat D = D + \epsilon$ with $\langle\epsilon\rangle=0$ and $\mathrm{Cov}(\epsilon) = \Sigma_D/N_{\rm pair}$, the standard estimator has the expectation
+\begin{equation}
+\langle \hat D^T C^{-1}\hat D\rangle = D^T C^{-1} D + \mathrm{Tr}\big(C^{-1}\Sigma_D\big)/N_{\rm pair},
+\end{equation}
+a positive bias that grows with the length of the data vector and is roughly the same in all directions of parameter space. It is negligible along directions where $D^TC^{-1}D$ is large, but dominates along the weakest eigen-directions of the Fisher matrix, and the marginalised errors, which are set by the inverse of the matrix, are precisely controlled by those directions. Subtracting the expected bias makes the six-parameter matrices non positive definite.
+
+\paragraph{Estimator.} We therefore use the approach of \cite{CoultonWandelt2023}. The standard estimator is biased high by the derivative noise; a \emph{compressed} estimator, in which half of the simulations define the compression $t = (C^{-1}\bar D_A)^T d$ and the other half measure the information of $t$, is biased low. The two bracket the true Fisher information and their geometric mean is nearly unbiased. Where the two agree, the forecast does not depend on the derivative noise; we call a forecast \emph{reliable} when the compressed and standard marginalised errors differ by less than a factor 1.5 for both statistics compared.
+
+\paragraph{Parameters and compression.} The bias due to derivative noise grows with the length of the data vector and is concentrated in the degenerate directions. We therefore computed the forecasts for six parameter subsets, from $(\Omega_m,\sigma_8)$ to all six parameters, and three compressions of the data vector: $10\Mpch$ bins with $\ell=0,2$, $20\Mpch$ bins with $\ell=0,2$, and $20\Mpch$ bins with the monopole only (Figure~\ref{fig:qsubsets}). Only the subsets $(\Omega_m,\sigma_8)$ and $(\Omega_m, n_s, \sigma_8)$ give reliable forecasts, for all compressions; as soon as $\Omega_b$, $h$ or $M_\nu$ are varied, the standard and compressed estimates differ by factors 2--10 and the ranking of the two methods changes from one compression to the next. These parameters cannot be constrained with these observables and 500 derivative pairs. Fixing $\Omega_b$, $h$ and $n_s$, as many density-split forecasts do, is justified by their external constraints (BBN, CMB); $M_\nu$ is the parameter we would most like to constrain, and its forecast requires either denser tracers or many more derivative simulations.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_quijote_subsets.png}
+\caption{Quijote halos: ratio of the marginalised errors $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ (above 1: ASTRA split more constraining) for six parameter subsets and three compressions of the data vector, for the random-quartile cross-correlations (left), with their auto-correlations (centre), and the galaxy (here halo) quartiles (right). Filled symbols: reliable forecasts, for which the standard and compressed Fisher estimators agree within a factor 1.5; open symbols: dominated by the noise of the derivatives.}
+\label{fig:qsubsets}
+\end{figure*}
+
+\subsection{Results}
+
+Table~\ref{tab:quijote} gives the reliable comparisons. For the cross-correlations of the random quartiles alone, density split is as constraining as or more constraining than ASTRA split ($\sigma_{\rm DS}/\sigma_{\rm ASTRA} = 0.6$--$1.0$ for $\Omega_m$ and $n_s$, 0.65--1.1 for $\sigma_8$). When the quartile auto-correlations are included, or for the halo quartiles, ASTRA split is more constraining on $\sigma_8$ by a factor 1.5--2.1, and comparable on $\Omega_m$ and $n_s$. The constraining power of ASTRA split therefore lies more in the clustering of its environments with themselves, and in the environments of the tracers, than in the profiles of the tracers around random environments.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{llccc}
+\toprule
+quartiles & parameters & $\Omega_m$ & $n_s$ & $\sigma_8$ \\
+\midrule
+random, cross & $\Omega_m,\sigma_8$ & 0.86--1.04 & -- & 0.65--0.81 \\
+random, cross & $\Omega_m,n_s,\sigma_8$ & 0.57--0.64 & 0.68--0.74 & 1.04--1.14 \\
+random, cross+auto & $\Omega_m,\sigma_8$ & 1.19--1.40 & -- & 1.54--2.11 \\
+random, cross+auto & $\Omega_m,n_s,\sigma_8$ & 0.74--0.81 & 0.85--0.92 & 1.72--1.78 \\
+halo, cross & $\Omega_m,\sigma_8$ & 1.18--1.21 & -- & 1.91--2.04 \\
+halo, cross & $\Omega_m,n_s,\sigma_8$ & 1.16--1.20 & 1.17--1.23 & 1.54--1.70 \\
+\bottomrule
+\end{tabular}
+\caption{Quijote halos, reliable forecasts: range of $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ over the three compressions (above 1: ASTRA split more constraining).}
+\label{tab:quijote}
+\end{table}
+
 
 % =====================================================================
 \section{Robustness tests}
@@ -412,6 +507,9 @@ This is an intrinsic property of the estimator rather than a numerical instabili
 % =====================================================================
 \section{Discussion and limitations}
 \label{sec:discussion}
+
+\paragraph{Synthesis: what is robust.} The comparison of ASTRA split and density split was made with three derivative estimators (emulator, regression over pairs, Quijote finite differences), two covariances (192 subvolumes of one box, 1786 independent boxes), four fiducial HODs, two tracer populations (LRG-like galaxies, halos) and several data-vector types. The ranking of the two methods for a given parameter changed between some of these analyses, and we do not consider it established. What holds in all of them is: (i) the two methods carry comparable information, the ratio of their errors lying between $\sim0.75$ and $\sim1.2$ for the same data-vector type in the DESI-like analysis with the independent covariance, and between $\sim0.6$ and $\sim2$ in the reliable Quijote forecasts; (ii) they are complementary, their combination improving on either by 25--35\%; (iii) where one method is consistently ahead, it is density split for the parameters that set the shape of the clustering ($\omega_b$, $\Omega_m$, $n_s$) with the random-quartile cross-correlations, and ASTRA split for $\sigma_8$ when its quartile auto-correlations or its tracer quartiles are included (Quijote). Differences of 10--40\% between the methods are of the same order as the changes induced by our analysis choices (covariance, derivative estimator), and should be read as such. In particular, the advantage of ASTRA split on $\sigma_8$ found with the single-box covariance (Section~\ref{sec:fisher}) disappears with the independent covariance, which we take as the baseline.
+
 % =====================================================================
 
 \paragraph{HOD mismatch in the derivatives.} The emulator catalogues are not HOD-matched across cosmologies. Our selection reduces the mismatch by a factor of two but does not cancel it, so the finite differences contain a residual response to the HOD parameters, smooth in scale and mostly affecting the amplitude. It is expected to matter most for $\sigma_8$, whose effect is also mainly an amplitude. In practice the paired differences are measured with high precision (the error of the mean over the 192 paired samples is small), but they are dominated by this HOD response: the implied change of the 2PCF reaches tens of percent at $s\sim20\Mpch$ for a 2\% change in $\omega_b$, and the derivative vectors with respect to $\omega_b$, $n_s$ and $\sigma_8$ are almost collinear (correlation coefficients 0.95--0.99 in the Fisher metric), so that the raw Fisher matrices are close to singular. Subtracting a calibrated HOD response was not accurate enough (Section~\ref{sec:fisher}), which led us to the emulator. A clean solution is an emulator of the statistics as a function of cosmological \emph{and} HOD parameters, trained on the full Latin hypercube, whose derivatives can be taken at fixed HOD.
@@ -430,7 +528,7 @@ This is an intrinsic property of the estimator rather than a numerical instabili
 
 We have compared ASTRA split, an environment estimator built on the Delaunay tessellation of galaxies and random points, with standard density split, measuring both on the same AbacusSummit LRG mocks, with the same random points and estimators.
 \begin{itemize}
-\item The two classifications are strongly but not perfectly correlated (Spearman $\rho\simeq0.72$); ASTRA produces weaker quartile contrasts but carries comparable cosmological information, slightly more than density split for $\sigma_8$, $\omega_b$ and $n_s$ in our forecasts, and the two are complementary.
+\item The two classifications are strongly but not perfectly correlated (Spearman $\rho\simeq0.72$); ASTRA produces weaker quartile contrasts but carries comparable cosmological information to density split (ratio of the errors 0.75--1.2 in the DESI-like analysis with an independent covariance), and the two are complementary; the ranking for individual parameters depends on the data vector and on analysis choices, ASTRA being more constraining on $\sigma_8$ through its quartile auto-correlations in Quijote.
 \item ASTRA is an adaptive-scale statistic: its effective scale is set by the sampling density, to which it is far more sensitive than density split; it must be modelled at fixed number density and random-to-galaxy ratio.
 \item Emulator suites in which the HOD is drawn independently in each cosmology do not allow naive finite differences: the HOD mismatch dominates by an order of magnitude. A joint cosmology--HOD emulator trained also on catalogue differences, validated on held-out pairs and cross-checked against a regression over the derivative grid, yields consistent relative forecasts; the absolute forecasts are limited by the galaxy sampling noise of single HOD realisations.
 \end{itemize}
@@ -501,6 +599,7 @@ A first version of this analysis averaged the statistics of 64 different HOD fil
 \bibitem{LandySzalay1993} S.~D.~Landy \& A.~S.~Szalay, ApJ 412, 64 (1993).
 \bibitem{Sinha2020} M.~Sinha \& L.~H.~Garrison, \emph{Corrfunc}, MNRAS 491, 3022 (2020).
 \bibitem{Quijote} F.~Villaescusa-Navarro et al., \emph{The Quijote simulations}, ApJS 250, 2 (2020), arXiv:1909.05273.
+\bibitem{CoultonWandelt2023} W.~R.~Coulton \& B.~D.~Wandelt, \emph{How to estimate Fisher information matrices from simulations}, arXiv:2305.08994 (2023) \todo{v\'erifier le titre et le num\'ero arXiv}.
 \bibitem{Hartlap2007} J.~Hartlap, P.~Simon \& P.~Schneider, A\&A 464, 399 (2007).
 \end{thebibliography}
 
