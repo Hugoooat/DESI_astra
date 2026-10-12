@@ -154,7 +154,10 @@ def main():
                         help='compress each data vector to 16 numbers (4 cosmology + 12 HOD) before the Fisher')
     args = parser.parse_args()
     fc = Forecaster(args.models_dir, args.validation_tag, compress=args.compress, regression=args.regression)
-    tag = ('_compressed' if args.compress else '') + ('_regression' if args.regression else '')
+    tag = ('_compressed' if args.compress else '') + \
+        (f'_regression_{Path(args.regression).stem.replace("derivatives_regression", "").strip("_") or "lin"}'
+         if args.regression else '') + \
+        ('' if Path(args.models_dir).name in ('models', 'models10') else f'_{Path(args.models_dir).name}')
     res = {}
 
     # 1, 3, 5: ASTRA vs DS for each type of data vector
