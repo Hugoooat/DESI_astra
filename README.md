@@ -38,6 +38,24 @@ volume, Landy–Szalay, fixed line of sight, ℓ = 0, 2, 4, s ∈ [0, 150] Mpc/h
   of the AbacusSummit derivative grid (`config/hod_selection.json`).
 * **Fisher** forecasts with the derivative-noise bias subtracted.
 
+## Baseline analysis of the paper
+
+* **DESI-like (AbacusSummit)**: emulator trained on 999 catalogues with the
+  pair-difference loss (`models_pairs/`), covariance of the 1786 official
+  DESI small boxes, fiducial point = official best-fit HOD:
+  `python scripts/compare_methods.py --models-dir models_pairs --validation-tag _pairs --compress --cov covbox --fiducial official`
+* **Quijote**: parameter subsets (Om, s8) and (Om, ns, s8), combined
+  (Coulton & Wandelt 2023) Fisher estimator, reliability criterion
+  compressed/standard < 1.5: `scripts/quijote_fisher.py`, `scripts/summarize_quijote.py`
+* **Inference**: `scripts/mcmc.py` + `scripts/summarize_mcmc.py`
+
+Every other configuration (single-box covariance, other fiducials, regression
+derivatives, all Quijote subsets) is a robustness test; see Appendix C of
+the paper for the path that led to these choices. Heavy products (`data/`,
+`models*/`) are not versioned; on NERSC they live in
+`/pscratch/sd/h/hugon/astra-ds-store/` (symlinked) and can be regenerated with
+the commands of Appendix A.
+
 ## Installation
 
 On NERSC everything needed (numpy, scipy, pandas, fitsio, pycorr/Corrfunc,
