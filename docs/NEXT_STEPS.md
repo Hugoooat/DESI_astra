@@ -69,8 +69,25 @@ calculer moins de statistiques par catalogue.
 3. **Choix de l'analyse de référence.** Est-il d'accord avec : covariance des
    petites boîtes officielles, fiducial = HOD officielle, Quijote limité à
    (Ωm, σ8) et (Ωm, ns, σ8) ?
-4. **Références** : article ASTRA à citer, et référence du prior HOD
-   « yuan23 ».
+4. **Références** : trouvées et ajoutées (ASTRA : arXiv:2404.01124 ; prior HOD :
+   Yuan et al. 2024, arXiv:2306.06314). Lui faire seulement confirmer que le
+   prior « yuan23 » vient bien de cet article.
+
+5. **Classes ASTRA probabilistes.** Avec les seuils fixes (vide ≤ −0.9 < feuillet
+   ≤ 0 < filament ≤ 0.9 < nœud) et un seul catalogue aléatoire, vides et nœuds
+   contiennent < 1 % des points à la densité des LRG (0.2 % de vides pour les
+   points aléatoires, contre 7–11 % dans l'article ASTRA, sur des catalogues
+   11–73 fois plus denses) : il reste 2 classes dominantes. Sur Quijote, les
+   classes feuillet/filament avec leurs autocorrélations sont pourtant la
+   statistique la plus contraignante (σ8 ≈ 2× mieux que le DS). L'article ASTRA
+   utilise des **probabilités** de classe sur 100 catalogues aléatoires : est-ce
+   la version probabiliste qu'il a en tête pour DESI ? Faut-il adapter les
+   seuils à la densité de l'échantillon ? (Coût d'un test : ~100× la
+   tessellation actuelle.)
+6. **Émulateur des classes sur Abacus** (~150 h-nœud de remesure) : utile pour
+   une analyse type DESI des classes, mais hors du périmètre de cet article
+   (déjà 3 articles prévus en un : statistiques ASTRA, émulateur, MCMC).
+   Pour un article suivant ?
 
 ## 4. GitHub
 
