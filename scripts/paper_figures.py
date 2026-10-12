@@ -34,7 +34,8 @@ import emulator as E
 PLOTS = ROOT / 'plots'
 CQ = ['#3b4cc0', '#7aa6f7', '#f4a582', '#b2182b']
 COLV = {'2PCF': 'k', 'ASTRA': '#d95f02', 'DS': '#1b9e77', 'ASTRA+DS': '#7570b3', '2PCF+ASTRA+DS': '#e7298a'}
-PTEX = {'omega_b': r'\omega_b', 'omega_cdm': r'\omega_{\rm cdm}', 'n_s': 'n_s', 'sigma8': r'\sigma_8'}
+PARAMS = ['omega_b', 'omega_cdm', 'n_s', 'sigma8']
+PTEX = {'omega_b': r'\omega_b', 'omega_cdm': r'\omega_{\rm cdm}', 'n_s': 'n_s', 'sigma8': r'\sigma_8', 'w0': 'w_0', 'wa': 'w_a'}
 
 
 def q(method, pop='rand', kinds=('cross',), qs=(1, 4)):
@@ -126,16 +127,16 @@ def fig_derivatives(fc):
     J = np.concatenate([fc.jac(st).mean(0) for st in stats])          # (ndim, 20)
     s = E.Emulator.load('gg', fc.models_dir).s
     ns = len(s)
-    params = ['omega_b', 'omega_cdm', 'n_s', 'sigma8']
+    params = PARAMS
     from fisher_emulator import INPUT_OF
-    fig, axes = plt.subplots(2, 4, figsize=(15, 6), sharex=True)
+    fig, axes = plt.subplots(2, len(params), figsize=(3.8 * len(params), 6), sharex=True)
     styles = {'gg': ('k', '-'), 'astra_rand_cross_q1': ('#d95f02', '--'), 'astra_rand_cross_q4': ('#d95f02', '-'),
               'ds_rand_cross_q1': ('#1b9e77', '--'), 'ds_rand_cross_q4': ('#1b9e77', '-')}
     names = {'gg': '2PCF', 'astra_rand_cross_q1': 'ASTRA Q1', 'astra_rand_cross_q4': 'ASTRA Q4',
              'ds_rand_cross_q1': 'DS Q1', 'ds_rand_cross_q4': 'DS Q4'}
     for k, p in enumerate(params):
         ip = E.COSMO_INPUTS.index(INPUT_OF[p])
-        width = {'omega_b': 0.001, 'omega_cdm': 0.005, 'n_s': 0.02, 'sigma8': 0.02}[p]
+        width = {'omega_b': 0.001, 'omega_cdm': 0.005, 'n_s': 0.02, 'sigma8': 0.02, 'w0': 0.1, 'wa': 0.2}[p]
         for j, st in enumerate(stats):
             d = J[2 * ns * j:2 * ns * (j + 1), ip] * width / sig[2 * ns * j:2 * ns * (j + 1)]
             for ell in range(2):
@@ -158,10 +159,10 @@ def fig_derivatives(fc):
 def fig_triangle(fc):
     from getdist.gaussian_mixtures import GaussianND
     from getdist import plots
-    from compare_methods import PARAMS
+    from fisher_emulator import INPUT_OF
     vectors = {'2PCF': ['gg'], 'ASTRA': q('astra'), 'DS': q('ds'), 'ASTRA+DS': q('astra') + q('ds'),
                '2PCF+ASTRA+DS': ['gg'] + q('astra') + q('ds')}
-    fid = [fc.x0[E.COSMO_INPUTS.index(c)] for c in ['omega_b', 'omega_cdm', 'n_s', 'sigma8_m']]
+    fid = [fc.x0[E.COSMO_INPUTS.index(INPUT_OF[p])] for p in PARAMS]
     gs = [GaussianND(fid, fc(v)['cov_marg'], names=PARAMS, labels=[PTEX[p] for p in PARAMS], label=name)
           for name, v in vectors.items()]
     g = plots.get_subplot_plotter(width_inch=8)
@@ -170,11 +171,11 @@ def fig_triangle(fc):
 
 
 def fig_quartiles(fc):
-    params = ['omega_b', 'omega_cdm', 'n_s', 'sigma8']
+    params = PARAMS
     ref = fc(['gg'])['marg'][0]
     variants = [('Q1 cross', dict(qs=(1,))), ('Q4 cross', dict(qs=(4,))), ('Q1+Q4 cross', {}),
                 ('Q1+Q4 cross+auto', dict(kinds=('cross', 'auto')))]
-    fig, axes = plt.subplots(1, 4, figsize=(15, 3.6), sharey=True)
+    fig, axes = plt.subplots(1, len(params), figsize=(3.8 * len(params), 3.6), sharey=True)
     w = 0.38
     for k, (ax, p) in enumerate(zip(axes, params)):
         for j, (m, col) in enumerate([('astra', '#d95f02'), ('ds', '#1b9e77')]):
@@ -227,7 +228,12 @@ def fig_response():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--only', nargs='+', default=None)
+    parser.add_argument('--params', nargs='+', default=None)
     args = parser.parse_args()
+    global PARAMS
+    if args.params:
+        import compare_methods
+        PARAMS = compare_methods.PARAMS = list(args.params)
     todo = args.only or ['fig_map', 'fig_env_hist', 'fig_corr', 'fig_derivatives', 'fig_triangle',
                          'fig_quartiles', 'fig_response']
     env = slab_environments() if {'fig_map', 'fig_env_hist'} & set(todo) else None
