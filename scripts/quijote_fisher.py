@@ -7,8 +7,10 @@ Fisher forecasts with Quijote: clean derivatives, ASTRA split vs density split.
   standard three-point forward difference on Mnu = 0 (fiducial_ZA), 0.1, 0.2 eV:
       d/dMnu = (-3 f_0 + 4 f_0.1 - f_0.2) / (2 x 0.1);
 * covariance: fiducial realisations, Hartlap-corrected, volume (1 Gpc/h)^3;
-* the derivative-noise bias is subtracted (analysis.fisher), and the
-  convergence is tested by recomputing with fewer realisations.
+* noisy derivatives bias the standard Fisher estimate high; we quote the
+  combined estimator of Coulton & Wandelt (2023), geometric mean of the
+  standard and of a compressed estimator (biased low), and both bounds;
+  the convergence is tested by recomputing with fewer realisations.
 
     python scripts/quijote_fisher.py [--report]  ->  data/quijote_fisher.json, plots/quijote_*.png
 With --report, also writes data/quijote/CONTINUE if the constraints are not
@@ -64,9 +66,13 @@ def load_set(name, stats_needed):
     return out, meta
 
 
+REBIN = 2
+KEEP = None   # parameters kept in the Fisher matrix (None: all)
+
+
 def vec(meta, real, stats, smin):
     st = {k: np.array([real[k]]) for k in stats}
-    return A.data_vector(meta, st, stats, smin=smin)[1][0]
+    return A.data_vector(meta, st, stats, smin=smin, rebin=REBIN)[1][0]
 
 
 def compute(sets, meta, stats, smin, nderiv=None, ncov=None):
@@ -83,18 +89,45 @@ def compute(sets, meta, stats, smin, nderiv=None, ncov=None):
     derivs['Mnu'] = np.array([(-3 * vec(meta, sets['fiducial_ZA'][i], stats, smin)
                                + 4 * vec(meta, sets['Mnu_p'][i], stats, smin)
                                - vec(meta, sets['Mnu_pp'][i], stats, smin)) / 0.2 for i in common])
-    F, noise = A.fisher(derivs, prec)
-    sig = np.sqrt(np.diag(np.linalg.inv(F))) if np.all(np.linalg.eigvalsh(F) > 0) else np.full(len(F), np.nan)
-    return dict(sigma=sig.tolist(), noise_frac=noise.tolist(), ndim=cov_samples.shape[1],
-                ncov=len(ids), nderiv=min(len(d) for d in derivs.values()), hartlap=hartlap,
-                cov=np.linalg.inv(F).tolist())
+    if KEEP:
+        derivs = {p: derivs[p] for p in KEEP}
+    params = list(derivs)
+    D = np.array([derivs[p].mean(0) for p in params])                 # (npar, ndim)
+    F_s = D @ prec @ D.T                                               # standard: biased high by derivative noise
+    F_deb, noise = A.fisher(derivs, prec)                               # standard with the noise bias subtracted
+    # compressed estimator (Coulton & Wandelt 2023): compress with the derivatives of one half of the
+    # simulations, measure the Fisher information with the other half; biased low by the noise
+    n = min(len(d) for d in derivs.values())
+    half = n // 2
+    DA = np.array([derivs[p][:half].mean(0) for p in params])
+    DB = np.array([derivs[p][half:n].mean(0) for p in params])
+    W = prec @ DA.T                                                    # (ndim, npar)
+    Ct = W.T @ np.linalg.inv(prec) @ W
+    TB = W.T @ DB.T                                                    # (npar, npar)
+    F_c = TB.T @ np.linalg.inv(Ct) @ TB
+
+    def sig(F):
+        return np.sqrt(np.diag(np.linalg.inv(F))) if np.all(np.linalg.eigvalsh(F) > 0) else np.full(len(F), np.nan)
+    s_s, s_c = sig(F_s), sig(F_c)
+    s_comb = np.sqrt(s_s * s_c)                                       # geometric mean: nearly unbiased
+    return dict(sigma=s_comb.tolist(), sigma_standard=s_s.tolist(), sigma_compressed=s_c.tolist(),
+                sigma_debiased=sig(F_deb).tolist(), noise_frac=noise.tolist(), ndim=cov_samples.shape[1],
+                ncov=len(ids), nderiv=n, hartlap=hartlap, cov=np.linalg.inv(F_s).tolist())
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--smin', type=float, default=20.)
     parser.add_argument('--report', action='store_true')
+    parser.add_argument('--rebin', type=int, default=2, help='5 Mpc/h bins merged (2: 10 Mpc/h)')
+    parser.add_argument('--params', nargs='+', default=None, help='parameters kept (others fixed)')
+    parser.add_argument('--no-convergence', action='store_true')
+    parser.add_argument('--tag', default='')
     args = parser.parse_args()
+    global REBIN, KEEP, PARAMS
+    REBIN, KEEP = args.rebin, args.params
+    if KEEP:
+        PARAMS = KEEP
     stats = sorted({s for v in VECTORS.values() for s in v})
     names = ['fiducial', 'fiducial_ZA', 'Mnu_p', 'Mnu_pp'] + [s for p in STEPS.values() for s in p[:2]]
     sets, meta = {}, None
@@ -104,10 +137,11 @@ def main():
         print(f'{n}: {len(sets[n])} realisations')
     res = {name: compute(sets, meta, v, args.smin) for name, v in VECTORS.items()}
 
-    print(f'\nmarginalised 1-sigma, V = 1 (Gpc/h)^3, s >= {args.smin:g}   [derivative-noise fraction]')
-    print(f'{"data vector":22s} {"ndim":>4s} ' + ' '.join(f'{p:>15s}' for p in PARAMS))
+    print(f'\nmarginalised 1-sigma, V = 1 (Gpc/h)^3, s >= {args.smin:g}: combined [standard, compressed]')
+    print(f'{"data vector":22s} {"ndim":>4s} ' + ' '.join(f'{p:>24s}' for p in PARAMS))
     for name, r in res.items():
-        print(f'{name:22s} {r["ndim"]:4d} ' + ' '.join(f'{s:9.2e} [{n:3.0%}]' for s, n in zip(r['sigma'], r['noise_frac'])))
+        print(f'{name:22s} {r["ndim"]:4d} ' + ' '.join(f'{s:8.2e} [{a:.1e},{b:.1e}]' for s, a, b in
+                                                      zip(r['sigma'], r['sigma_standard'], r['sigma_compressed'])))
     print('\nsigma_DS / sigma_ASTRA   [> 1: ASTRA more constraining]')
     for a, d in [('ASTRA rand', 'DS rand'), ('ASTRA gal', 'DS gal'), ('ASTRA rand + auto', 'DS rand + auto'),
                  ('ASTRA Q1 (voids)', 'DS Q1 (voids)'), ('ASTRA Q4 (clusters)', 'DS Q4 (clusters)'),
@@ -117,7 +151,7 @@ def main():
     # convergence with the number of realisations
     conv = {}
     nfid, nder = len(sets['fiducial']), res['2PCF']['nderiv']
-    for name in ['2PCF', 'ASTRA rand', 'DS rand', '2PCF + ASTRA + DS']:
+    for name in ([] if args.no_convergence else ['2PCF', 'ASTRA rand', 'DS rand', '2PCF + ASTRA + DS']):
         conv[name] = {'ncov': {}, 'nderiv': {}}
         for nc in [nfid // 4, nfid // 2, nfid]:
             conv[name]['ncov'][nc] = compute(sets, meta, VECTORS[name], args.smin, ncov=nc)['sigma']
@@ -131,7 +165,7 @@ def main():
         dd = np.array(c['nderiv'][kd[1]]) / np.array(c['nderiv'][kd[2]]) - 1
         worst_cov, worst_der = max(worst_cov, np.nanmax(np.abs(dc))), max(worst_der, np.nanmax(np.abs(dd)))
         print(f'  {name:20s} cov {np.round(dc, 3)}  deriv {np.round(dd, 3)}')
-    (A.DATA / 'quijote_fisher.json').write_text(json.dumps(
+    (A.DATA / f'quijote_fisher{args.tag}.json').write_text(json.dumps(
         dict(results=res, convergence={k: {kk: {str(n): s for n, s in vv.items()} for kk, vv in v.items()}
                                        for k, v in conv.items()}, nfid=nfid, nderiv=nder), indent=1))
 
@@ -148,11 +182,11 @@ def main():
     axes[0].set_yticks(range(len(pairs)), [a.replace('ASTRA ', '') for a, _ in pairs], fontsize=8)
     fig.suptitle(f'Quijote halos, Fisher with clean derivatives ({nder} pairs, {nfid} fiducial realisations)', fontsize=10)
     fig.tight_layout()
-    fig.savefig(ROOT / 'plots' / 'quijote_ratios.png', dpi=140)
+    fig.savefig(ROOT / 'plots' / f'quijote_ratios{args.tag}.png', dpi=140)
 
     if args.report:
         flag = QDATA / 'CONTINUE'
-        if worst_cov > 0.05:
+        if worst_cov > 0.05 and np.isfinite(worst_cov):
             flag.write_text(f'covariance not converged: max |sigma(N/2)/sigma(N) - 1| = {worst_cov:.3f}\n')
             print(f'\n-> CONTINUE: covariance not converged ({worst_cov:.1%}); process the remaining fiducial realisations')
         else:
