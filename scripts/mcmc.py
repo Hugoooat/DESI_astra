@@ -10,9 +10,10 @@ Simulation-based inference with the emulator (SUNBIRD-like): posterior of the
   emulator catalogue (--cov subbox), rescaled to the volume of the data by
   --volume-factor (64 for a full 2 Gpc/h box), Hartlap-corrected;
 * priors : uniform over the range of the emulator training set;
-* data  : --data official:PHASE (official DESI base box of c000, mean of its
-  64 subboxes; true HOD = the official best fit) or --data cosmo:HOD (a
-  catalogue of the emulator suite, e.g. a held-out test cosmology);
+* data  : --data official:PHASE[:SUBBOX] (official DESI base box of c000, mean
+  of its 64 subboxes or one subbox; true HOD = the official best fit) or
+  --data cosmo:COSMO_HOD[:SUBBOX] (a catalogue of the emulator suite, e.g. a
+  held-out test cosmology). With one subbox use --volume-factor 1;
 * sampler: emcee, the emulator being evaluated for all walkers at once.
 
     python scripts/mcmc.py --data official:000 --vector ASTRA --cov covbox
@@ -66,17 +67,20 @@ def covariance_samples(kind, stats):
 
 def data_and_truth(spec, stats):
     """Measured data vector (mean over the subboxes) and true parameters (or None)."""
-    kind, ident = spec.split(':')
+    parts = spec.split(':')
+    kind, ident = parts[0], parts[1]
+    sub = int(parts[2]) if len(parts) > 2 else None      # one subbox (volume 0.125 (Gpc/h)^3) or all (mean)
+    pick = (lambda x: x[sub]) if sub is not None else (lambda x: x.mean(0))
     table = A.cosmology_table()
     if kind == 'official':
         d = np.load(A.DATA / 'official' / f'cubicbox_ph{ident}.npz')
         meta = {'s': d['s'], 'ells': d['ells']}
-        x = A.data_vector(meta, {k: d[k] for k in stats}, stats)[1].mean(0)
+        x = pick(A.data_vector(meta, {k: d[k] for k in stats}, stats)[1])
         truth = [float(table.loc[0, c]) for c in E.COSMO_INPUTS] + [OFFICIAL_HOD[k] for k in astra_ds.HOD_PARAMS]
         return x, np.array(truth)
     cosmo, hod = map(int, ident.split('_'))
     meta, st, _ = A.load(cosmo, hod, los=['z'])
-    x = A.data_vector(meta, st, stats)[1].mean(0)
+    x = pick(A.data_vector(meta, st, stats)[1])
     h = astra_ds.read_hod_header(astra_ds.hod_path(cosmo, hod))
     truth = [float(table.loc[cosmo, c]) for c in E.COSMO_INPUTS] + [h[k] for k in astra_ds.HOD_PARAMS]
     return x, np.array(truth)
@@ -137,7 +141,7 @@ def main():
         tau = np.full(len(lo), np.nan)
     burn = int(min(args.nsteps // 2, 5 * np.nanmax(tau))) if np.isfinite(np.nanmax(tau)) else args.nsteps // 2
     chain = sampler.get_chain(discard=burn, flat=True, thin=max(1, int(np.nanmin(tau) // 2) if np.isfinite(np.nanmin(tau)) else 1))
-    tag = f'{args.data.replace(":", "_")}_{args.vector}_{args.cov}'
+    tag = f'{args.data.replace(":", "_")}_{args.vector}_{args.cov}_v{args.volume_factor:g}'
     (A.DATA / 'chains').mkdir(exist_ok=True)
     np.savez(A.DATA / 'chains' / f'{tag}.npz', chain=chain, labels=np.array(labels), truth=truth, tau=tau,
              acceptance=sampler.acceptance_fraction.mean(), lo=lo, hi=hi)
