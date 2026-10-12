@@ -117,7 +117,7 @@ def split(ids, test=TEST_COSMOS, valid=VALID_COSMOS, exclude=()):
 
 
 def train(stat, nseeds=3, epochs=4000, lr=1e-3, weight_decay=1e-6, patience=500, holdout=True, verbose=False,
-          exclude=(), pairs=None, lam=1., small_scale_weight=0., sigma_floor=0.05):
+          exclude=(), pairs=None, lam=1., small_scale_weight=0., sigma_floor=0.05, train_fraction=1., fraction_seed=0):
     """
     Train the ensemble for one statistic. With holdout=True the test and
     validation cosmologies are excluded from training (validation drives early
@@ -136,6 +136,11 @@ def train(stat, nseeds=3, epochs=4000, lr=1e-3, weight_decay=1e-6, patience=500,
         tr = tr | va
     if pairs is not None:
         tr[np.asarray(pairs['holdout'], dtype=int)] = False
+    if train_fraction < 1.:   # learning curve: random subset of the training catalogues
+        idx = np.flatnonzero(tr)
+        drop = np.random.default_rng(fraction_seed).choice(idx, size=int(round((1 - train_fraction) * len(idx))),
+                                                           replace=False)
+        tr[drop] = False
     xmin, xmax = X[tr].min(0), X[tr].max(0)
     ymean, ysigma = Y[tr].mean(0), statistical_error(stat)
     tx = lambda m: torch.as_tensor((X[m] - xmin) / (xmax - xmin))

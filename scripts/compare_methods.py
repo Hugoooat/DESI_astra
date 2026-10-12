@@ -140,14 +140,18 @@ class Forecaster:
         prec = (n - p - 2) / (n - 1) * np.linalg.inv(C)
         out = {'fixed': [], 'marg': []}
         npar = len(PARAMS)
+        out_cov = None
         for Jm in np.concatenate([J0, J]):
             D = Jm[:, self.ipar + self.ihod]
             F = D.T @ prec @ D
             out['fixed'].append(np.sqrt(np.diag(np.linalg.inv(F[:npar, :npar]))))
             F[npar:, npar:] += self.hod_prior
-            out['marg'].append(np.sqrt(np.diag(np.linalg.inv(F)[:npar, :npar])))
+            Cm = np.linalg.inv(F)[:npar, :npar]
+            out['marg'].append(np.sqrt(np.diag(Cm)))
+            out.setdefault('cov_marg', Cm)          # first entry: central derivatives
         # first entry: ensemble-mean derivatives; others: individual members
-        return {k: (np.array(v[0]), np.array(v[1:])) for k, v in out.items()} | {'ndim': samples.shape[1] if not self.compress else J.shape[1], 'ndim_raw': len(emu_var)}
+        cov_marg = out.pop('cov_marg')
+        return {k: (np.array(v[0]), np.array(v[1:])) for k, v in out.items()} | {'cov_marg': cov_marg,'ndim': samples.shape[1] if not self.compress else J.shape[1], 'ndim_raw': len(emu_var)}
 
 
 def ratio_with_error(fc, va, vb, smin=20., key='marg'):
