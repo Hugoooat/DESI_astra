@@ -60,6 +60,23 @@ We use three sets of simulations, each for what the others cannot provide (Secti
 \label{sec:sims}
 % =====================================================================
 
+Table~\ref{tab:datasets} summarises the data used, their versions and their role; exact paths, file names and the lists of catalogues are given in Appendix~\ref{app:repro}.
+
+\begin{table*}[t]
+\centering\small
+\begin{tabular}{p{3.3cm}p{4.6cm}p{4.3cm}p{4.3cm}}
+\toprule
+Data set & Version / content & Used & Role \\
+\midrule
+AbacusSummit emulator suite (DESI LRG HOD mocks) & AbacusSummit base boxes $2\,h^{-1}$Gpc, $z=0.5$, AbacusHOD, \texttt{yuan23\_prior}; 85 cosmologies, phase \texttt{ph000}, seed 0, 500 HOD draws each & $\simeq1040$ catalogues: 8 HODs per cosmology (678), 72 fiducial HOD-calibration, 240 near-fiducial (densification), 54 extra; 27 in real space & measurements, emulator training/validation/test, finite differences, regression, single-box covariance (\texttt{c000 hod239}) \\
+Official DESI AbacusHOD mocks & \texttt{AbacusHOD\_mocks/v1}, LRG, $z=0.5$, model \texttt{velbias} (best fit to early DESI LRG data); \texttt{CovBox}: 1786 small boxes $500\Mpch$ (\texttt{ph3000+}); \texttt{CubicBox}: 25 base boxes \texttt{c000 ph000--024} & all 1786 small boxes and 25 base boxes & baseline covariance, fiducial point, MCMC test data \\
+Quijote & $1\,h^{-1}$Gpc, $512^3$ particles, Rockstar halos, snapshot 3 ($z=0.5$, \texttt{out\_3\_pid.list}) & 4000 \texttt{fiducial}; 500 each of \texttt{Om}, \texttt{Ob2}, \texttt{h}, \texttt{ns}, \texttt{s8} ($\pm$), \texttt{Mnu\_p/pp/ppp}, \texttt{fiducial\_ZA} & clean finite-difference Fisher forecasts \\
+\bottomrule
+\end{tabular}
+\caption{Data sets used in this work.}
+\label{tab:datasets}
+\end{table*}
+
 \subsection{AbacusSummit emulator suite}
 
 We use the HOD galaxy catalogues built for the DESI emulator programme on top of the AbacusSummit $N$-body suite \cite{Maksimova2021}. Each simulation evolves $6912^3$ particles in a periodic box of $2\,h^{-1}{\rm Gpc}$; we use the $z=0.5$ snapshot. Halos are populated with luminous red galaxies (LRG) with the AbacusHOD model \cite{Yuan2022}, whose 12 parameters (central and satellite occupation, velocity bias, environment-based assembly bias) are sampled in the prior of \cite{Yuan2023}. Every catalogue contains $4\times10^6$ galaxies, $\bar n = 5\times10^{-4}\,h^3{\rm Mpc}^{-3}$. The suite covers 85 cosmologies.
@@ -690,7 +707,13 @@ source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 \end{lstlisting}
 The code is organised in three modules and a set of scripts: \texttt{astra\_ds.py} contains the whole measurement of one catalogue (reading, periodic padding, ASTRA tessellation, density field, quartiles, subvolumes, clustering), \texttt{analysis.py} the loading of measurements, data vectors, covariances and Fisher tools, \texttt{emulator.py} the emulator (networks, training with the difference loss, derivatives). Each catalogue is measured on one 128-core node in $\simeq8$ minutes (64 subvolumes processed in parallel, ASTRA and density split, 33 statistics, three multipoles); measurements are saved as one \texttt{.npz} file per catalogue, line of sight and space, containing the multipoles of every statistic for every subvolume. Lists of catalogues are run with \texttt{slurm/run\_list.sh} inside an allocation (one \texttt{srun} per node).
 
-\paragraph{Data.} AbacusSummit emulator catalogues: \texttt{/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23\_prior/}; official DESI mocks: \texttt{/global/cfs/cdirs/desi/cosmosim/AbacusHOD\_mocks/v1/} (\texttt{CovBox}, \texttt{CubicBox}, LRG, $z=0.5$, \texttt{velbias}); Quijote: Rockstar halo catalogues at $z=0.5$ (\texttt{out\_3\_pid.list}) of the \texttt{fiducial}, \texttt{fiducial\_ZA} and derivative sets, obtained through Globus.
+\paragraph{Data.} The three data sets of Table~\ref{tab:datasets} are read from the following locations on NERSC:
+\begin{itemize}
+\item \textbf{AbacusSummit emulator suite}: \texttt{/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23\_prior/c\{CCC\}\_ph000/seed0/hod\{NNN\}.fits} (85 cosmology directories, \texttt{hod000}--\texttt{hod499}); cosmological parameters in \texttt{config/cosmologies.csv}. The catalogues measured are listed, one line per catalogue (cosmology, HOD, space, line of sight), in \texttt{config/runs\_emulator*.txt} (8 HODs per cosmology), \texttt{runs\_hod\_calibration.txt} (72), \texttt{runs\_local\_*.txt} (240), \texttt{runs\_extra.txt} (54) and \texttt{runs\_real\_space.txt} (27); the fiducial catalogue and the HOD-matched pairs are in \texttt{config/hod\_selection.json}.
+\item \textbf{Official DESI mocks}: \texttt{/global/cfs/cdirs/desi/cosmosim/AbacusHOD\_mocks/v1/CovBox/LRG/z0.500/catalog\_rsd\_xi2d\_lrg\_main\_z0.5\_velbias\_mockcov\_ph\{3000+\}.fits} (1786 files) and \texttt{.../CubicBox/LRG/z0.500/AbacusSummit\_base\_c000\_ph\{000--024\}/}.
+\item \textbf{Quijote}: Rockstar halo catalogues \texttt{\{set\}/\{i\}/out\_3\_pid.list} for the sets \texttt{fiducial} (realisations 0--3999), \texttt{fiducial\_ZA}, \texttt{Om\_p/m}, \texttt{Ob2\_p/m}, \texttt{h\_p/m}, \texttt{ns\_p/m}, \texttt{s8\_p/m}, \texttt{Mnu\_p/pp/ppp} (realisations 0--499), transferred with Globus from the Quijote public data to \texttt{/pscratch/sd/h/hugon/quijote/}.
+\end{itemize}
+Intermediate products (measurements, trained emulators, chains; $\simeq3$\,GB) are stored in \texttt{/pscratch/sd/h/hugon/astra-ds-store/} and are regenerated by the steps below.
 
 \paragraph{Steps.}
 \begin{lstlisting}[language=bash]
