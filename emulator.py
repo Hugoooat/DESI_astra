@@ -117,21 +117,38 @@ def split(ids, test=TEST_COSMOS, valid=VALID_COSMOS, exclude=()):
 
 
 def train(stat, nseeds=3, epochs=4000, lr=1e-3, weight_decay=1e-6, patience=500, holdout=True, verbose=False,
-          exclude=()):
+          exclude=(), pairs=None, lam=1., small_scale_weight=0., sigma_floor=0.05):
     """
     Train the ensemble for one statistic. With holdout=True the test and
     validation cosmologies are excluded from training (validation drives early
     stopping); with holdout=False only the test cosmologies are excluded.
+
+    pairs: optional dict from data/pair_dataset.npz (option b). The loss then
+    also includes the chi^2 of the predicted *differences* between catalogues,
+        lam * < ((f(x_i) - f(x_j)) - (y_i - y_j))^2 / (sigma_ij^2 + floor^2) >,
+    where sigma_ij is the (small) error of the paired difference; catalogues in
+    pairs['holdout'] are removed from training altogether.
+    small_scale_weight: alpha of the per-bin weight (25 / s)^alpha (option c).
     """
     X, Y, ids, s, names = load_dataset(stat)
     tr, va, te = split(ids, exclude=exclude)
     if not holdout:
         tr = tr | va
+    if pairs is not None:
+        tr[pairs['holdout']] = False
     xmin, xmax = X[tr].min(0), X[tr].max(0)
     ymean, ysigma = Y[tr].mean(0), statistical_error(stat)
     tx = lambda m: torch.as_tensor((X[m] - xmin) / (xmax - xmin))
     ty = lambda m: torch.as_tensor((Y[m] - ymean) / ysigma)
     xtr, ytr, xva, yva = tx(tr), ty(tr), tx(va), ty(va)
+    w = torch.as_tensor(np.tile((25. / s)**small_scale_weight, len(Y[0]) // len(s)))
+    w = w / w.mean()
+    if pairs is not None:
+        keep = tr[pairs['i']] & tr[pairs['j']]
+        pi, pj = torch.as_tensor(pairs['i'][keep]), torch.as_tensor(pairs['j'][keep])
+        pdelta = torch.as_tensor(pairs[f'delta/{stat}'][keep] / ysigma)
+        pvar = torch.as_tensor((pairs[f'sigma/{stat}'][keep] / ysigma)**2 + sigma_floor**2)
+        xall = torch.as_tensor((X - xmin) / (xmax - xmin))
     nets, history = [], []
     for seed in range(nseeds):
         torch.manual_seed(seed)
@@ -142,7 +159,10 @@ def train(stat, nseeds=3, epochs=4000, lr=1e-3, weight_decay=1e-6, patience=500,
         for epoch in range(epochs):
             net.train()
             opt.zero_grad()
-            loss = ((net(xtr) - ytr)**2).mean()
+            loss = (w * (net(xtr) - ytr)**2).mean()
+            if pairs is not None:
+                pred = net(xall)
+                loss = loss + lam * (w * ((pred[pi] - pred[pj]) - pdelta)**2 / pvar).mean()
             loss.backward()
             opt.step()
             net.eval()
