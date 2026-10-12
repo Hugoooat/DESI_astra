@@ -35,7 +35,7 @@ import emulator as E
 PLOTS = ROOT / 'plots'
 QCOL = ['#1f77b4', '#ff4f6d', '#2ca02c', '#c9a800']            # Q1..Q4, as in the first version
 NAME = {'astra': 'ASTRA split', 'ds': 'Density split'}
-PTEX = {'omega_b': r'\omega_b', 'omega_cdm': r'\omega_{\rm cdm}', 'n_s': 'n_s', 'sigma8': r'\sigma_8'}
+PTEX = {'omega_b': r'\omega_b', 'omega_cdm': r'\omega_{\rm cdm}', 'n_s': 'n_s', 'sigma8': r'\sigma_8', 'w0': 'w_0', 'wa': 'w_a'}
 PARAMS = ['omega_b', 'omega_cdm', 'n_s', 'sigma8']
 
 
@@ -77,7 +77,8 @@ def fig_derivatives(fc):
     s = E.Emulator.load('gg', fc.models_dir).s
     ns = len(s)
     for m in ('astra', 'ds'):
-        fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+        nr = (len(PARAMS) + 1) // 2
+        fig, axes = plt.subplots(nr, 2, figsize=(12, 5 * nr))
         for ax, p in zip(axes.flat, PARAMS):
             ip = E.COSMO_INPUTS.index(INPUT_OF[p])
             for i in range(1, 5):
@@ -100,7 +101,8 @@ def fig_derivatives(fc):
 def triangle(fc, vectors, colors, styles, title, out, limits_from='2PCF'):
     from getdist.gaussian_mixtures import GaussianND
     from getdist import plots
-    fid = [fc.x0[E.COSMO_INPUTS.index(c)] for c in ['omega_b', 'omega_cdm', 'n_s', 'sigma8_m']]
+    from fisher_emulator import INPUT_OF
+    fid = [fc.x0[E.COSMO_INPUTS.index(INPUT_OF[p])] for p in PARAMS]
     covs = {k: fc(v)['cov_marg'] for k, v in vectors.items()}
     gs = [GaussianND(fid, c, names=PARAMS, labels=[PTEX[p] for p in PARAMS], label=k) for k, c in covs.items()]
     sref = np.sqrt(np.diag(covs[limits_from])) if limits_from else None
@@ -143,7 +145,8 @@ def fig_smin(fc):
     col = {'2PCF': '#4c72b0', 'ASTRA': '#d95f02', 'DS': '#1b9e77', 'ASTRA+DS': '#7570b3', '2PCF+ASTRA+DS': 'k'}
     smins = [20., 30., 40., 50., 60., 70.]   # beyond, the 2PCF has fewer bins than parameters
     res = {k: np.array([fc(v, smin)['marg'][0] for smin in smins]) for k, v in vec.items()}
-    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+    nr = (len(PARAMS) + 1) // 2
+    fig, axes = plt.subplots(nr, 2, figsize=(10, 4 * nr))
     for k, (ax, p) in enumerate(zip(axes.flat, PARAMS)):
         for lab, r in res.items():
             ax.plot(smins, np.log10(r[:, k]), 'o-', color=col[lab], lw=2, label=lab)
@@ -171,7 +174,12 @@ def fig_constraints(fc):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--only', nargs='+', default=None)
+    parser.add_argument('--params', nargs='+', default=None)
     args = parser.parse_args()
+    global PARAMS
+    if args.params:
+        import compare_methods
+        PARAMS = compare_methods.PARAMS = list(args.params)
     todo = args.only or ['multipoles', 'derivatives', 'quartiles', 'autocross', 'smin', 'constraints']
     fc = None
     if set(todo) - {'multipoles'}:
