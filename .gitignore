@@ -1,0 +1,9 @@
+data/
+logs/
+plots/*_test*
+__pycache__/
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.pdf
+models*/
