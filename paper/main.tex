@@ -158,16 +158,10 @@ For each method, each subvolume and each population, points are ranked by their 
 \subsection{Cosmic-web classes and why we use quartiles}
 \label{sec:classes_def}
 
-ASTRA was designed to classify points into four cosmic-web classes with fixed thresholds on $r$ \cite{ASTRA}: voids ($r\le-0.9$), sheets ($-0.9<r\le0$), filaments ($0<r\le0.9$) and knots ($r>0.9$). We use exactly the definition of the reference implementation (Eq.~\ref{eq:astra_r} with $N_r=N_g$, $r$ from a single random catalogue, these thresholds). On the DESI-like fiducial catalogue the classes are extremely unbalanced (Figure~\ref{fig:classes_map}): 0.25\% of the random points are voids, 65\% sheets, 34\% filaments and 0.05\% knots; for the galaxies 0.07\%, 49\%, 51\% and 0.3\%. In Quijote, 0.7\%, 72\%, 27\% and 0\% of the random points. In practice the classification reduces to \emph{two dominant classes}, sheets and filaments, i.e.\ to a split of $r$ at zero; the voids and knots contain a few hundred points per subvolume, too few for precise clustering measurements (Figure~\ref{fig:classes_mp}). This imbalance motivated the use of equal-size quartiles of $r$ in the main analysis, which keep the ranking of the environments by ASTRA while giving every environment the same statistical weight, as in density split.
+ASTRA was designed to classify points into four cosmic-web classes with fixed thresholds on $r$ \cite{ASTRA}: voids ($r\le-0.9$), sheets ($-0.9<r\le0$), filaments ($0<r\le0.9$) and knots ($r>0.9$). We use exactly the definition of the reference implementation (Eq.~\ref{eq:astra_r} with $N_r=N_g$, $r$ from a single random catalogue, these thresholds). On the DESI-like fiducial catalogue the classes are extremely unbalanced (Figure~\ref{fig:map}): 0.25\% of the random points are voids, 65\% sheets, 34\% filaments and 0.05\% knots; for the galaxies 0.07\%, 49\%, 51\% and 0.3\%. In Quijote, 0.7\%, 72\%, 27\% and 0\% of the random points. In practice the classification reduces to \emph{two dominant classes}, sheets and filaments, i.e.\ to a split of $r$ at zero; the voids and knots contain a few hundred points per subvolume, too few for precise clustering measurements (Figure~\ref{fig:classes_mp}). This imbalance motivated the use of equal-size quartiles of $r$ in the main analysis, which keep the ranking of the environments by ASTRA while giving every environment the same statistical weight, as in density split.
 
 The ASTRA paper reports 7--11\% of random points in voids \cite{ASTRA}, against 0.25--0.7\% here. Its samples are 11--73 times denser than our LRGs (number densities $1.7\times10^{-3}$ to $1.1\times10^{-2}\,{\rm Mpc}^{-3}$, against $1.5\times10^{-4}\,{\rm Mpc}^{-3}$). The fractions are not set by the density alone (the Quijote halos, ten times sparser than the LRGs but more strongly clustered, have more voids), but by the density contrast of the tracer field at the scale of the mean inter-point separation. This is another manifestation of the adaptive scale of ASTRA (Section~\ref{sec:robustness}): fixed thresholds on $r$ do not select the same environments in samples of different density and bias, whereas quantiles of $r$ do define comparable environments.
 
-\begin{figure*}[!tp]
-\centering
-\includegraphics[width=0.85\textwidth]{classes_abacus_map.png}
-\caption{ASTRA cosmic-web classes of the random points (left) and galaxies (right) in a $20\Mpch$ slab of one subvolume of the fiducial catalogue; voids and knots are drawn with larger symbols. Fractions over the subvolume in the legends.}
-\label{fig:classes_map}
-\end{figure*}
 
 \begin{figure}[!htbp]
 \centering
@@ -191,8 +185,8 @@ Figure~\ref{fig:env} compares the two estimators on the fiducial catalogue. They
 
 \begin{figure*}[!tp]
 \centering
-\includegraphics[width=0.85\textwidth]{v2_map.png}
-\caption{Random points of the extreme quartiles (Q1 blue, Q4 red) and galaxies (grey) in a $20\Mpch$ slab of one subvolume of the fiducial catalogue, for ASTRA split (left) and density split (right).}
+\includegraphics[width=\textwidth]{env_maps.png}
+\caption{Environments in a $10\Mpch$ slab of $250\times250\Mpch$ of the fiducial catalogue, drawn as filled regions: each pixel takes the ASTRA value $r$, quartile or class of the nearest random point (left, bottom right), or the smoothed density contrast and its quartile (centre); black dots: galaxies of the slab. ASTRA defines environments cell by cell, at the scale of the Delaunay neighbours, whereas density split defines them on a smooth field; the ASTRA classes are dominated by sheets and filaments.}
 \label{fig:map}
 \end{figure*}
 
