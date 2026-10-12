@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import analysis as A
 import emulator as E
+import astra_ds
 from fisher_emulator import input_point, INPUT_OF, LABELS
 
 PARAMS = ['omega_b', 'omega_cdm', 'n_s', 'sigma8']
@@ -58,14 +59,28 @@ COMBINED = {'2PCF': ['gg'], 'ASTRA': q('astra'), 'DS': q('ds'), 'ASTRA + DS': q(
 class Forecaster:
     """Emulator Fisher for arbitrary lists of statistics and scale cuts (cached emulators and covariance)."""
 
-    def __init__(self, models_dir, validation_tag, hod_prior=0.29, compress=False, regression=None, nboot=50):
+    def __init__(self, models_dir, validation_tag, hod_prior=0.29, compress=False, regression=None, nboot=50,
+                 cov='subbox', fiducial=None):
         self.compress = compress
+        self.cov = cov
         # optional: cosmological derivatives from scripts/pair_regression.py instead of the emulator
         # (bootstrap over subboxes replaces the ensemble members); HOD derivatives stay from the emulator
         self.reg = np.load(regression) if regression else None
         self.nboot = nboot
         sel = A.selection()
-        self.x0 = input_point(sel['fiducial']['cosmo'], sel['fiducial']['hod'])
+        if fiducial in (None, 'hod239'):
+            self.x0 = input_point(sel['fiducial']['cosmo'], sel['fiducial']['hod'])
+        elif fiducial == 'official':
+            from mcmc import OFFICIAL_HOD
+            table = A.cosmology_table()
+            self.x0 = np.array([float(table.loc[0, c]) for c in E.COSMO_INPUTS] +
+                               [OFFICIAL_HOD[k] for k in astra_ds.HOD_PARAMS])
+        else:
+            c, h = map(int, fiducial.split('_'))
+            self.x0 = input_point(c, h)
+        if cov == 'covbox':
+            from mcmc import covariance_samples
+            self._covbox = covariance_samples
         self.meta, self.fstats, _ = A.load(sel['fiducial']['cosmo'], sel['fiducial']['hod'])
         self.val = np.load(A.DATA / f'emulator_validation{validation_tag}.npz')
         self.models_dir = models_dir
@@ -94,7 +109,12 @@ class Forecaster:
     def __call__(self, stats, smin=20.):
         s_emu = E.Emulator.load(stats[0], self.models_dir).s
         keep = np.tile(s_emu >= smin, 2)                       # monopole and quadrupole bins
-        _, samples = A.data_vector(self.meta, self.fstats, stats, smin=smin)
+        if self.cov == 'covbox':
+            samples = self._covbox('covbox', stats)
+            s_all = E.Emulator.load(stats[0], self.models_dir).s
+            samples = samples[:, np.tile(np.concatenate([s_all >= smin] * 1), len(stats) * 2)]
+        else:
+            _, samples = A.data_vector(self.meta, self.fstats, stats, smin=smin)
         n, p = samples.shape
         emu_var = np.concatenate([self.val[f'{st}/res'].var(0)[keep] for st in stats])
         J = np.concatenate([self.jac(st)[:, keep] for st in stats], axis=1)   # (nmembers, ndim, 20)
@@ -148,13 +168,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--models-dir', type=Path, default=E.MODELS)
     parser.add_argument('--validation-tag', default='')
+    parser.add_argument('--cov', choices=['subbox', 'covbox'], default='subbox',
+                        help='covariance: 192 subboxes of the fiducial, or the 1786 official small boxes')
+    parser.add_argument('--fiducial', default=None, help="'official', or COSMO_HOD (default: c000 hod239)")
     parser.add_argument('--regression', type=Path, default=None,
                         help='cosmological derivatives from pair_regression.py (npz) instead of the emulator')
     parser.add_argument('--compress', action='store_true',
                         help='compress each data vector to 16 numbers (4 cosmology + 12 HOD) before the Fisher')
     args = parser.parse_args()
-    fc = Forecaster(args.models_dir, args.validation_tag, compress=args.compress, regression=args.regression)
-    tag = ('_compressed' if args.compress else '') + \
+    fc = Forecaster(args.models_dir, args.validation_tag, compress=args.compress, regression=args.regression,
+                    cov=args.cov, fiducial=args.fiducial)
+    tag = (f'_{args.cov}' if args.cov != 'subbox' else '') + (f'_fid{args.fiducial}' if args.fiducial else '') + ('_compressed' if args.compress else '') + \
         (f'_regression_{Path(args.regression).stem.replace("derivatives_regression", "").strip("_") or "lin"}'
          if args.regression else '') + \
         ('' if Path(args.models_dir).name in ('models', 'models10') else f'_{Path(args.models_dir).name}')
