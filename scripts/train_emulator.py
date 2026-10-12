@@ -29,14 +29,14 @@ import analysis as A
 
 
 def work(args):
-    stat, nseeds, epochs, models, exclude, pair_file, lam, ssw = args
+    stat, nseeds, epochs, models, exclude, pair_file, lam, ssw, frac = args
     import torch
     torch.set_num_threads(4)
     import emulator as E
     print(f'{stat}: start', flush=True)
     pairs = dict(np.load(pair_file)) if pair_file else None
     emu, history = E.train(stat, nseeds=nseeds, epochs=epochs, verbose=True, exclude=exclude,
-                           pairs=pairs, lam=lam, small_scale_weight=ssw)
+                           pairs=pairs, lam=lam, small_scale_weight=ssw, train_fraction=frac)
     models.mkdir(exist_ok=True)
     emu.save(models / f'{stat}.pt')
     res, ids = E.test_residuals(emu, stat)
@@ -120,13 +120,15 @@ def main():
     parser.add_argument('--pairs', type=Path, default=None, help='data/pair_dataset.npz: train on pair differences too')
     parser.add_argument('--lam', type=float, default=1., help='weight of the pair-difference loss')
     parser.add_argument('--small-scale-weight', type=float, default=0., help='alpha of the (25/s)^alpha bin weight')
+    parser.add_argument('--train-fraction', type=float, default=1., help='fraction of the training catalogues used')
     args = parser.parse_args()
     import emulator as E
     stats = args.stats or [str(s) for s in np.load(A.DATA / 'emulator_dataset.npz')['stat_names']]
     # 'spawn': forking a process in which torch/OpenMP threads already exist deadlocks the children
     with mp.get_context('spawn').Pool(min(args.nproc, len(stats))) as pool:
         results = pool.map(work, [(st, args.nseeds, args.epochs, args.models_dir, args.exclude_cosmos,
-                                   args.pairs, args.lam, args.small_scale_weight) for st in stats])
+                                   args.pairs, args.lam, args.small_scale_weight, args.train_fraction)
+                                  for st in stats])
     out = {st: {'res': res, 'sigma': sig, 'ids': ids, 'history': hist} for st, res, sig, ids, hist in results}
     np.savez(A.DATA / f'emulator_validation{args.tag}.npz',
              **{f'{st}/{k}': np.asarray(v) for st, d in out.items() for k, v in d.items()})
