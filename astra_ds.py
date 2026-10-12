@@ -112,6 +112,30 @@ def extract(positions, lo, size, boxsize, pad=0.):
     return np.flatnonzero(keep), local, core
 
 
+def periodic_pad(positions, boxsize, pad):
+    """
+    A whole periodic box treated as one subbox: the points plus their periodic
+    images within `pad` of the faces. Returns (indices into positions, padded
+    positions, core mask), with the original points first.
+    """
+    boxsize = np.asarray(boxsize)
+    idx, pts = [np.arange(len(positions))], [positions]
+    for shift in np.array(np.meshgrid(*[[-1, 0, 1]] * 3, indexing='ij')).reshape(3, -1).T:
+        if not shift.any():
+            continue
+        m = np.ones(len(positions), dtype=bool)
+        for ax in range(3):
+            if shift[ax] == 1:
+                m &= positions[:, ax] < pad
+            elif shift[ax] == -1:
+                m &= positions[:, ax] >= boxsize[ax] - pad
+        idx.append(np.flatnonzero(m))
+        pts.append(positions[m] + shift * boxsize)
+    core = np.zeros(sum(len(i) for i in idx), dtype=bool)
+    core[:len(positions)] = True
+    return np.concatenate(idx), np.concatenate(pts), core
+
+
 # ---------------------------------------------------------------------------
 # Environment estimators
 # ---------------------------------------------------------------------------
@@ -236,6 +260,25 @@ class SubboxClustering:
         return s, poles
 
 
+class PeriodicClustering:
+    """Natural-estimator multipoles in a full periodic box (analytic RR), line of sight z."""
+
+    def __init__(self, boxsize, sedges, nmu=120, ells=(0, 2, 4), nthreads=1):
+        from pycorr import TwoPointCorrelationFunction
+        self._tpcf = TwoPointCorrelationFunction
+        self.boxsize = np.asarray(boxsize)
+        self.edges = (np.asarray(sedges), np.linspace(-1., 1., nmu + 1))
+        self.ells, self.nthreads = ells, nthreads
+
+    def randoms_x(self, positions):
+        return None
+
+    def multipoles(self, positions1, positions2=None, R1D2=None):
+        res = self._tpcf('smu', self.edges, data_positions1=positions1, data_positions2=positions2,
+                         boxsize=self.boxsize, los='z', position_type='pos', nthreads=self.nthreads)
+        return res(ells=self.ells, return_sep=True)
+
+
 # ---------------------------------------------------------------------------
 # Full measurement of one catalogue
 # ---------------------------------------------------------------------------
@@ -256,13 +299,35 @@ def measure_catalog(path, space='z', los='z', nside=4, pad=30., sedges=np.arange
     Run ASTRA and density split on one HOD catalogue and measure all the
     clustering statistics in each subbox. Returns a dict of arrays.
     """
-    t0 = time.time()
     galaxies, boxsize = load_catalog(path, space=space, los=los)
     if thin > 1:   # random subsampling of the galaxies (robustness tests)
         galaxies = galaxies[np.random.default_rng(seed + 3000).random(len(galaxies)) < 1. / thin]
+    result, _ = measure_positions(galaxies, boxsize, path.name, nside=nside, pad=pad, sedges=sedges,
+                                  nrand_astra=nrand_astra, nrand_geometry=nrand_geometry,
+                                  smoothing_radius=smoothing_radius, cellsize=cellsize, seed=seed,
+                                  subboxes=subboxes, nthreads=nthreads, keep_sample=keep_sample)
+    result.update({f'hod_{k}': v for k, v in read_hod_header(path).items()})
+    return result
+
+
+def measure_positions(galaxies, boxsize, label='', nside=4, pad=30., sedges=np.arange(0., 151., 5.),
+                      nrand_astra=1, nrand_geometry=5, smoothing_radius=10., cellsize=5., seed=42,
+                      subboxes=None, nthreads=1, keep_sample=2000, periodic_clustering=False,
+                      clustering=None):
+    """
+    ASTRA and density split on a periodic box of tracers (positions in [0, L),
+    line of sight z), clustering measured in nside^3 subboxes. With nside=1
+    the whole box is one subbox (periodic images used for the tessellation)
+    and periodic_clustering=True uses the natural estimator of a periodic box
+    instead of Landy-Szalay. `clustering` can be passed back in to reuse the
+    random-random counts across boxes of the same geometry.
+    Returns (dict of arrays, clustering).
+    """
+    t0 = time.time()
+    galaxies = np.asarray(galaxies, dtype='f8') % boxsize
     ngal = len(galaxies)
     randoms = uniform_randoms(nrand_astra * ngal, boxsize, seed)
-    logger.info(f'{path.name}: {ngal} galaxies, box {boxsize.round(2)}, {len(randoms)} randoms')
+    logger.info(f'{label}: {ngal} tracers, box {np.round(boxsize, 2)}, {len(randoms)} randoms')
 
     # density split: one periodic smoothed field for the whole box
     mesh, cell = smoothed_density(galaxies, boxsize, cellsize, smoothing_radius, nthreads)
@@ -273,8 +338,12 @@ def measure_catalog(path, space='z', los='z', nside=4, pad=30., sedges=np.arange
 
     corners, size = subbox_corners(boxsize, nside)
     ngal_box = ngal / nside**3
-    clustering = SubboxClustering(size, sedges, nrand_geometry=int(nrand_geometry * ngal_box),
-                                  seed=seed + 1000, nthreads=nthreads)
+    if clustering is None:
+        if periodic_clustering:
+            clustering = PeriodicClustering(boxsize, sedges, nthreads=nthreads)
+        else:
+            clustering = SubboxClustering(size, sedges, nrand_geometry=int(nrand_geometry * ngal_box),
+                                          seed=seed + 1000, nthreads=nthreads)
     logger.info(f'geometry RR done ({time.time() - t0:.0f}s)')
 
     if subboxes is None:
@@ -289,8 +358,12 @@ def measure_catalog(path, space='z', los='z', nside=4, pad=30., sedges=np.arange
     for ibox in subboxes:
         tb = time.time()
         lo = corners[ibox]
-        igal, gal, gal_core = extract(galaxies, lo, size, boxsize, pad)
-        irand, rand, rand_core = extract(randoms, lo, size, boxsize, pad)
+        if nside == 1:
+            igal, gal, gal_core = periodic_pad(galaxies, boxsize, pad)
+            irand, rand, rand_core = periodic_pad(randoms, boxsize, pad)
+        else:
+            igal, gal, gal_core = extract(galaxies, lo, size, boxsize, pad)
+            irand, rand, rand_core = extract(randoms, lo, size, boxsize, pad)
 
         # ASTRA on the padded region, kept on the core only
         r_gal, r_rand = astra_r(gal, rand)
@@ -337,5 +410,4 @@ def measure_catalog(path, space='z', los='z', nside=4, pad=30., sedges=np.arange
     result.update({name: np.array(value) for name, value in out.items()})
     result.update({name: np.array(value) for name, value in diag.items()})
     result.update(sample)
-    result.update({f'hod_{k}': v for k, v in read_hod_header(path).items()})
-    return result
+    return result, clustering
