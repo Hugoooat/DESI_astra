@@ -1,0 +1,12 @@
+\section{Conclusions}
+% =====================================================================
+
+We set out to measure how much cosmological information ASTRA environment statistics add to the galaxy two-point function, and how they compare with density split. We measured both on the same DESI-like mocks and Quijote halos, built covariance and derivative datasets for Fisher forecasts, and tested the full chain with an emulator-based inference. The main points are:
+\begin{itemize}
+\item \textbf{Gain over the two-point function.} ASTRA environment statistics constrain $\omega_b$, $\omega_{\rm cdm}$, $n_s$, $\sigma_8$, $w_0$ and $w_a$ 1.6--3.1 times better than the galaxy two-point function.
+\item \textbf{Comparison with density split.} The two methods carry comparable information (error ratio 0.8--1.1, density split slightly ahead) and are complementary: combining them gains another 23\% to a factor 2.4. With Quijote halos, ASTRA does better on $\sigma_8$ (factor 1.5--2) through its environment auto-correlations and tracer environments.
+\item \textbf{Cosmic-web classes.} With the fixed ASTRA thresholds, the classes reduce in practice to two dominant classes (sheets and filaments) at these densities, which is why the main analysis uses quartiles. On Quijote, the classes with their auto-correlations are nevertheless the most constraining statistic: two to three times better than density split on $\sigma_8$, robustly across compressions.
+\item \textbf{What ASTRA measures.} The ASTRA and density-split environments are strongly but not perfectly correlated ($\rho\simeq0.72$). The ASTRA value $r$ itself hardly responds to cosmology: the information lies in how the environments cluster. ASTRA adapts its scale to the local density, so it must be modelled at the density and random-to-galaxy ratio of the data.
+\item \textbf{Method.} Emulator suites with an independent HOD per cosmology do not allow naive finite differences, single-box covariances can bias the comparison of statistics, and environment statistics of sparse tracers have noisy derivatives. We showed how each problem was diagnosed and addressed. The emulator inference is unbiased and calibrated, but discriminating between statistics with it would require several HOD realisations per training point.
+\end{itemize}
+Natural continuations, beyond the scope of this paper, are the probabilistic ASTRA classes of \cite{ASTRA}, which could make the void and knot classes usable, and an emulator of the class statistics for a DESI-like analysis of the classes.

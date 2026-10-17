@@ -1,0 +1,65 @@
+\section{Analysis choices and how the results evolved}
+\label{sec:choices}
+% =====================================================================
+
+The framework above is the result of successive corrections, each motivated by a failure of the previous approach (Table~\ref{tab:evolution}, details in Appendix~\ref{app:path}). We report the intermediate results because they show which conclusions depend on the analysis choices.
+
+\begin{table*}[!tp]
+\centering\small
+\begin{tabular}{p{4.2cm}p{6.3cm}p{6.3cm}}
+\toprule
+Change & Problem solved & Effect on ASTRA vs DS \\
+\midrule
+Averaged HOD files $\to$ HOD-matched pairs & the 500 files are different HOD models: their scatter ($\sim55\%$) swamped the cosmology ($\sim1\%$) & derivatives were pure noise \\
+Finite differences $\to$ emulator & the residual HOD mismatch of the pairs dominated the derivatives by a factor $\sim10$; a calibrated HOD correction (8\% accurate) was not enough & Fisher matrices became well defined \\
+Emulator $\to$ densified emulator trained on catalogue differences & $\omega_{\rm cdm}$ response not learnt; derivatives of individual networks scattered by 70--170\%; ranking changed between trainings & ranking stable between trainings; cross-checked by an independent regression over the derivative grid \\
+192 subvolumes of one box $\to$ 1786 independent boxes & covariance from a single box, three correlated lines of sight & $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ on $\sigma_8$: $1.12\to0.85$--$1.11$; ASTRA's apparent lead disappears \\
+DESI-like: 4 $\to$ 6 cosmological parameters ($+w_0$, $w_a$) & the emulator and derivative grid allow the dark-energy parameters of the initial goals & errors on $\omega_{\rm cdm}$ (+40\%) and $n_s$ (+15\%) degrade; ratios unchanged within errors \\
+ASTRA classes $\to$ quartiles (main analysis), classes revisited with Quijote & with fixed thresholds, voids and knots contain $<1\%$ of the points: two dominant classes & quartiles give balanced environments; classes + auto-correlations turn out the most constraining on Quijote \\
+Quijote, 6 parameters $\to$ reliable subsets & derivative noise dominates the degenerate directions ($\Omega_b$, $h$, $M_\nu$) & ranking stable only for $(\Omega_m,\sigma_8)$, $(\Omega_m,n_s,\sigma_8)$ \\
+\bottomrule
+\end{tabular}
+\caption{The main changes of the analysis, the problem each solved, and its effect on the comparison.}
+\label{tab:evolution}
+\end{table*}
+
+\paragraph{Results with the single-box covariance.} With the 192-subvolume covariance and the \texttt{hod239} fiducial, the baseline emulator and the regression over pairs, which rely on different assumptions, agreed that ASTRA split was as constraining as or slightly more constraining than density split for the random quartiles (Table~\ref{tab:ratio}): by 0--20\% on $\omega_b$, $n_s$ and $\sigma_8$, the $\sigma_8$ ratio being above unity for both estimators. They disagreed on $\omega_{\rm cdm}$ (1.30 vs 0.94), and the absolute errors differed between the two estimators by a factor $\sim2$ for $\omega_{\rm cdm}$, $n_s$, $\sigma_8$ and $\sim6$ for $\omega_b$ (Table~\ref{tab:sigma_sub}), as did the gain over the 2PCF: the regression is likely too optimistic (residual HOD contamination of its intercepts) and the emulator too conservative (training noise smoothing small slopes). The variants with auto-correlations or a single environment changed strongly between estimators and trainings.
+
+\paragraph{Results with the independent covariance.} With the same emulator derivatives, replacing the covariance by that of the 1786 independent boxes reversed the small lead of ASTRA split (Section~\ref{sec:results}). The 192 correlated samples misrepresented the relative noise of the two methods; the independent covariance is the more reliable one and is the baseline. What survived this change, and all the others, is that the two methods carry comparable information and are complementary.
+
+\paragraph{Baseline.} The baseline analysis was fixed after these steps: for the DESI-like mocks, the densified emulator trained on catalogue differences, the covariance of the official small boxes and the official HOD as fiducial point; for Quijote, the parameter subsets whose forecasts do not depend on the derivative noise. Other choices are treated as robustness tests.
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{llcccc}
+\toprule
+quart. & deriv. & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+random & emulator & $1.02(15)$ & $1.30(11)$ & $1.11(9)$ & $1.12(6)$ \\
+random & regression & $1.09(11)$ & $0.94(4)$ & $1.07(11)$ & $1.16(9)$ \\
+galaxy & emulator & $0.80(9)$ & $0.91(8)$ & $0.92(7)$ & $0.96(2)$ \\
+galaxy & regression & $1.08(16)$ & $1.15(10)$ & $1.10(13)$ & $1.00(12)$ \\
+\bottomrule
+\end{tabular}
+\caption{Superseded: $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ with the 192-subvolume covariance (Q1+Q4 cross-correlations, HOD marginalised); above 1 favours ASTRA. In parentheses: uncertainty from the emulator ensemble or the bootstrap of the subvolumes.}
+\label{tab:ratio}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+data vector & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+2PCF & .023/.0026 & .018/.0067 & .20/.077 & .25/.083 \\
+ASTRA & .011/.0018 & .015/.0071 & .11/.051 & .13/.081 \\
+DS & .011/.0019 & .019/.0067 & .12/.054 & .14/.094 \\
+A + DS & .0075/.0014 & .013/.0052 & .090/.039 & .11/.061 \\
+all & .0066/.0011 & .010/.0042 & .081/.032 & .10/.052 \\
+\bottomrule
+\end{tabular}
+\caption{Superseded: marginalised errors with the 192-subvolume covariance, emulator / regression derivatives (random quartiles, compressed, HOD marginalised, one $(500\Mpch)^3$ volume).}
+\label{tab:sigma_sub}
+\end{table}
+
+

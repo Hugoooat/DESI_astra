@@ -1,0 +1,64 @@
+\section{Clustering measurements}
+\label{sec:clustering}
+% =====================================================================
+
+\subsection{Subvolumes and estimator}
+
+Each $2\,h^{-1}$Gpc box is divided into $4^3=64$ non-overlapping cubic subvolumes of $500\Mpch$ (about $62\,500$ galaxies each). Each subvolume is treated as an independent survey with open boundaries: correlation functions are measured with the Landy--Szalay estimator \cite{LandySzalay1993},
+\begin{equation}
+\xi(s,\mu) = \frac{D_1D_2 - D_1R - RD_2 + RR}{RR},
+\end{equation}
+using a uniform catalogue of $5\times$ the number of galaxies to describe the geometry (the same for all subvolumes, so that $RR$ is computed once). Pair counts are computed with \texttt{pycorr}/\texttt{Corrfunc} \cite{Sinha2020} in 30 bins of $5\Mpch$ in $s\in[0,150]\Mpch$ and 120 bins in $\mu\in[-1,1]$, with $\mu$ defined with respect to the fixed line of sight, and projected on the Legendre multipoles $\ell=0,2,4$ (only $\ell=0,2$ are used in the forecasts).
+
+\subsection{Statistics}
+
+For each method $m\in\{$ASTRA, DS$\}$, population $p\in\{$random, galaxy$\}$ and quartile Q$_i$ we measure the quartile--galaxy cross-correlation $\xi^{\rm QG}_{i,\ell}(s)$, between the points of Q$_i$ and all galaxies, and the quartile auto-correlation $\xi^{\rm QQ}_{i,\ell}(s)$, together with the galaxy two-point correlation function $\xi^{\rm GG}_\ell(s)$ (2PCF): 33 statistics per catalogue. For random quartiles, $\xi^{\rm QG}$ and $\xi^{\rm QQ}$ are the analogues of the density-split cross- and auto-correlation functions \cite{Paillas2023}. For galaxy quartiles, which partition the galaxies into four equal sets, the average of the four quartile--galaxy cross-correlations is the 2PCF: the quartiles decompose the 2PCF by environment.
+
+\subsection{Results on the fiducial cosmology}
+
+Figure~\ref{fig:multipoles} compares the extreme quartiles of the two methods, and Figures~\ref{fig:mp_astra} and~\ref{fig:mp_ds} show all four quartiles of each method in the layout of the density-split analyses \cite{Paillas2023}; the galaxy quartiles are shown in Figure~\ref{fig:multipoles_gal}.
+
+The two methods produce qualitatively identical signals. The Q1--galaxy cross-correlation is negative at small separations, the profile of galaxies around underdense regions, and the Q4--galaxy cross-correlation is positive and above the galaxy 2PCF, the profile around overdense regions. The auto-correlations of the extreme quartiles are strongly enhanced with respect to the 2PCF. The quadrupoles have opposite signs for Q1 and Q4: around underdense regions, peculiar velocities point outwards and stretch the void profile along the line of sight, while around overdense regions infall compresses it. The intermediate quartiles Q2 and Q3 have weak cross-correlations of opposite signs, close to the mean field, and auto-correlations 5--6 times below those of the extreme quartiles.
+
+The ASTRA signals are systematically weaker, by a factor $\sim1.6$ at the peak of the Q1 and Q4 cross-correlations ($s^2\xi_0\simeq-90$ and $+90\,h^{-2}{\rm Mpc}^2$, against $-145$ and $+145$ for density split). This is consistent with the partial mixing of the quartiles: ASTRA relies on $\sim15$ neighbours per point, which dilutes the contrast between environments. For density split the Q1 and Q4 auto-correlations are nearly equal, whereas for ASTRA the Q1 auto-correlation peaks 40\% above the Q4 one: ASTRA's underdense quartile is relatively more clustered with itself, a first sign that its auto-correlations carry distinct information. The relevant question is not the amplitude of the signal but its information content relative to its noise, which we address with the forecasts.
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_multipoles_rand.png}
+\caption{Monopole (top) and quadrupole (bottom) of the random-quartile statistics on the fiducial catalogue, for ASTRA split and density split: quartile--galaxy cross-correlations (left two columns) and quartile auto-correlations (right two columns), from Q1 (blue) to Q4 (red); dashed: galaxy 2PCF. Mean and $1\sigma$ scatter over the 64 subvolumes of $(500\Mpch)^3$; panels of the same statistic share the same scale.}
+\label{fig:multipoles}
+\end{figure*}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_multipoles_astra.png}
+\caption{ASTRA split: monopole and quadrupole of the quartile--galaxy cross-correlations (left) and quartile auto-correlations (right) for the four random quartiles; dashed: galaxy 2PCF. Mean and scatter of 192 subvolumes of the fiducial catalogue.}
+\label{fig:mp_astra}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_multipoles_ds.png}
+\caption{Same as Figure~\ref{fig:mp_astra} for density split.}
+\label{fig:mp_ds}
+\end{figure}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_multipoles_gal.png}
+\caption{Same as Figure~\ref{fig:multipoles} for the galaxy quartiles.}
+\label{fig:multipoles_gal}
+\end{figure*}
+
+\subsection{Real space and redshift space}
+
+To isolate the effect of RSD, we also measured the fiducial catalogue (and the eight catalogues of the derivative pairs) in real space, the environments being then defined from the real-space positions (r-split) instead of the redshift-space ones (z-split), along the three lines of sight. Figure~\ref{fig:realz} compares the two. RSD increase the monopoles at $20$--$60\Mpch$ by a factor 1.6 for the galaxy 2PCF and by 1.3--1.5 for the Q1 and Q4 cross-correlations of both methods, and create quadrupoles that are absent in real space: positive around underdense regions (outflows) and negative around overdense ones (infall). In absolute value the quadrupoles of density split are 1.6--1.7 times larger than those of ASTRA split, following their larger monopoles; relative to the monopole, however, the ASTRA quadrupole is the larger one ($|\xi_2|/|\xi_0|\simeq0.8$ for ASTRA vs $0.6$ for density split for Q1, $1.0$ vs $0.8$ for Q4, at $20$--$60\Mpch$): the ASTRA environments are less contrasted but their redshift-space anisotropy is relatively stronger. Real-space environments are not observable, so all the forecasts use z-split; the real-space measurements are kept as a diagnostic. (A first version of this work used real space as a ``truth'' to quantify ``systematic biases'' of redshift-space forecasts; since both measurements and emulator are in redshift space, this comparison does not describe a bias of the analysis, and the relevant systematic, the emulator error, is included in the covariance.)
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_real_vs_redshift.png}
+\caption{Environments and clustering defined in redshift space (solid) or real space (dashed) for the fiducial catalogue: galaxy 2PCF (left), Q1 (centre) and Q4 (right) random-quartile cross-correlations of ASTRA split (orange) and density split (green). Top: monopole, bottom: quadrupole. Bands: error of the mean over $3\times64$ subvolumes.}
+\label{fig:realz}
+\end{figure*}
+
+

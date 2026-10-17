@@ -1,0 +1,32 @@
+\section{Mathematical details}
+\label{app:maths}
+% =====================================================================
+
+\paragraph{Fisher matrix and Hartlap factor.} For a data vector $\boldsymbol d$ with covariance $C$ estimated from $N_s$ samples, $F_{ij} = \partial_i\boldsymbol d^T \hat C^{-1}\partial_j\boldsymbol d$ with $\hat C^{-1} = \frac{N_s-N_d-2}{N_s-1}C^{-1}$ \cite{Hartlap2007}; the marginalised errors are $\sigma_i=\sqrt{(F^{-1})_{ii}}$ and the errors at fixed other parameters $1/\sqrt{F_{ii}}$. HOD parameters are marginalised by adding a Gaussian prior $P_h$ to the HOD block and inverting the full matrix.
+
+\paragraph{Compression.} $\boldsymbol t = W^T\boldsymbol d$, $W=\tilde C^{-1}D$, with $D$ the derivatives with respect to the 16 parameters and $\tilde C$ a Ledoit--Wolf shrinkage covariance. If $\tilde C=C$, $\boldsymbol t$ keeps all the Fisher information of $\boldsymbol d$; otherwise it keeps less, without bias. The covariance of $\boldsymbol t$ is estimated from the samples, with a Hartlap factor close to unity.
+
+\paragraph{Noise of the derivatives.} Derivatives estimated as an average over $N$ pairs are $\hat D = D + \epsilon$, with a noise of covariance $\Sigma_D/N$. The standard Fisher estimator then has the expectation
+\begin{equation}
+\langle \hat D^T C^{-1}\hat D\rangle = D^T C^{-1} D + \mathrm{Tr}\big(C^{-1}\Sigma_D\big)/N .
+\end{equation}
+The second term is a positive bias: the noise adds spurious information. It is roughly the same in all directions of parameter space, but matters only where the true information $D^TC^{-1}D$ is small, i.e.\ in the degenerate directions; the marginalised errors, set by the inverse of the matrix, are controlled precisely by these weak directions. We use three tests:
+\begin{enumerate}
+\item the noise fraction $\mathrm{Tr}(C^{-1}\Sigma_D)/(N F_{ii})$; above 20--30\% the forecast is suspect;
+\item the bracketing of \cite{CoultonWandelt2023}: the standard estimator is biased high; a compressed estimator, in which half of the simulations define the compression and the other half measure its information, is biased low. If both give the same error the noise does not matter; if they differ by factors 2--10 the result reflects the noise, not the physics. We call a forecast reliable when they agree within a factor 1.5, and quote their geometric mean, which is nearly unbiased;
+\item convergence: the forecast is recomputed with $N/2$ pairs.
+\end{enumerate}
+
+\paragraph{Volume.} The forecasts are computed for one $(500\Mpch)^3$ volume, where the absolute errors are comparable to the prior widths; this is the nature of a comparison of information content and is not corrected. The ratios $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ do not depend on the volume as long as the covariance scales as $1/V$ and the emulator error is negligible, which holds at this volume.
+
+\paragraph{Emulator loss.} With outputs standardised by the statistical error of a $2\,h^{-1}$Gpc box $\sigma_{\rm box}$,
+\begin{equation}
+\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle + \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
+\end{equation}
+where the second average runs over the 2544 pairs of catalogues, $\sigma_{ij}$ is the error of their difference (64 paired subvolumes), $\lambda=1$, $\epsilon=0.05\,\sigma_{\rm box}$.
+
+\paragraph{Regression over pairs.} $\boldsymbol d_c(h) = \boldsymbol a_c + G\,V(h-h_0)$ for $c=c_\pm$, with a shared response $G$ and $V$ the 3 leading directions of the HOD space (singular vectors of the HOD response of the 72 fiducial catalogues); derivative $(\boldsymbol a_+-\boldsymbol a_-)/(\theta_+-\theta_-)$; errors by bootstrap over subvolumes.
+
+\paragraph{Inference.} Gaussian likelihood $-2\ln\mathcal L = (\boldsymbol d - \boldsymbol f(\boldsymbol\theta,\boldsymbol h))^T (C/V_{\rm f} + C_{\rm emu})^{-1}(\boldsymbol d - \boldsymbol f)$, with $C$ the official covariance, $V_{\rm f}$ the data volume in units of $(500\Mpch)^3$ and $C_{\rm emu}$ the emulator error; uniform priors over the training range; \texttt{emcee} with 64 walkers and 8000 steps. Calibration is tested by the fraction of runs whose truth lies within $1\sigma$ of the posterior mean (68\% expected).
+
+
