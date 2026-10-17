@@ -1,0 +1,60 @@
+\section{Reproduire cet article}
+\label{app:repro}
+% =====================================================================
+
+\paragraph{Code.} Toutes les mesures, prévisions et figures sont produites par le code disponible à \url{https://github.com/Hugoooat/DESI_astra/tree/astra_hugo_v2}, exécuté sur des nœuds CPU de NERSC Perlmutter avec l'environnement DESI \texttt{cosmodesi} :
+\begin{lstlisting}[language=bash]
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+\end{lstlisting}
+Le code est organisé en trois modules et un ensemble de scripts : \texttt{astra\_ds.py} contient toute la mesure d'un catalogue (lecture, extension périodique, tessellation ASTRA, champ de densité, quartiles, sous-volumes, clustering), \texttt{analysis.py} le chargement des mesures, des vecteurs de données, des covariances et les outils de Fisher, \texttt{emulator.py} l'émulateur (réseaux, entraînement avec la perte sur les différences, dérivées). Chaque catalogue est mesuré sur un nœud de 128 cœurs en $\simeq8$ minutes (64 sous-volumes traités en parallèle, ASTRA et density split, 33 statistiques, trois multipôles) ; les mesures sont sauvegardées dans un fichier \texttt{.npz} par catalogue, ligne de visée et espace, contenant les multipôles de chaque statistique pour chaque sous-volume. Les listes de catalogues sont exécutées avec \texttt{slurm/run\_list.sh} à l'intérieur d'une allocation (un \texttt{srun} par nœud).
+
+\paragraph{Données.} Les trois jeux de données du Tableau~\ref{tab:datasets} sont lus aux emplacements suivants sur NERSC :
+\begin{itemize}
+\item \textbf{Suite d'émulation AbacusSummit} : \texttt{/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23\_prior/c\{CCC\}\_ph000/seed0/hod\{NNN\}.fits} (85 répertoires de cosmologies, \texttt{hod000}--\texttt{hod499}) ; paramètres cosmologiques dans \texttt{config/cosmologies.csv}. Les catalogues mesurés sont listés, une ligne par catalogue (cosmologie, HOD, espace, ligne de visée), dans \texttt{config/runs\_emulator*.txt} (8 HOD par cosmologie), \texttt{runs\_hod\_calibration.txt} (72), \texttt{runs\_local\_*.txt} (240), \texttt{runs\_extra.txt} (54) et \texttt{runs\_real\_space.txt} (27) ; le catalogue fiduciel et les paires appariées en HOD sont dans \texttt{config/hod\_selection.json}.
+\item \textbf{Mocks officiels DESI} : \texttt{/global/cfs/cdirs/desi/cosmosim/AbacusHOD\_mocks/v1/CovBox/LRG/z0.500/catalog\_rsd\_xi2d\_lrg\_main\_z0.5\_velbias\_mockcov\_ph\{3000+\}.fits} (1786 fichiers) et \texttt{.../CubicBox/LRG/z0.500/AbacusSummit\_base\_c000\_ph\{000--024\}/}.
+\item \textbf{Quijote} : catalogues de halos Rockstar \texttt{\{set\}/\{i\}/out\_3\_pid.list} pour les ensembles \texttt{fiducial} (réalisations 0--3999), \texttt{fiducial\_ZA}, \texttt{Om\_p/m}, \texttt{Ob2\_p/m}, \texttt{h\_p/m}, \texttt{ns\_p/m}, \texttt{s8\_p/m}, \texttt{Mnu\_p/pp/ppp} (réalisations 0--499), transférés avec Globus depuis les données publiques de Quijote vers \texttt{/pscratch/sd/h/hugon/quijote/}, en suivant les instructions de la documentation de Quijote (\url{https://quijote-simulations.readthedocs.io}).
+\end{itemize}
+Les produits intermédiaires (mesures, émulateurs entraînés, chaînes ; $\simeq3$\,GB) sont stockés dans \texttt{/pscratch/sd/h/hugon/astra-ds-store/} et sont régénérés par les étapes ci-dessous.
+
+\paragraph{Étapes.}
+\begin{lstlisting}[language=bash]
+python scripts/select_hods.py; python scripts/select_runs.py; python scripts/select_local_runs.py
+salloc ... bash slurm/run_list.sh config/runs_*.txt     # measurements
+sbatch slurm/night_stage1.sbatch                         # official mocks + Quijote
+python scripts/build_emulator_dataset.py
+python scripts/build_pair_dataset.py --holdout 0 --out pair_dataset_full.npz
+python scripts/train_emulator.py --nseeds 10 --pairs data/pair_dataset_full.npz --models-dir models_pairs --tag _pairs
+python scripts/compare_methods.py --models-dir models_pairs --validation-tag _pairs --compress --cov covbox --fiducial official --params omega_b omega_cdm n_s sigma8 w0 wa
+python scripts/quijote_fisher.py --params Om s8 --rebin 2 --tag _p0c0; python scripts/summarize_quijote.py
+python scripts/mcmc.py --data official:000:0 --vector ASTRA --cov covbox --volume-factor 1; python scripts/summarize_mcmc.py
+bash slurm/quijote_classes.sh                           # ASTRA classes on Quijote (run_quijote.py --classes)
+python scripts/quijote_classes_fisher.py --params Om s8 --tag _p2; python scripts/classes_figures.py
+python scripts/robustness.py; python scripts/plot_real_space.py
+python scripts/paper_figures.py --params omega_b omega_cdm n_s sigma8 w0 wa
+python scripts/paper_figures_v1style.py --params omega_b omega_cdm n_s sigma8 w0 wa
+python scripts/readable_figures.py; python scripts/env_maps.py; python scripts/classes_figures.py
+cd paper && make                                       # article, article_fr, vulgarisation, poster
+\end{lstlisting}
+L'ensemble complet des mesures coûte $\simeq200$ heures-nœud (1043 catalogues de la suite d'émulation, 1786 petites boîtes et 25 boîtes de base, 11\,000 réalisations de Quijote à $\simeq5$\,s chacune).
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lc}
+\toprule
+Réglage & Valeur \\
+\midrule
+Sous-volumes & $4^3$ de $500\Mpch$ \\
+Extension ASTRA, aléatoires & $30\Mpch$ périodique, $N_r=N_g$ \\
+Lissage DS, maillage & gaussien $10\Mpch$, CIC $5\Mpch$ \\
+Quartiles & 4, effectifs égaux \\
+Aléatoires de géométrie & $5N_g$ par sous-volume \\
+Bins en $s$, $\mu$ & $5\Mpch$ dans $[0,150]$, 120 dans $[-1,1]$ \\
+Multipôles & $\ell=0,2,4$ \\
+Vecteurs de données & $\ell=0,2$, $s\in[20,150]$, $10\Mpch$ \\
+Graine & 42 \\
+\bottomrule
+\end{tabular}
+\caption{Réglages numériques.}
+\label{tab:config}
+\end{table}
+

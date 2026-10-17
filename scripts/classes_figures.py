@@ -93,6 +93,37 @@ def fig_abacus(nthreads=128):
     print('abacus fractions rand', res['fraction_rand'].mean(0).round(4), 'data', res['fraction_data'].mean(0).round(4))
 
 
+def fig_abacus_multipoles():
+    """Class multipoles with readable scales: sheets/filaments (cross, auto) and voids/knots (cross) separately."""
+    res = np.load(A.DATA / 'classes_abacus_fiducial.npz')
+    s, ells = res['s'], list(res['ells'])
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    cols = [('cross', ('sheet', 'filament'), 'Cross-correlation with galaxies: sheets, filaments'),
+            ('auto', ('sheet', 'filament'), 'Auto-correlation: sheets, filaments'),
+            ('cross', ('void', 'knot'), 'Cross-correlation with galaxies: voids, knots')]
+    for col, (kind, classes, title) in enumerate(cols):
+        for row, ell in enumerate((0, 2)):
+            ax = axes[row, col]
+            for c in classes:
+                x = res[f'astra_rand_{kind}_{c}'][:, ells.index(ell)]
+                x = x[np.all(np.isfinite(x), axis=1)]
+                mu, sd = x.mean(0), x.std(0, ddof=1)
+                ax.plot(s, s**2 * mu, color=CCOL[c], lw=2, label=f'{c} ({len(x)} subvolumes)' if c in ('void', 'knot') else c)
+                ax.fill_between(s, s**2 * (mu - sd), s**2 * (mu + sd), color=CCOL[c], alpha=0.2)
+            g = res['gg'][:, ells.index(ell)]
+            ax.plot(s, s**2 * g.mean(0), 'k--', lw=1.2, label='2PCF')
+            ax.axhline(0, color='0.6', lw=0.5)
+            ax.set_title(title if row == 0 else '', fontsize=10)
+            ax.set_xlabel(r'$s$ [$h^{-1}$ Mpc]')
+            ax.set_ylabel(r'$s^2\xi_%d$' % ell)
+            ax.legend(fontsize=8)
+    fig.suptitle('ASTRA classes of the random points, fiducial catalogue: monopole (top) and quadrupole (bottom); '
+                 'mean and 1$\\sigma$ scatter of 64 subvolumes', fontsize=11)
+    fig.tight_layout()
+    fig.savefig(PLOTS / 'classes_abacus_multipoles.png', dpi=140)
+    plt.close(fig)
+
+
 def fig_response():
     qd = A.DATA / 'quijote_classes'
 
@@ -157,7 +188,7 @@ def fig_fisher():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--only', nargs='+', default=['abacus', 'response', 'fisher'])
+    parser.add_argument('--only', nargs='+', default=['abacus', 'abacus_multipoles', 'response', 'fisher'])
     for name in parser.parse_args().only:
         globals()[f'fig_{name}']()
         print(f'{name} done', flush=True)

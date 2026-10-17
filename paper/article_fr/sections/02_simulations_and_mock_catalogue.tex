@@ -1,0 +1,69 @@
+\section{Simulations et catalogues simulés}
+\label{sec:sims}
+% =====================================================================
+
+Le Tableau~\ref{tab:datasets} résume les données utilisées, leurs versions et leur rôle ; les chemins exacts, les noms de fichiers et les listes de catalogues sont donnés dans l'Annexe~\ref{app:repro}.
+
+\begin{table*}[!tp]
+\centering\small
+\begin{tabular}{p{3.3cm}p{4.6cm}p{4.3cm}p{4.3cm}}
+\toprule
+Jeu de données & Version / contenu & Utilisé & Rôle \\
+\midrule
+Suite d'émulation AbacusSummit (mocks HOD de LRG DESI) & Boîtes de base AbacusSummit $2\,h^{-1}$Gpc, $z=0.5$, AbacusHOD, \texttt{yuan23\_prior} ; 85 cosmologies, phase \texttt{ph000}, graine 0, 500 tirages de HOD chacune & $\simeq1040$ catalogues : 8 HOD par cosmologie (678), 72 de calibration de la HOD fiducielle, 240 proches de la fiducielle (densification), 54 supplémentaires ; 27 dans l'espace réel & mesures, entraînement/validation/test de l'émulateur, différences finies, régression, covariance à boîte unique (\texttt{c000 hod239}) \\
+Mocks officiels DESI AbacusHOD & \texttt{AbacusHOD\_mocks/v1}, LRG, $z=0.5$, modèle \texttt{velbias} (meilleur ajustement aux premières données DESI de LRG) ; \texttt{CovBox} : 1786 petites boîtes de $500\Mpch$ (\texttt{ph3000+}) ; \texttt{CubicBox} : 25 boîtes de base \texttt{c000 ph000--024} & les 1786 petites boîtes et les 25 boîtes de base & covariance de référence, point fiduciel, données de test MCMC \\
+Quijote & $1\,h^{-1}$Gpc, $512^3$ particules, halos Rockstar, snapshot 3 ($z=0.5$, \texttt{out\_3\_pid.list}) & 4000 \texttt{fiducial} ; 500 chacune de \texttt{Om}, \texttt{Ob2}, \texttt{h}, \texttt{ns}, \texttt{s8} ($\pm$), \texttt{Mnu\_p/pp/ppp}, \texttt{fiducial\_ZA} & prévisions de Fisher propres par différences finies \\
+\bottomrule
+\end{tabular}
+\caption{Jeux de données utilisés dans ce travail.}
+\label{tab:datasets}
+\end{table*}
+
+\subsection{Suite d'émulation AbacusSummit}
+
+Nous utilisons les catalogues de galaxies HOD construits pour le programme d'émulation de DESI au-dessus de la suite de simulations à $N$ corps AbacusSummit \cite{Maksimova2021}. Chaque simulation fait évoluer $6912^3$ particules dans une boîte périodique de $2\,h^{-1}{\rm Gpc}$ ; nous utilisons le snapshot à $z=0.5$. Les halos sont peuplés de galaxies rouges lumineuses (LRG) avec le modèle AbacusHOD \cite{Yuan2022}, dont les 12 paramètres (occupation des centrales et des satellites, biais de vitesse, biais d'assemblage fondé sur l'environnement) sont échantillonnés dans le prior de \cite{Yuan2023}. Chaque catalogue contient $4\times10^6$ galaxies, $\bar n = 5\times10^{-4}\,h^3{\rm Mpc}^{-3}$. La suite couvre 85 cosmologies.
+
+Les catalogues sont stockés sous la forme \texttt{c\{cosmo\}\_ph000/seed0/hod\{NNN\}.fits}. Deux propriétés de cette suite déterminent notre méthodologie :
+\begin{itemize}
+\item \textbf{Une phase par cosmologie.} Toutes les cosmologies partagent les conditions initiales \texttt{ph000}, avec une seule graine de HOD.
+\item \textbf{Un tirage de HOD par fichier.} Les 500 fichiers \texttt{hod000}--\texttt{hod499} d'une cosmologie ont des paramètres de HOD \emph{différents} (un hypercube latin pour l'entraînement de l'émulateur), et les paramètres associés à un indice donné diffèrent d'une cosmologie à l'autre.
+\end{itemize}
+Les différents fichiers de HOD ne peuvent donc pas être utilisés comme réalisations indépendantes d'un même modèle : la dispersion entre tirages de HOD atteint $\sim55\%$ de l'amplitude des monopôles du density split, contre $\sim1\%$ pour la réponse cosmologique que nous voulons mesurer.
+
+\paragraph{Cosmologies et paramètres.} Outre la cosmologie fiducielle $\Lambda$CDM de Planck 2018 (\texttt{c000}), nous utilisons la grille linéaire de dérivées d'AbacusSummit \texttt{c100}--\texttt{c113} : sept paires, chacune faisant varier un paramètre ($\omega_b$, $\omega_{\rm cdm}$, $n_s$, $\alpha_s$, $w_0$, $w_0$ et $w_a$ ensemble, $\sigma_8$) autour de la fiducielle, avec $h$ et $A_s$ ajustés pour garder fixes la taille angulaire de l'horizon sonore $\theta_*$ et, pour \texttt{c100}--\texttt{c105}, $\sigma_8$. Les dérivées par rapport à $\omega_b$, $\omega_{\rm cdm}$ et $n_s$ sont donc prises à $\sigma_8$ fixé. Les sept paires servent à entraîner et valider l'émulateur. Les prévisions de Fisher incluent les quatre paramètres $\Lambda$CDM du Tableau~\ref{tab:cosmo}, qui sont ceux communs avec les prévisions de density split de \cite{Paillas2023} et étaient les seuls de la première version de ce travail, ainsi que, puisque l'émulateur et la grille de dérivées le permettent, les paramètres d'énergie noire $w_0$ et $w_a$ : six paramètres cosmologiques au total. Passer de quatre à six paramètres dégrade les erreurs marginalisées sur $\omega_{\rm cdm}$ d'environ $\sim40\%$ et sur $n_s$ d'environ $\sim15\%$, laisse $\omega_b$ et $\sigma_8$ inchangés, et modifie les rapports ASTRA/density split de moins que leur incertitude. Les paramètres restants de l'émulateur ($\alpha_s$, $N_{\rm ur}$) sont fixés à leurs valeurs fiducielles dans les matrices de Fisher ; les huit sont libres dans l'inférence MCMC (Section~\ref{sec:mcmc}).
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Paramètre & fiducielle & $+$ / $-$ & pas $\theta_+-\theta_-$ \\
+\midrule
+$\omega_b$ & 0.02237 & c100 / c101 & 0.00089 \\
+$\omega_{\rm cdm}$ & 0.1200 & c102 / c103 & 0.0079 \\
+$n_s$ & 0.9649 & c104 / c105 & 0.0200 \\
+$\sigma_8$ & 0.808 & c112 / c113 & 0.0320 \\
+\bottomrule
+\end{tabular}
+\caption{Cosmologies AbacusSummit de la grille de dérivées pour les quatre paramètres $\Lambda$CDM ; les paires \texttt{c106}--\texttt{c111} font varier $\alpha_s$, $w_0$ et $(w_0, w_a)$.}
+\label{tab:cosmo}
+\end{table}
+
+\paragraph{Positions.} La ligne de visée est un axe de la boîte ($z$ par défaut, $x$ et $y$ pour la covariance des sous-volumes). Les positions dans l'espace des redshifts sont \texttt{X\_PERP}, \texttt{Y\_PERP}, \texttt{Z\_RSD} ; les positions dans l'espace réel utilisent \texttt{Z\_PERP}. Ces colonnes incluent déjà le changement d'échelle d'Alcock--Paczynski de la cosmologie fiducielle ($q_\perp$, $q_\parallel$, stockés dans les en-têtes), de sorte que la boîte mesure $2000/q_\perp$ en travers et $2000/q_\parallel$ le long de la ligne de visée.
+
+\subsection{Mocks officiels de LRG DESI AbacusHOD}
+\label{sec:official}
+
+La suite d'émulation contient une seule phase par cosmologie, si bien que sa seule source de covariance est constituée des 64 sous-volumes d'une boîte, mesurés selon trois lignes de visée corrélées (192 échantillons). Cela limite la longueur des vecteurs de données (facteur de Hartlap) et, comme nous l'avons constaté, biaise la comparaison des statistiques (Section~\ref{sec:choices}). Nous utilisons donc aussi les mocks officiels de LRG DESI AbacusHOD à $z=0.5$ \cite{Yuan2022} (\texttt{AbacusHOD\_mocks/v1}), générés avec une HOD de meilleur ajustement unique (modèle \texttt{velbias}, ajusté sur le clustering des premières LRG de DESI) :
+\begin{itemize}
+\item les 1786 \emph{petites} boîtes AbacusSummit (\texttt{c000}, phases 3000+), de côté $500\Mpch$ et de conditions initiales indépendantes ;
+\item les 25 boîtes de \emph{base} de \texttt{c000} (phases 0--24), de côté $2\,h^{-1}$Gpc.
+\end{itemize}
+Choix. (i) Chaque petite boîte est traitée exactement comme un sous-volume de l'analyse principale : images périodiques pour la tessellation, champ de densité lissé sur la boîte périodique, et estimateur de Landy--Szalay \emph{ouvert} avec points aléatoires de géométrie pour le clustering, de sorte que la covariance correspond à la même mesure. Une petite boîte périodique n'a pas de modes plus grands que son côté, alors qu'un sous-volume d'une boîte plus grande en est affecté (covariance de super-échantillon) ; les boîtes de base (64 sous-volumes $\times$ 25 phases) permettent de mesurer cet effet. (ii) Les positions sont utilisées telles que fournies, la coordonnée $z$ incluant les RSD ; seule la ligne de visée $z$ est disponible. (iii) La HOD de meilleur ajustement se situe à l'intérieur du prior de la suite d'émulation et sa densité numérique ($62\,900$ galaxies par petite boîte) correspond à celle de nos catalogues ($62\,500$ par sous-volume), ce qui importe pour ASTRA (Section~\ref{sec:robustness}). Nous la prenons donc comme point fiduciel des prévisions de référence et de l'inférence, avec cette covariance. Ces mocks contiennent une seule cosmologie : ils ne fournissent pas de dérivées.
+
+\subsection{Simulations Quijote}
+\label{sec:quijote_sims}
+
+Les dérivées ne peuvent pas être estimées proprement par différences finies dans la suite d'émulation, parce que la HOD diffère d'une cosmologie à l'autre. Les simulations Quijote \cite{Quijote}, utilisées par \cite{Paillas2023} pour les prévisions de Fisher du density split, fournissent ce qui manque : pour chaque paramètre, 500 paires de simulations avec des variations $\pm$ de $\Omega_m$ ($\pm0.01$), $\Omega_b$ ($\pm0.002$), $h$ ($\pm0.02$), $n_s$ ($\pm0.02$), $\sigma_8$ ($\pm0.015$), et des simulations avec $M_\nu = 0.1, 0.2, 0.4$\,eV, toutes partageant les graines initiales des réalisations fiducielles correspondantes, ainsi que des milliers de réalisations fiducielles pour la covariance. Chacune est une boîte périodique de $1\,h^{-1}$Gpc avec $512^3$ particules.
+
+Choix. (i) Traceurs : tous les halos hôtes Rockstar à $z=0.5$ (pas de sous-halos, au moins 100 particules). Leur densité numérique, $n\simeq5\times10^{-5}\,h^3{\rm Mpc}^{-3}$, est dix fois inférieure à celle des mocks de LRG et ne peut être augmentée avec ces catalogues. Comme ASTRA est une statistique à échelle adaptative (Section~\ref{sec:robustness}), son échelle effective, la distance entre voisins $\propto\bar n^{-1/3}$, est plus grande dans Quijote ($\simeq27\Mpch$) que pour les LRG ($\simeq13\Mpch$). Les deux méthodes sont mesurées sur les mêmes halos, de sorte que la comparaison entre ASTRA et density split reste équitable, mais à une autre densité : les erreurs absolues et les rapports ne doivent pas être comparés directement entre les analyses Quijote et AbacusSummit. (ii) Espace des redshifts le long de $z$ : $z_s = z + v_z/[aH(a)]$, avec le $\Omega_m$ de chaque simulation. (iii) La boîte entière constitue un seul volume, avec des images périodiques pour la tessellation et l'estimateur naturel d'une boîte périodique (paires aléatoires analytiques) pour le clustering ; le density split utilise le même lissage ($R_s=10\Mpch$) que pour les LRG. (iv) Les dérivées sont des différences centrales appariées moyennées sur les réalisations partagées par les ensembles $+$ et $-$ ; pour $M_\nu$, la différence progressive à trois points $(-3f_0+4f_{0.1}-f_{0.2})/0.2$ avec l'ensemble fiduciel initialisé par Zel'dovich (\texttt{fiducial\_ZA}) pour $M_\nu=0$, comme il est d'usage pour Quijote. Comme les traceurs sont les mêmes halos dans toutes les simulations, ces dérivées ne souffrent d'aucune discordance de HOD. Le prix à payer est le réalisme : les halos ne sont pas des LRG de DESI, de sorte que Quijote sert de comparaison contrôlée du contenu en information des deux méthodes, complémentaire de l'analyse de type DESI.
+
