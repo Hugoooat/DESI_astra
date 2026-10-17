@@ -1,0 +1,233 @@
+\section{Results}
+\label{sec:results}
+% =====================================================================
+
+\subsection{DESI-like mocks: ASTRA split, density split and the 2PCF}
+
+Table~\ref{tab:sigma} and Figure~\ref{fig:ratios} give the baseline forecasts. Both methods improve on the 2PCF by factors 1.6--3.1 depending on the parameter. Between them, the ratio $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ for the random-quartile cross-correlations is 0.90, 1.10, 0.84, 0.83, 0.94 and 0.92 for $\omega_b$, $\omega_{\rm cdm}$, $n_s$, $\sigma_8$, $w_0$ and $w_a$: density split is slightly ahead, by 5--15\%, except on $\omega_{\rm cdm}$. The two are clearly complementary: combined, they improve on the better one by 23\% ($\sigma_8$) to a factor 2.4 ($\omega_b$), 1.4 and 1.7 for $w_0$ and $w_a$, and the combination with the 2PCF is the most constraining (Figure~\ref{fig:combined}). The errors on $w_0$ and $w_a$ ($\simeq0.8$ and $2.7$ for one $(500\Mpch)^3$ volume) are larger than the range of the AbacusSummit suite: at this volume the dark-energy parameters are not constrained, and only the relative information content of the statistics is meaningful. Adding them nevertheless keeps the ASTRA errors on the other parameters moderate (at most $+40\%$, on $\omega_{\rm cdm}$) and leaves the DS/ASTRA ratios stable, so the comparison does not depend on whether $w_0$ and $w_a$ are free. The variants (auto-correlations, galaxy quartiles, single environments) give ratios between 0.5 and 1.4 with no consistent winner (Figure~\ref{fig:ratios}).
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lcccccc}
+\toprule
+data vector & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ & $w_0$ & $w_a$ \\
+\midrule
+2PCF & 0.033 & 0.057 & 0.40 & 0.58 & 2.1 & 6.7 \\
+ASTRA & 0.012 & 0.032 & 0.22 & 0.23 & 0.80 & 2.7 \\
+DS & 0.011 & 0.035 & 0.18 & 0.19 & 0.75 & 2.5 \\
+ASTRA + DS & 0.0046 & 0.022 & 0.13 & 0.15 & 0.53 & 1.5 \\
+2PCF + ASTRA + DS & 0.0039 & 0.019 & 0.12 & 0.13 & 0.50 & 1.3 \\
+\bottomrule
+\end{tabular}
+\caption{Baseline marginalised $1\sigma$ errors (random-quartile Q1+Q4 cross-correlations, HOD marginalised) for one $(500\Mpch)^3$ volume. These values are comparable to the prior widths and compare information content; they are not realistic constraints.}
+\label{tab:sigma}
+\end{table}
+
+Figure~\ref{fig:triangle} shows the corresponding contours: the environment statistics mainly reduce the $\omega_b$--$\omega_{\rm cdm}$ and $n_s$--$\sigma_8$ degeneracies of the 2PCF.
+
+\paragraph{Individual quartiles.} Figures~\ref{fig:q_astra} and~\ref{fig:q_ds} show, as in the density-split analyses, the constraints of each quartile alone and of the four together, and Figures~\ref{fig:c_astra} and~\ref{fig:c_ds} compare the 2PCF, the void-like (Q1) and cluster-like (Q4) quartiles, all quartiles, and all quartiles with the 2PCF. A single quartile constrains the parameters about as well as the 2PCF, the intermediate quartiles (Q3 in particular) being the least constraining, but its information is of a different nature: the 2PCF averages the clustering over all environments, whereas a quartile measures it around one range of densities only, e.g.\ the profile of galaxies around voids for Q1. Each environment responds to the parameters in its own way: the void and cluster quartiles respond with opposite signs and different scale dependences (Figures~\ref{fig:der_astra}, \ref{fig:der_ds}), and their degeneracy directions differ. The gain therefore comes from combining environments: the four quartiles together are several times tighter than any one of them or than the 2PCF, which mixes all environments and loses this distinction. Figure~\ref{fig:quartiles} summarises the information per environment: the Q4 cross-correlations alone already beat the 2PCF on most parameters, Q1 and Q4 together double the gain, and adding the auto-correlations multiplies it again.
+
+\paragraph{Auto-correlations.} Adding the quartile auto-correlations to the cross-correlations tightens the constraints of both methods by factors 1.3--2.8 depending on the parameter (Figure~\ref{fig:autocross}); with them, the two methods remain comparable (ratios 0.7--1.1), density split being ahead on $\omega_b$, $\omega_{\rm cdm}$ and $n_s$ and ASTRA on $\sigma_8$.
+
+\paragraph{Scale cuts.} Figure~\ref{fig:smin} shows the errors as a function of the minimum scale. All statistics lose information as small scales are removed, the environment statistics staying 0.2--0.5 dex below the 2PCF up to $s_{\min}=70\Mpch$ (beyond, the 2PCF has fewer bins than parameters). ASTRA and density split stay within 0.1 dex of each other at all scale cuts, their ranking changing with $s_{\min}$, and their combination keeps its 0.2--0.4 dex advantage.
+
+\paragraph{Fiducial point.} Evaluated at four different HODs, the ratio $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ stays between 0.77 and 1.14 for all six parameters (Table~\ref{tab:covbox}; 0.75--1.11 with four parameters): the fiducial point matters at the level of $\pm15\%$.
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lcccccc}
+\toprule
+fiducial HOD & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ & $w_0$ & $w_a$ \\
+\midrule
+official & 0.90(11) & 1.10(16) & 0.84(15) & 0.83(10) & 0.94(11) & 0.92(9) \\
+\texttt{hod239} & 0.83(9) & 0.92(7) & 1.04(12) & 0.93(8) & 0.88(6) & 0.84(8) \\
+\texttt{hod212} & 0.77(7) & 0.94(9) & 0.94(13) & 0.84(8) & 0.85(8) & 0.89(10) \\
+\texttt{hod795} & 0.79(8) & 0.98(10) & 1.06(16) & 1.14(10) & 0.89(12) & 0.92(13) \\
+\bottomrule
+\end{tabular}
+\caption{$\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ (above 1: ASTRA ahead) for the random-quartile cross-correlations with the official covariance at four fiducial HODs; in parentheses, the uncertainty from the emulator training.}
+\label{tab:covbox}
+\end{table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v2_triangle.png}
+\caption{Baseline Fisher contours (68\% and 95\%) for the 2PCF, ASTRA split, density split and their combinations, one $(500\Mpch)^3$ volume, HOD marginalised.}
+\label{fig:triangle}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_quartiles_astra.png}
+\caption{Constraints (68\% and 95\%) from individual and combined ASTRA-split quartiles (cross-correlations) and from the 2PCF (dashed), baseline, HOD marginalised. Axes span $\pm3\sigma$ of the 2PCF.}
+\label{fig:q_astra}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_quartiles_ds.png}
+\caption{Same as Figure~\ref{fig:q_astra} for density split.}
+\label{fig:q_ds}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_constraints_astra.png}
+\caption{ASTRA split: constraints from the 2PCF, the Q1 and Q4 cross-correlations, all quartiles, and all quartiles with the 2PCF (baseline).}
+\label{fig:c_astra}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_constraints_ds.png}
+\caption{Same as Figure~\ref{fig:c_astra} for density split.}
+\label{fig:c_ds}
+\end{figure}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_quartiles.png}
+\caption{Gain over the 2PCF, $\sigma_{\rm 2PCF}/\sigma$, for the Q1 and Q4 cross-correlations alone, together, and with the quartile auto-correlations, for ASTRA split (orange) and density split (green) (baseline, HOD marginalised).}
+\label{fig:quartiles}
+\end{figure*}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_autocross.png}
+\caption{Q1+Q4 cross-correlations only (dashed) and with the quartile auto-correlations (solid), for ASTRA split (orange) and density split (green), baseline.}
+\label{fig:autocross}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v1style_smin.png}
+\caption{Marginalised errors as a function of the minimum scale $s_{\min}$ (Q1+Q4 cross-correlations, baseline).}
+\label{fig:smin}
+\end{figure}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_compare_ratios.png}
+\caption{Baseline: $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ for several data-vector types (above 1: ASTRA split more constraining). Error bars: uncertainty from the emulator training.}
+\label{fig:ratios}
+\end{figure*}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_compare_combined.png}
+\caption{Baseline. Top: marginalised errors of the 2PCF, ASTRA split, density split and their combinations. Bottom: dependence on the minimum scale.}
+\label{fig:combined}
+\end{figure*}
+
+\subsection{Quijote halos}
+\label{sec:quijote}
+
+\paragraph{Covariance.} With 4000 fiducial realisations the covariance is converged: at fixed derivatives the marginalised errors change by less than 1\% between 2000 and 4000 realisations, and by less than 6\% between 1000 and 4000. (About half of the 15\,517 fiducial catalogues of our copy were empty, an incomplete download without consequence given this convergence; all derivative sets are complete.)
+
+\paragraph{Pairing.} The $\pm$ realisations of a given index share their initial conditions: the scatter of the differences between realisations of the same index is 3--4 times smaller than between different indices, for the 2PCF as for the quartile statistics.
+
+\paragraph{Noise of the derivatives.} Even paired, the derivatives remain noisy. Quijote is designed for statistics of the matter and halo fields (power spectrum, bispectrum, \dots). Our observables add two sources of noise that the pairing cannot cancel:
+\begin{enumerate}
+\item \emph{Sparse tracers.} With $\simeq50\,000$ host halos per $(h^{-1}{\rm Gpc})^3$, each quartile contains only $\simeq12\,000$ halos (or random points), and the shot noise of the quartile statistics is large.
+\item \emph{Discrete classification.} A small change of cosmology moves halos and random points from one quartile to another. This re-classification is only partly common to the $+$ and $-$ simulations, even with identical initial conditions, and adds a noise that does not cancel in the difference.
+\end{enumerate}
+This noise is mostly amplified by the six-parameter Fisher matrix. $\Omega_b$, $h$ and $n_s$ (and $M_\nu$) are strongly degenerate in the clustering of halos: their weakest combination is constrained by a very small amount of information, of the same order as the noise left in the average of 500 derivative pairs, so that along this direction the derivatives are dominated by noise. The standard Fisher estimator is then biased high, and subtracting the expected noise term makes the six-parameter matrices non positive definite (Appendix~\ref{app:maths}).
+
+\paragraph{Estimator and reliability criterion.} We therefore use the approach of \cite{CoultonWandelt2023}: the standard estimator is biased high by the derivative noise, a compressed estimator (half of the simulations define the compression, the other half measure its information) is biased low; the two bracket the true Fisher information, and their geometric mean is nearly unbiased. Where they agree, the forecast does not depend on the derivative noise: we call a forecast \emph{reliable} when the compressed and standard errors differ by less than a factor 1.5 for both statistics compared.
+
+\paragraph{Choice of the parameters.} The bias grows with the length of the data vector and is concentrated in the degenerate directions. We computed the forecasts for six parameter subsets, from $(\Omega_m,\sigma_8)$ to all six parameters, and three compressions of the data vector ($10\Mpch$ bins with $\ell=0,2$; $20\Mpch$ bins with $\ell=0,2$; $20\Mpch$ bins, monopole only; Figure~\ref{fig:qsubsets}). Only $(\Omega_m,\sigma_8)$ and $(\Omega_m,n_s,\sigma_8)$ give reliable forecasts, for all compressions; as soon as $\Omega_b$, $h$ or $M_\nu$ are varied, the two estimators differ by factors 2--10 and the ranking of the methods changes from one compression to the next. These parameters cannot be constrained with these observables and 500 derivative pairs. Fixing $\Omega_b$, $h$ (and $n_s$), as many density-split forecasts do, is justified by external constraints (BBN, CMB); $M_\nu$ would require denser tracers or many more derivative simulations.
+
+\paragraph{Results.} The reliable forecasts (Table~\ref{tab:quijote}) agree with the DESI-like analysis for the random-quartile cross-correlations: density split is as constraining as ASTRA split or more ($\sigma_{\rm DS}/\sigma_{\rm ASTRA}=0.6$--$1.1$). When the quartile auto-correlations are added, or with the halo quartiles, ASTRA split is more constraining on $\sigma_8$ by a factor 1.5--2 and comparable on $\Omega_m$ and $n_s$: its information lies more in the clustering of its environments with themselves and in the environments of the tracers than in the tracer profiles around random environments.
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{llccc}
+\toprule
+quartiles & parameters & $\Omega_m$ & $n_s$ & $\sigma_8$ \\
+\midrule
+random, cross & $\Omega_m,\sigma_8$ & 0.86--1.04 & -- & 0.65--0.81 \\
+random, cross & $\Omega_m,n_s,\sigma_8$ & 0.57--0.64 & 0.68--0.74 & 1.04--1.14 \\
+random, + auto & $\Omega_m,\sigma_8$ & 1.19--1.40 & -- & 1.54--2.11 \\
+random, + auto & $\Omega_m,n_s,\sigma_8$ & 0.74--0.81 & 0.85--0.92 & 1.72--1.78 \\
+halo, cross & $\Omega_m,\sigma_8$ & 1.18--1.21 & -- & 1.91--2.04 \\
+halo, cross & $\Omega_m,n_s,\sigma_8$ & 1.16--1.20 & 1.17--1.23 & 1.54--1.70 \\
+\bottomrule
+\end{tabular}
+\caption{Quijote, reliable forecasts: $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$, range over three compressions of the data vector (above 1: ASTRA ahead).}
+\label{tab:quijote}
+\end{table}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{v2_quijote_subsets.png}
+\caption{Quijote halos: $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ (above 1: ASTRA more constraining) for six parameter subsets and three compressions, for the random-quartile cross-correlations (left), with their auto-correlations (centre), and the halo quartiles (right). Filled: reliable forecasts (standard and compressed Fisher estimators within a factor 1.5); open: dominated by the noise of the derivatives.}
+\label{fig:qsubsets}
+\end{figure*}
+
+\subsection{ASTRA cosmic-web classes (Quijote)}
+\label{sec:classes}
+
+To test whether the original ASTRA classes carry more information than quartiles, we measured them on Quijote, where the derivatives are clean: 4000 fiducial realisations for the covariance and the 500 pairs of $\Omega_m$, $n_s$ and $\sigma_8$, with the same halos, random points and estimators as the quartile analysis, and compared them with the quartiles of ASTRA and density split measured on the same realisations ($10\Mpch$ bins, $\ell=0,2$, $s\ge20\Mpch$). Because the void and knot classes are nearly empty for random points, the class data vectors use the sheets and filaments (adding the voids changes nothing).
+
+\paragraph{Class fractions.} The fractions of points in each class are themselves sensitive to cosmology (Figure~\ref{fig:classes_resp}): a variation of $\Omega_m$, $n_s$ or $\sigma_8$ shifts the sheet and filament fractions of the random points by 0.3--1 times their scatter between realisations, in opposite directions. Unlike quartiles, which have fixed fractions by construction, fixed thresholds let the volume of each environment respond to cosmology.
+
+\paragraph{Information.} Table~\ref{tab:classes} and Figure~\ref{fig:classes_fisher} compare the classes with the quartiles of ASTRA and density split for the three compressions of the data vector used in Section~\ref{sec:quijote}. For $(\Omega_m,\sigma_8)$ all the forecasts are reliable. With cross-correlations only, the classes carry about as much information as the ASTRA quartiles, and less than density split on $\sigma_8$. With the auto-correlations, the classes are the most constraining statistic for every compression: $\sigma(\sigma_8)$ is 2.1--3.0 times smaller than with density split and 1.35--1.45 times smaller than with the ASTRA quartiles, and $\sigma(\Omega_m)$ 1.3--1.5 and $\sim1.1$ times smaller. For $(\Omega_m,n_s,\sigma_8)$, the classes with auto-correlations are reliable for all compressions (and are the only reliable ASTRA random-point vector with the finest binning); their advantage over density split remains a factor 2.8--2.9 on $\sigma_8$, but shrinks with the compression on $\Omega_m$ (1.0--1.5) and $n_s$ (1.2--1.85). The classes of the halos give $\sigma(\Omega_m)$ 15\% smaller than the halo quartiles but a larger $\sigma(\sigma_8)$.
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+compression & $\Omega_m$ & $n_s$ & $\sigma_8$ \\
+\midrule
+\multicolumn{4}{l}{$(\Omega_m,\sigma_8)$} \\
+$10\Mpch$, $\ell=0,2$ & 1.28 & -- & 2.08 \\
+$20\Mpch$, $\ell=0,2$ & 1.49 & -- & 2.95 \\
+$20\Mpch$, $\ell=0$ & 1.52 & -- & 2.96 \\
+\multicolumn{4}{l}{$(\Omega_m,n_s,\sigma_8)$} \\
+$10\Mpch$, $\ell=0,2$ & 1.51$^*$ & 1.85$^*$ & 2.88$^*$ \\
+$20\Mpch$, $\ell=0,2$ & 1.07 & 1.31 & 2.86 \\
+$20\Mpch$, $\ell=0$ & 0.99 & 1.20 & 2.78 \\
+\bottomrule
+\end{tabular}
+\caption{Quijote, 4000 fiducial realisations: $\sigma_{\rm DS}/\sigma_{\rm classes}$ for the random-point cross- and auto-correlations of the density-split quartiles and of the ASTRA classes (sheets and filaments); above 1: classes more constraining. $^*$: density split marginally reliable (estimator ratio 1.5--1.6).}
+\label{tab:classes}
+\end{table}
+
+\paragraph{Interpretation.} The gain comes from the auto-correlations of the two classes and from the response of their volumes to cosmology, which equal-size quartiles remove by construction. The advantage on $\sigma_8$, a factor 2--3 over density split, is robust to the compression, the parameter set and the number of covariance realisations; the advantage on $\Omega_m$ and $n_s$ is smaller and depends on the compression. For a DESI-like analysis, this would require an emulator trained on class statistics, i.e.\ remeasuring the emulator suite.
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{classes_response.png}
+\caption{Response of the ASTRA class fractions of the random points (left) and halos (right) to the $\pm$ variations of $\Omega_m$, $n_s$ and $\sigma_8$ (Quijote, 500 pairs), in units of the scatter of one realisation (error bars: error of the mean, smaller than the symbols).}
+\label{fig:classes_resp}
+\end{figure*}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{classes_fisher.png}
+\caption{Quijote halos, $V=1\,(h^{-1}{\rm Gpc})^3$: marginalised errors for $(\Omega_m,\sigma_8)$ (left) and $(\Omega_m,n_s,\sigma_8)$ (right) from the 2PCF, the density-split and ASTRA quartiles of the random points, and the ASTRA classes (sheets and filaments), with cross-correlations only or with auto-correlations. Hatched: not reliable (compressed and standard Fisher estimators differ by more than a factor 1.5).}
+\label{fig:classes_fisher}
+\end{figure*}
+
+\subsection{Inference with the emulator (MCMC)}
+\label{sec:mcmc}
+
+Fisher forecasts assume Gaussian posteriors and are local. To test the full pipeline as it would be applied to data, we sampled the posterior of the 20 parameters (8 cosmological, 12 HOD) with the emulator as the model: Gaussian likelihood with the official covariance rescaled to the data volume plus the emulator error, uniform priors over the training range, \texttt{emcee} with 64 walkers and 8000 steps (Appendix~\ref{app:maths}). The data are measurements the emulator has never seen: one subvolume of each of 2 catalogues of the 8 test cosmologies, and 8 subvolumes of the official base box of the fiducial cosmology, each analysed with the 2PCF, ASTRA split, density split and their combinations (120 chains).
+
+The posteriors are unbiased and calibrated or slightly conservative: the truth lies within $1\sigma$ of the posterior mean in 70--100\% of the runs depending on the parameter (68\% expected). They are however barely narrower than the priors (Figures~\ref{fig:mcmc} and~\ref{fig:mcmc_off}): one $(500\Mpch)^3$ volume with 12 free HOD parameters constrains only $\omega_{\rm cdm}$ and $\sigma_8$ beyond the prior, by 10--15\%, and the statistics differ by a few per cent. A first set of runs on the full $(2\,h^{-1}{\rm Gpc})^3$ box was limited the other way: the emulator error (0.4--0.9 times the statistical error of that volume) was as large as the statistical error, and masked the differences between the statistics. Distinguishing the statistics through inference therefore requires both a large volume and an emulator error well below the statistical error of that volume; with the present training set this is not the case (and the learning curve shows that more catalogues of the same kind would not change it), so the comparison of the methods rests on the Fisher forecasts. The inference pipeline is validated and ready for a larger or less noisy training set.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth]{v2_mcmc_widths.png}
+\caption{Emulator inference on held-out cosmologies (one $(500\Mpch)^3$ volume, official covariance): posterior width relative to the prior width, median of 16 runs, for the 2PCF, ASTRA split, density split and their combinations.}
+\label{fig:mcmc}
+\end{figure}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{readable_mcmc_official.png}
+\caption{Marginal posteriors of four cosmological parameters for one $(500\Mpch)^3$ subvolume of the official mock (fiducial cosmology, dotted lines), with 12 free HOD parameters, for the 2PCF, ASTRA split, density split and ASTRA + DS. At this volume all posteriors remain close to the uniform prior (grey).}
+\label{fig:mcmc_off}
+\end{figure*}
+
+
