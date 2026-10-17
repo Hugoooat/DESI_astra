@@ -1,0 +1,231 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[a4paper,margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,graphicx,booktabs,hyperref,xcolor,enumitem}
+\graphicspath{{../figures/}}
+\setlist{itemsep=2pt,topsep=4pt}
+\newcommand{\Mpch}{\,h^{-1}\mathrm{Mpc}}
+\newcommand{\encadre}[1]{\par\smallskip\noindent\fcolorbox{gray!60}{gray!8}{\parbox{0.96\linewidth}{#1}}\par\smallskip}
+
+\title{ASTRA, density split et cosmologie :\\ le projet expliqué simplement}
+\author{Hugo Nguyen}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent Ce document accompagne l'article. Il explique, sans prérequis, les notions utilisées, les choix faits et les questions qu'on peut se poser en le lisant. Les sections peuvent se lire dans le désordre.
+
+\tableofcontents
+
+% ======================================================================
+\section{Le projet en quelques phrases}
+
+\encadre{\textbf{Pourquoi.} La façon dont les galaxies sont réparties dans l'Univers dépend de quelques grandeurs fondamentales : la quantité de matière, l'amplitude des fluctuations, la nature de l'énergie noire, la masse des neutrinos. La statistique habituelle, la fonction de corrélation à deux points, ne capte qu'une partie de cette information, parce que la toile cosmique (amas, filaments, feuillets, vides) n'est pas un champ gaussien.
+
+\textbf{Quoi.} On teste si ASTRA, un algorithme qui attribue un environnement à chaque point à partir de ses voisins, permet de récupérer cette information manquante, et s'il fait mieux ou moins bien que la méthode de référence, le \emph{density split}.
+
+\textbf{Comment.} (1) On classe les galaxies et des points aléatoires par environnement, avec ASTRA et avec le density split. (2) On mesure comment ces environnements se regroupent (corrélations). (3) On estime, à l'aide de simulations, combien ces mesures varient quand on change les paramètres cosmologiques (dérivées) et combien elles fluctuent par hasard (covariance). (4) On en déduit les incertitudes attendues sur chaque paramètre (matrice de Fisher). (5) On vérifie toute la chaîne avec un émulateur par réseau de neurones et une inférence MCMC.
+
+\textbf{Conclusion.} Les statistiques d'environnement ASTRA contraignent les paramètres environ deux fois mieux que la fonction à deux points. Elles sont aussi informatives que le density split et complémentaires : les combiner fait encore mieux. Les classes d'origine d'ASTRA (vides, feuillets, filaments, nœuds) donnent, sur les simulations Quijote, une contrainte sur $\sigma_8$ deux à trois fois meilleure que le density split.}
+
+\paragraph{La chaîne d'analyse (pipeline).}
+\begin{center}
+\small
+catalogues de galaxies $\to$ environnements (ASTRA, density split) $\to$ quartiles / classes $\to$ corrélations (monopôle, quadrupôle) $\to$ covariance + dérivées $\to$ matrice de Fisher $\to$ incertitudes sur les paramètres $\to$ comparaison 2PCF / density split / ASTRA
+\end{center}
+
+% ======================================================================
+\section{Les bases de cosmologie}
+
+\subsection{Le redshift}
+La lumière d'une galaxie lointaine nous arrive « étirée » vers le rouge, parce que l'Univers s'est dilaté pendant son trajet. Ce décalage, le \emph{redshift} $z$, mesure donc à la fois la distance et l'époque : $z=0.5$ correspond à une lumière émise il y a environ 5 milliards d'années. Les relevés comme DESI mesurent le redshift de chaque galaxie pour la placer en 3D.
+
+\paragraph{Les distorsions dans l'espace des redshifts (RSD).} Une galaxie ne fait pas que suivre l'expansion : elle bouge aussi, attirée par les structures voisines. Cette vitesse propre ajoute un petit décalage Doppler, si bien que la position déduite du redshift est légèrement fausse le long de la ligne de visée. Autour d'un amas, les galaxies qui tombent vers lui semblent écrasées le long de la ligne de visée ; autour d'un vide, les galaxies qui s'en éloignent semblent étirées. Ces distorsions sont une nuisance mais aussi une information : elles mesurent la vitesse de croissance des structures.
+
+\subsection{Les paramètres que l'on veut contraindre}
+Le modèle standard, $\Lambda$CDM, décrit l'Univers avec une poignée de paramètres :
+\begin{itemize}
+\item $\omega_b$ et $\omega_{\rm cdm}$ : la densité de matière ordinaire (baryons) et de matière noire froide. Leur somme donne $\Omega_m$, la fraction de l'Univers faite de matière. Elles fixent la vitesse à laquelle les structures se forment et la forme de la fonction de corrélation.
+\item $\sigma_8$ : l'amplitude des fluctuations de densité aujourd'hui (sur des sphères de $8\Mpch$). Plus $\sigma_8$ est grand, plus l'Univers est « grumeleux ».
+\item $n_s$ : la manière dont l'amplitude des fluctuations initiales dépend de l'échelle (héritée de l'inflation).
+\item $h$ : le taux d'expansion actuel (constante de Hubble). Dans AbacusSummit il est fixé par les autres paramètres.
+\item $\alpha_s$, $N_{\rm ur}$ : des extensions (variation de $n_s$ avec l'échelle, nombre d'espèces relativistes).
+\end{itemize}
+
+\paragraph{L'énergie noire ($w_0$, $w_a$).} L'expansion de l'Univers accélère depuis quelques milliards d'années. On attribue cette accélération à une « énergie noire » dont on ignore la nature. Si c'est une constante cosmologique, sa pression vaut exactement $-1$ fois sa densité : $w=-1$. Les paramètres $w_0$ et $w_a$ décrivent un éventuel écart à cette valeur et son évolution dans le temps ($w = w_0 + w_a(1-a)$). Les premiers résultats de DESI suggèrent justement un tel écart : mieux contraindre $w_0$ et $w_a$ est l'un des enjeux majeurs actuels.
+
+\paragraph{Les neutrinos ($\sum m_\nu$).} Les neutrinos sont des particules très légères dont on sait qu'elles ont une masse, mais pas laquelle. Leur somme des masses $\sum m_\nu$ est un paramètre de physique fondamentale que la cosmologie peut mesurer : des neutrinos massifs se déplacent vite et « lissent » les petites structures, ce qui freine leur croissance. Cet effet est subtil et apparaît surtout dans les environnements extrêmes (vides, amas) : c'est pour cela que les statistiques d'environnement sont prometteuses pour $\sum m_\nu$ (cf. Sunseri et al.).
+
+\paragraph{Pourquoi et comment on les « contraint ».} Contraindre un paramètre, c'est réduire l'intervalle des valeurs compatibles avec les observations. On quantifie cela par l'incertitude $\sigma$ attendue sur le paramètre : une statistique est meilleure qu'une autre si elle donne un $\sigma$ plus petit avec les mêmes données. Dans l'article, on compare toujours des rapports d'incertitudes, par exemple $\sigma_{\rm 2PCF}/\sigma_{\rm ASTRA}=2$ veut dire qu'ASTRA réduit l'incertitude d'un facteur 2, ce qui équivaut à un relevé 4 fois plus grand.
+
+% ======================================================================
+\section{Les statistiques utilisées}
+
+\subsection{La fonction de corrélation à deux points (2PCF)}
+La 2PCF $\xi(s)$ mesure l'excès de paires de galaxies séparées d'une distance $s$ par rapport à une distribution au hasard. $\xi(s)>0$ : on trouve plus de paires que par hasard à cette distance, les galaxies sont regroupées. Son équivalent dans l'espace de Fourier est le spectre de puissance.
+
+Dans la plupart des analyses, toute l'information cosmologique est comprimée dans ces statistiques à deux points. Elles sont optimales pour des champs gaussiens : un champ gaussien est entièrement décrit par sa moyenne et ses corrélations à deux points, il n'y a rien d'autre à mesurer. Aux grandes échelles, la distribution de matière reste proche d'un champ gaussien, et la 2PCF y est extrêmement performante.
+
+\subsection{Pourquoi la 2PCF ne suffit pas}
+La distribution de matière « tardive » (aujourd'hui) devient fortement non gaussienne. La gravité amplifie les surdensités : la matière s'effondre en halos, se rassemble dans des filaments et des nœuds, et vide les régions sous-denses. La distribution des densités devient très asymétrique (quelques amas très denses, beaucoup de vides). Les RSD ajoutent une autre déformation. Une partie de l'information se loge alors dans des corrélations à trois points, quatre points, etc., que la 2PCF ne voit pas.
+
+On pourrait mesurer directement ces corrélations d'ordre supérieur (fonction à trois points, bispectre), mais elles sont coûteuses, bruitées et difficiles à modéliser. Les statistiques d'environnement sont une alternative : en séparant les régions denses et peu denses avant de mesurer des corrélations à deux points, on capte indirectement une partie de cette information d'ordre supérieur.
+
+\subsection{Monopôle et quadrupôle}
+À cause des RSD, la corrélation n'est pas la même le long de la ligne de visée et perpendiculairement. On mesure donc $\xi(s,\mu)$, où $\mu$ est le cosinus de l'angle entre la paire et la ligne de visée, et on le décompose en polynômes de Legendre :
+\begin{itemize}
+\item le \textbf{monopôle} $\xi_0(s)$ est la moyenne sur toutes les directions : l'amplitude du regroupement ;
+\item le \textbf{quadrupôle} $\xi_2(s)$ mesure l'anisotropie, c'est-à-dire la différence entre le long et le travers de la ligne de visée : c'est la signature des vitesses (écrasement autour des amas : quadrupôle négatif ; étirement autour des vides : positif).
+\end{itemize}
+On multiplie par $s^2$ sur les figures ($s^2\xi$) uniquement pour rendre lisibles les grandes échelles.
+
+\subsection{Auto-corrélations et corrélations croisées}
+On découpe les points en environnements (par exemple Q1 = les plus sous-denses, Q4 = les plus denses). Pour chaque environnement :
+\begin{itemize}
+\item la \textbf{corrélation croisée} quartile--galaxies mesure combien de galaxies on trouve à une distance $s$ des points de ce quartile. Pour Q1, elle est négative à petite distance : c'est le \emph{profil} des galaxies autour d'un vide. Pour Q4, elle est forte et positive : le profil autour d'un amas.
+\item l'\textbf{auto-corrélation} du quartile mesure comment les points du quartile se regroupent entre eux : comment les vides (ou les amas) sont répartis dans l'espace les uns par rapport aux autres.
+\end{itemize}
+Les deux portent des informations différentes : la première décrit la forme des structures, la seconde leur distribution à grande échelle. Dans nos résultats, l'auto-corrélation apporte un gain d'un facteur 1.3 à 2.8, et c'est elle qui donne l'avantage aux classes ASTRA sur $\sigma_8$.
+
+\paragraph{Un quartile seul face à la 2PCF.} La 2PCF fait la moyenne du regroupement sur tous les environnements. Un quartile ne mesure que le regroupement autour d'une gamme de densités. Pour les quartiles de galaxies, la moyenne des quatre corrélations croisées redonne exactement la 2PCF : les quartiles « découpent » la 2PCF par environnement. Un quartile seul contient à peu près autant d'information que la 2PCF, mais pas la même ; c'est en les combinant, parce que les vides et les amas réagissent différemment à la cosmologie, qu'on gagne.
+
+% ======================================================================
+\section{Galaxies, halos et HOD}
+
+\subsection{Les objets}
+\begin{itemize}
+\item \textbf{Particule} : dans une simulation $N$-corps, la matière (essentiellement noire) est représentée par des milliards de « particules » numériques, chacune pesant des milliards de masses solaires. Ce ne sont pas des particules physiques, mais des morceaux de fluide qui suivent la gravité.
+\item \textbf{Halo} : un amas de particules lié par la gravité, le lieu où se forment les galaxies. On les repère dans la simulation avec un « halo finder » ; \textbf{Rockstar} est l'un d'eux (il regroupe les particules proches en position et en vitesse). Dans Quijote, on garde les halos d'au moins 100 particules.
+\item \textbf{Galaxie} : les simulations de matière noire ne contiennent pas de galaxies. On les ajoute ensuite dans les halos avec un modèle statistique, la HOD.
+\item \textbf{LRG} (Luminous Red Galaxies) : des galaxies massives, rouges et lumineuses, l'une des populations cibles de DESI. Elles vivent dans des halos massifs.
+\item \textbf{Traceur} : tout ce qu'on utilise pour « tracer » la matière : galaxies, halos.
+\item \textbf{Points aléatoires} : des points tirés uniformément dans la boîte, sans aucune structure. Ils servent de référence « sans regroupement », et de points de sondage pour décrire l'environnement partout, y compris dans les vides où il n'y a pas de galaxies.
+\end{itemize}
+
+\subsection{La HOD (Halo Occupation Distribution)}
+La HOD est une recette qui dit combien de galaxies mettre dans un halo selon sa masse : en dessous d'une certaine masse aucune galaxie ; au-dessus une galaxie centrale, puis de plus en plus de galaxies satellites. Elle a ici 12 paramètres : la masse minimale, la pente du nombre de satellites, la dispersion, les vitesses des galaxies dans le halo, l'effet de l'environnement, etc. Ce ne sont pas des paramètres cosmologiques : ils décrivent la formation des galaxies, mal connue, et on doit les marginaliser (les laisser libres) pour ne pas biaiser la cosmologie.
+
+\paragraph{« Un tirage de HOD indépendant par cosmologie ».} Les catalogues que nous avons utilisés ne sont pas des données réelles : ce sont des catalogues simulés (\emph{mocks}). Pour chaque cosmologie, on a pris une simulation de matière noire et on l'a peuplée de galaxies 500 fois, avec 500 jeux de paramètres HOD différents, tirés au hasard dans une plage (un « hypercube latin »). Ces 500 fichiers ne sont donc pas 500 réalisations du même modèle : ce sont 500 modèles de galaxies différents. Et le fichier \texttt{hod042} d'une cosmologie n'a pas les mêmes paramètres que le \texttt{hod042} d'une autre. C'est voulu : ces catalogues ont été produits pour entraîner un émulateur, qui doit voir beaucoup de combinaisons différentes.
+
+\paragraph{Pourquoi plusieurs échantillons, si les galaxies sont « réelles » ?} Justement, elles ne le sont pas : dans l'Univers réel, il n'existe qu'un seul jeu de galaxies et une seule HOD (inconnue). Les simulations permettent d'essayer de nombreuses HOD possibles pour apprendre comment les statistiques en dépendent.
+
+\paragraph{Si les paramètres HOD sont comme des hyperparamètres, pourquoi ne pas tout générer ?} En principe on pourrait générer, pour chaque cosmologie, des catalogues avec \emph{exactement} la même HOD : c'est ce qui donnerait les dérivées les plus propres. Deux obstacles : (1) il faut pour cela les sous-échantillons de particules préparés pour AbacusHOD dans chaque cosmologie, que nous n'avions pas (c'est une question pour Jaime) ; (2) chaque génération plus mesure coûte du temps de calcul. Nous avons donc travaillé avec les catalogues existants, et c'est ce qui a rendu les dérivées difficiles.
+
+\paragraph{« La dispersion entre tirages de HOD atteint 55\% contre 1\% pour la cosmologie ».} Si l'on compare deux fichiers HOD d'une même cosmologie, leurs statistiques diffèrent en moyenne de 55\% de l'amplitude du signal, simplement parce que ce sont deux modèles de galaxies différents. Changer un paramètre cosmologique d'un petit pas, lui, ne change les statistiques que d'environ 1\%. Si l'on compare deux cosmologies avec des HOD différentes, l'effet HOD (55\%) noie complètement l'effet cosmologique (1\%). C'est tout le problème des dérivées.
+
+\subsection{Cosmologie, phase, graine}
+\begin{itemize}
+\item \textbf{Cosmologie} : un jeu de paramètres cosmologiques (la suite en propose 85, notées \texttt{c000}, \texttt{c001}, etc. ; \texttt{c000} est la cosmologie de référence, Planck 2018).
+\item \textbf{Phase} : les conditions initiales de la simulation, c'est-à-dire le tirage aléatoire des fluctuations primordiales. Deux simulations de même phase partent des « mêmes » fluctuations : elles forment les mêmes structures aux mêmes endroits, à la cosmologie près. Dans la suite d'émulation, toutes les cosmologies partagent la phase \texttt{ph000}.
+\item \textbf{Graine (seed) de HOD} : la HOD est probabiliste (un halo a une certaine probabilité d'avoir une galaxie). La graine fixe ce tirage aléatoire. Une seule graine (\texttt{seed0}) existe ici.
+\end{itemize}
+
+% ======================================================================
+\section{Les trois jeux de données}
+
+\begin{center}\small
+\begin{tabular}{p{3.2cm}p{4.8cm}p{6.5cm}}
+\toprule
+ & Contenu & Pourquoi on l'utilise \\
+\midrule
+AbacusSummit (suite d'émulation) & galaxies LRG simulées, 85 cosmologies, 500 HOD par cosmologie, 1 phase & le seul jeu avec beaucoup de cosmologies : mesures, entraînement de l'émulateur, dérivées type DESI \\
+Mocks officiels DESI & mêmes simulations AbacusSummit, une seule cosmologie et une seule HOD (ajustée sur les vraies données DESI), mais 1786 petites boîtes indépendantes & beaucoup de réalisations indépendantes du même modèle : la covariance, et le point fiduciel \\
+Quijote & simulations de matière noire, halos seulement (pas de galaxies), 500 paires $\pm$ par paramètre & dérivées « propres » sans problème de HOD \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Abacus et mocks officiels DESI : quelle différence ?} Les deux viennent des simulations AbacusSummit et de la même méthode (AbacusHOD). La suite d'émulation \emph{varie} la cosmologie et la HOD pour apprendre leurs effets, mais n'a qu'une réalisation par point. Les mocks officiels \emph{fixent} cosmologie et HOD (la meilleure HOD ajustée sur DESI) mais en ont 1786 réalisations indépendantes. L'un sert aux dérivées, l'autre à la covariance.
+
+\paragraph{Comparer LRG et Quijote « sur les mêmes halos ».} Dans Quijote il n'y a pas de galaxies, donc on applique ASTRA et le density split directement aux halos. « Mêmes halos » signifie que les deux méthodes sont mesurées sur exactement le même catalogue de halos, donc la comparaison ASTRA/density split est équitable. En revanche, ces halos sont dix fois plus rares que nos LRG et ne sont pas des galaxies DESI : on ne compare pas les chiffres absolus entre Quijote et Abacus, seulement le classement des méthodes.
+
+\paragraph{Pourquoi Quijote n'a pas de problème de HOD.} Les halos sont définis par la simulation elle-même (Rockstar les trouve), sans aucun modèle de galaxies. Quand on change la cosmologie, on compare les halos des deux simulations : rien d'autre ne change. Le prix à payer est le réalisme : des halos ne sont pas des LRG, donc Quijote sert de comparaison contrôlée des méthodes, complémentaire de l'analyse de type DESI.
+
+\paragraph{Pourquoi des « particules de 100 » ?} Un halo de moins de 100 particules est mal résolu (on ne sait pas bien s'il existe). Ce seuil fixe la densité des halos de Quijote.
+
+% ======================================================================
+\section{La mesure}
+
+\subsection{ASTRA}
+On mélange les galaxies et autant de points aléatoires, et on calcule la triangulation de Delaunay de l'ensemble (on relie chaque point à ses voisins naturels). Pour chaque point, galaxie ou aléatoire, on compte ses voisins galaxies $N_{\rm data}$ et ses voisins aléatoires $N_{\rm rand}$, et on calcule $r=(N_{\rm data}-N_{\rm rand})/(N_{\rm data}+N_{\rm rand})$. \textbf{Oui, le $r$ des points aléatoires est calculé avec les galaxies et les autres points aléatoires} : c'est le même calcul pour tous. Un point entouré de galaxies est dans une région dense ($r\to1$), un point entouré de points aléatoires dans un vide ($r\to-1$).
+
+\paragraph{L'extension de 30 Mpc/h.} On calcule ASTRA par sous-volume. Près des bords, un point a moins de voisins qu'il ne devrait, ce qui fausse $r$. On ajoute donc autour de chaque sous-volume une couche de $30\Mpch$ de points (en tenant compte de la périodicité de la boîte), qu'on n'utilise que comme voisins. La distance moyenne entre deux points voisins est d'environ $10\Mpch$ : la couche contient donc trois « rangées » de voisins, ce qui suffit (on l'a vérifié en passant à 60).
+
+\subsection{Le density split}
+On calcule une densité lissée : (1) on découpe la boîte en petits cubes de $5\Mpch$ et on compte les galaxies dans chaque cube. Le schéma « nuage dans la cellule » (CIC) répartit chaque galaxie entre les 8 cubes voisins au prorata de sa position, pour éviter des sauts brusques ; (2) on lisse ce champ avec une gaussienne de rayon $10\Mpch$, c'est-à-dire qu'on remplace la densité en chaque point par une moyenne pondérée sur une sphère d'environ $10\Mpch$. Ce n'est pas une dérivée : c'est une moyenne locale, qui définit « la densité de l'environnement à l'échelle de $10\Mpch$ » et supprime le bruit dû au nombre fini de galaxies. ASTRA, lui, n'a pas d'échelle fixe : il utilise les voisins, quelle que soit leur distance.
+
+\subsection{Quartiles de points aléatoires et de galaxies}
+On classe les points selon leur environnement et on les répartit en quatre groupes de même taille. On le fait séparément pour deux populations :
+\begin{itemize}
+\item \textbf{quartiles aléatoires} : les points aléatoires. Comme ils remplissent l'espace uniformément, chaque quartile représente un quart du \emph{volume} : Q1 = le quart du volume le plus vide. C'est la version standard du density split.
+\item \textbf{quartiles de galaxies} : les galaxies elles-mêmes. Comme les galaxies sont concentrées dans les régions denses, chaque quartile représente un quart des galaxies, donc de la \emph{masse}.
+\end{itemize}
+On les classe séparément pour que les seuils d'une population ne dépendent pas de l'autre.
+
+\subsection{Sous-volumes et estimateur de Landy--Szalay}
+Chaque boîte de $2\,h^{-1}$Gpc est découpée en 64 sous-volumes de $500\Mpch$, chacun traité comme un petit relevé. Pour mesurer une corrélation, on compte les paires de points à chaque distance et on compare au nombre attendu sans regroupement. L'estimateur de Landy--Szalay fait cette comparaison avec un catalogue de points aléatoires « de géométrie » qui remplit le même volume :
+$\xi=(DD-DR-RD+RR)/RR$. « Ouvert » veut dire qu'on traite le sous-volume comme une région isolée, avec des bords (comme un vrai relevé), et non comme une boîte périodique : les points aléatoires de géométrie corrigent l'effet des bords. On applique exactement la même méthode aux petites boîtes officielles, pour que la covariance corresponde à la même mesure.
+
+\paragraph{« Une petite boîte périodique n'a pas de modes plus grands que son côté ».} Une simulation de $500\Mpch$ de côté ne contient aucune fluctuation plus grande que $500\Mpch$. Un sous-volume de $500\Mpch$ découpé dans une boîte de $2000\Mpch$, lui, baigne dans des fluctuations plus grandes (il peut être globalement un peu plus dense ou moins dense que la moyenne). Cela ajoute un peu de variance (« super-sample covariance »). L'effet est petit ici, et peut être mesuré avec les 25 grandes boîtes officielles.
+
+% ======================================================================
+\section{Covariance}
+
+La covariance décrit combien une mesure fluctue par hasard, et comment ses différents bins fluctuent ensemble, à modèle fixé. C'est ce qui détermine les barres d'erreur.
+
+\paragraph{Pourquoi 64 sous-volumes d'une même simulation donnent une covariance.} Même avec les mêmes paramètres, deux régions différentes de l'Univers ne contiennent pas les mêmes structures : c'est la « variance cosmique ». Les 64 sous-volumes d'une boîte sont 64 régions différentes, donc 64 échantillons de cette variance, à paramètres fixés : c'est exactement ce qu'on veut. Mais ils ont des défauts : ils viennent d'une seule boîte (ils partagent ses grandes fluctuations), et les trois lignes de visée réutilisent les mêmes galaxies. C'est pourquoi on a remplacé cette covariance par celle des 1786 boîtes officielles, qui sont vraiment indépendantes. Ce changement a d'ailleurs modifié le classement ASTRA / density split, ce qui montre son importance.
+
+% ======================================================================
+\section{Dérivées}
+
+Pour savoir combien une mesure contraint un paramètre, il faut savoir de combien elle change quand le paramètre change : c'est la dérivée.
+
+\paragraph{Différences finies.} La méthode la plus simple : simuler l'Univers avec le paramètre un peu plus grand ($+$) et un peu plus petit ($-$), et calculer (mesure$_+$ $-$ mesure$_-$)/(écart). Dans AbacusSummit, les fichiers $+$ et $-$ n'ont pas la même HOD : la différence mesure surtout le changement de HOD (10 fois plus grand que l'effet cosmologique). C'est le sens de la phrase « les différences finies entre cosmologies sont dominées par le changement de HOD ».
+
+\paragraph{L'émulateur.} On entraîne un réseau de neurones qui prédit chaque statistique à partir des 8 paramètres cosmologiques et des 12 paramètres HOD, sur 999 catalogues. Une fois entraîné, on peut lui demander la dérivée par rapport à un paramètre cosmologique \emph{à HOD exactement fixée}, ce qui supprime le problème. On a vérifié ces dérivées par une méthode indépendante, une \textbf{régression} : dans chaque cosmologie $\pm$, on ajuste une droite des statistiques en fonction de la HOD, et on compare les deux cosmologies au même point HOD.
+
+\paragraph{Différences centrales appariées (Quijote).} Dans Quijote, chaque simulation $+$ a une jumelle $-$ avec la même phase (mêmes conditions initiales). En faisant la différence jumelle par jumelle, la variance cosmique, commune aux deux, s'annule presque entièrement ; on moyenne ensuite sur les 500 paires. C'est beaucoup plus précis que de comparer des simulations indépendantes.
+
+\paragraph{Le cas des neutrinos.} La masse des neutrinos ne peut pas être négative : on ne peut pas simuler un « $-$ » autour de $M_\nu=0$. On utilise donc une formule à trois points d'un seul côté, $(-3f_0+4f_{0.1}-f_{0.2})/0.2$, avec des simulations à $M_\nu=0$, $0.1$ et $0.2$ eV. Les simulations avec neutrinos de Quijote partent de conditions initiales calculées d'une façon particulière (approximation de Zel'dovich) ; pour que la comparaison soit propre, le point $M_\nu=0$ utilise des simulations fiducielles générées de la même façon (\texttt{fiducial\_ZA}).
+
+\paragraph{Le bruit des dérivées.} Même appariées, les dérivées Quijote restent bruitées : peu de halos par quartile, et un petit changement de cosmologie fait passer des points d'un quartile à l'autre de façon un peu aléatoire. Ce bruit ajoute de la « fausse information », surtout pour les paramètres dégénérés ($\Omega_b$, $h$, $M_\nu$). On le détecte en comparant deux estimateurs de Fisher, l'un biaisé vers le haut et l'autre vers le bas : s'ils sont d'accord, le résultat est fiable.
+
+\paragraph{Le prior.} Le prior est ce qu'on sait (ou suppose) d'un paramètre avant la mesure. Dans le Fisher, on met sur les paramètres HOD un prior gaussien de la largeur de la plage où ils ont été tirés, pour ne pas leur permettre de prendre des valeurs absurdes. Dans le MCMC, les priors sont uniformes sur la plage d'entraînement de l'émulateur : en dehors, l'émulateur ne sait rien.
+
+% ======================================================================
+\section{Matrice de Fisher et MCMC}
+
+\paragraph{Fisher.} La matrice de Fisher combine les dérivées (combien la mesure réagit) et la covariance (combien elle fluctue) : une statistique est informative si elle réagit beaucoup par rapport à son bruit. En l'inversant, on obtient les incertitudes attendues sur chaque paramètre et leurs corrélations (les ellipses des figures « triangles »). « Marginaliser » sur la HOD veut dire qu'on laisse les paramètres HOD libres, ce qui élargit un peu les incertitudes cosmologiques.
+
+\paragraph{MCMC.} Le Fisher est une approximation (posteriors gaussiens). Le MCMC fait la vraie inférence : il explore l'espace des 20 paramètres et trouve toutes les valeurs compatibles avec une mesure donnée, en utilisant l'émulateur comme modèle. On l'a appliqué à des mesures que l'émulateur n'avait jamais vues. Résultat : il retrouve les bonnes valeurs sans biais, mais sur un seul sous-volume les données contraignent peu (le prior domine), et sur un grand volume c'est l'erreur de l'émulateur qui domine. Il valide la chaîne mais ne départage pas les méthodes.
+
+\paragraph{Lire les figures MCMC.} Un histogramme plat comme la bande grise (le prior) veut dire que le paramètre n'est pas contraint ; un pic autour de la ligne pointillée (la vraie valeur) veut dire qu'il l'est. La figure des largeurs donne largeur du postérieur / largeur du prior : 1 = rien appris, 0.85 = 15\% de gain.
+
+% ======================================================================
+\section{Les classes ASTRA}
+
+ASTRA définit quatre classes par des seuils fixes sur $r$ : vides ($r\le-0.9$), feuillets, filaments, nœuds ($r>0.9$). Sur nos LRG, moins de 1\% des points sont des vides ou des nœuds : il reste en pratique deux classes, feuillets et filaments. C'est pourquoi l'analyse principale utilise des quartiles, qui donnent des groupes de même taille.
+
+\paragraph{Pourquoi ces fractions dépendent du catalogue.} Pour être classé « vide », un point doit avoir au moins 95\% de voisins aléatoires. Cela arrive dans les régions vraiment vides \emph{à l'échelle de la distance entre voisins}. Dans un catalogue très dense et très contrasté (celui de l'article ASTRA, 11 à 73 fois plus dense), il existe de grandes régions vides comparées à cette distance : 7 à 11\% de vides. Dans nos LRG, plus clairsemées, la distance entre voisins ($\sim13\Mpch$) est comparable à la taille de beaucoup de vides : peu de points y ont uniquement des voisins aléatoires. Les halos de Quijote, encore plus rares mais plus fortement regroupés (ce sont des objets massifs), ont des contrastes plus marqués, d'où un peu plus de vides que nos LRG. Ce qui compte n'est donc pas la densité seule mais le contraste de densité à l'échelle des voisins : c'est une autre façon de dire qu'ASTRA est une statistique à échelle adaptative.
+
+% ======================================================================
+\section{Questions sur l'article}
+
+\paragraph{Cette organisation (annexes « reproduire », « maths », « cheminement ») est-elle usuelle ?} En partie. Mettre les détails mathématiques en annexe et indiquer où trouver le code et les données est courant, et de plus en plus demandé. Une annexe qui retrace tout le cheminement (les essais qui n'ont pas marché) est plus rare dans un article de revue, où l'on garde surtout les tests de robustesse ; elle est en revanche très utile pour un rapport de stage ou une thèse, et pour quelqu'un qui reprend le projet. Pour une soumission, on pourrait la raccourcir.
+
+\paragraph{Faut-il dire que le but initial n'est pas entièrement atteint ?} Pas sous cette forme. L'introduction annonce désormais simplement l'objectif (quantifier le gain sur $\Omega_m$, $\sigma_8$, $w_0$, $w_a$ et $\sum m_\nu$) et précise en une phrase que $\sum m_\nu$ n'est pas accessible avec les simulations disponibles, et pourquoi. C'est une information utile au lecteur, pas un aveu d'échec.
+
+\paragraph{La figure des multipôles des classes.} Dans la première version, les vides et les nœuds, qui ne contiennent qu'environ 150 et 30 points par sous-volume, avaient des barres d'erreur énormes qui imposaient l'échelle des axes : feuillets, filaments et 2PCF étaient écrasés. La figure est maintenant séparée en panneaux avec des échelles adaptées. Les bandes représentent la dispersion d'\emph{un} sous-volume (pas l'erreur de la moyenne), d'où leur largeur aux grandes échelles, où il y a peu de paires.
+
+\paragraph{Pourquoi elle ne ressemble pas à la figure DS de la V1.} La figure de la V1 venait de la première version du code, qui avait plusieurs erreurs (lignes de visée, bords non périodiques, quartiles calculés ensemble), allait jusqu'à $200\Mpch$ et montrait d'autres quantités (quartiles de density split, données contre aléatoires). Ses oscillations aux grandes échelles et ses quadrupôles qui explosent au-delà de $150\Mpch$ sont des artefacts de ces erreurs. Les figures « multipôles par quartile » de l'article actuel (une pour ASTRA, une pour le density split) sont la version corrigée de cette figure.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{env_maps.png}
+\caption{Les environnements dans une tranche de la simulation : $r$ d'ASTRA et densité lissée du density split (haut), quartiles et classes (bas), galaxies en noir.}
+\end{figure}
+
+\end{document}

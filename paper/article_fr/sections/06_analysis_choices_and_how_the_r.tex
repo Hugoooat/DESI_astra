@@ -1,0 +1,64 @@
+\section{Choix d'analyse et évolution des résultats}
+\label{sec:choices}
+% =====================================================================
+
+Le cadre ci-dessus est le résultat de corrections successives, chacune motivée par l'échec de l'approche précédente (Tableau~\ref{tab:evolution}, détails dans l'Annexe~\ref{app:path}). Nous rapportons les résultats intermédiaires car ils montrent quelles conclusions dépendent des choix d'analyse.
+
+\begin{table*}[!tp]
+\centering\small
+\begin{tabular}{p{4.2cm}p{6.3cm}p{6.3cm}}
+\toprule
+Changement & Problème résolu & Effet sur ASTRA vs DS \\
+\midrule
+Fichiers de HOD moyennés $\to$ paires appariées en HOD & les 500 fichiers sont des modèles de HOD différents : leur dispersion ($\sim55\%$) noyait la cosmologie ($\sim1\%$) & les dérivées n'étaient que du bruit \\
+Différences finies $\to$ émulateur & la discordance de HOD résiduelle des paires dominait les dérivées d'un facteur $\sim10$ ; une correction calibrée de la HOD (précise à 8\%) ne suffisait pas & les matrices de Fisher sont devenues bien définies \\
+Émulateur $\to$ émulateur densifié entraîné sur les différences de catalogues & réponse à $\omega_{\rm cdm}$ non apprise ; dérivées des réseaux individuels dispersées de 70--170\% ; le classement changeait d'un entraînement à l'autre & classement stable entre entraînements ; vérifié par une régression indépendante sur la grille de dérivées \\
+192 sous-volumes d'une boîte $\to$ 1786 boîtes indépendantes & covariance issue d'une seule boîte, trois lignes de visée corrélées & $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ sur $\sigma_8$ : $1.12\to0.85$--$1.11$ ; l'avance apparente d'ASTRA disparaît \\
+Type DESI : 4 $\to$ 6 paramètres cosmologiques ($+w_0$, $w_a$) & l'émulateur et la grille de dérivées permettent les paramètres d'énergie noire des objectifs initiaux & les erreurs sur $\omega_{\rm cdm}$ (+40\%) et $n_s$ (+15\%) se dégradent ; rapports inchangés aux erreurs près \\
+Classes ASTRA $\to$ quartiles (analyse principale), classes réexaminées avec Quijote & avec des seuils fixes, les vides et les nœuds contiennent $<1\%$ des points : deux classes dominantes & les quartiles donnent des environnements équilibrés ; classes + auto-corrélations s'avèrent les plus contraignantes sur Quijote \\
+Quijote, 6 paramètres $\to$ sous-ensembles fiables & le bruit des dérivées domine les directions dégénérées ($\Omega_b$, $h$, $M_\nu$) & classement stable seulement pour $(\Omega_m,\sigma_8)$, $(\Omega_m,n_s,\sigma_8)$ \\
+\bottomrule
+\end{tabular}
+\caption{Les principaux changements de l'analyse, le problème résolu par chacun, et son effet sur la comparaison.}
+\label{tab:evolution}
+\end{table*}
+
+\paragraph{Résultats avec la covariance à boîte unique.} Avec la covariance de 192 sous-volumes et la fiducielle \texttt{hod239}, l'émulateur de référence et la régression sur les paires, qui reposent sur des hypothèses différentes, s'accordaient pour dire que l'ASTRA split était aussi contraignant que le density split ou légèrement plus pour les quartiles aléatoires (Tableau~\ref{tab:ratio}) : de 0--20\% sur $\omega_b$, $n_s$ et $\sigma_8$, le rapport sur $\sigma_8$ étant supérieur à l'unité pour les deux estimateurs. Ils divergeaient sur $\omega_{\rm cdm}$ (1.30 contre 0.94), et les erreurs absolues différaient entre les deux estimateurs d'un facteur $\sim2$ pour $\omega_{\rm cdm}$, $n_s$, $\sigma_8$ et $\sim6$ pour $\omega_b$ (Tableau~\ref{tab:sigma_sub}), de même que le gain par rapport à la 2PCF : la régression est probablement trop optimiste (contamination résiduelle par la HOD de ses ordonnées à l'origine) et l'émulateur trop conservateur (le bruit d'entraînement lisse les petites pentes). Les variantes avec auto-corrélations ou un seul environnement changeaient fortement entre estimateurs et entre entraînements.
+
+\paragraph{Résultats avec la covariance indépendante.} Avec les mêmes dérivées de l'émulateur, le remplacement de la covariance par celle des 1786 boîtes indépendantes a inversé la petite avance de l'ASTRA split (Section~\ref{sec:results}). Les 192 échantillons corrélés représentaient mal le bruit relatif des deux méthodes ; la covariance indépendante est la plus fiable et constitue la référence. Ce qui a survécu à ce changement, et à tous les autres, c'est que les deux méthodes portent une information comparable et sont complémentaires.
+
+\paragraph{Analyse de référence.} L'analyse de référence a été fixée après ces étapes : pour les mocks de type DESI, l'émulateur densifié entraîné sur les différences de catalogues, la covariance des petites boîtes officielles et la HOD officielle comme point fiduciel ; pour Quijote, les sous-ensembles de paramètres dont les prévisions ne dépendent pas du bruit des dérivées. Les autres choix sont traités comme des tests de robustesse.
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{llcccc}
+\toprule
+quart. & dériv. & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+aléatoire & émulateur & $1.02(15)$ & $1.30(11)$ & $1.11(9)$ & $1.12(6)$ \\
+aléatoire & régression & $1.09(11)$ & $0.94(4)$ & $1.07(11)$ & $1.16(9)$ \\
+galaxie & émulateur & $0.80(9)$ & $0.91(8)$ & $0.92(7)$ & $0.96(2)$ \\
+galaxie & régression & $1.08(16)$ & $1.15(10)$ & $1.10(13)$ & $1.00(12)$ \\
+\bottomrule
+\end{tabular}
+\caption{Obsolète : $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ avec la covariance de 192 sous-volumes (corrélations croisées Q1+Q4, HOD marginalisée) ; au-dessus de 1 : avantage à ASTRA. Entre parenthèses : incertitude due à l'ensemble d'émulateurs ou au bootstrap des sous-volumes.}
+\label{tab:ratio}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\begin{tabular}{lcccc}
+\toprule
+vecteur de données & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
+\midrule
+2PCF & .023/.0026 & .018/.0067 & .20/.077 & .25/.083 \\
+ASTRA & .011/.0018 & .015/.0071 & .11/.051 & .13/.081 \\
+DS & .011/.0019 & .019/.0067 & .12/.054 & .14/.094 \\
+A + DS & .0075/.0014 & .013/.0052 & .090/.039 & .11/.061 \\
+tous & .0066/.0011 & .010/.0042 & .081/.032 & .10/.052 \\
+\bottomrule
+\end{tabular}
+\caption{Obsolète : erreurs marginalisées avec la covariance de 192 sous-volumes, dérivées de l'émulateur / de la régression (quartiles aléatoires, comprimé, HOD marginalisée, un volume de $(500\Mpch)^3$).}
+\label{tab:sigma_sub}
+\end{table}
+
