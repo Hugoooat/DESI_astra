@@ -49,8 +49,43 @@
 \contentsline {paragraph}{Lire les figures MCMC.}{9}{section*.27}%
 \contentsline {section}{\numberline {10}Les classes ASTRA}{9}{section.10}%
 \contentsline {paragraph}{Pourquoi ces fractions dépendent du catalogue.}{9}{section*.28}%
-\contentsline {section}{\numberline {11}Questions sur l'article}{9}{section.11}%
-\contentsline {paragraph}{Cette organisation (annexes « reproduire », « maths », « cheminement ») est-elle usuelle ?}{9}{section*.29}%
-\contentsline {paragraph}{Faut-il dire que le but initial n'est pas entièrement atteint ?}{9}{section*.30}%
-\contentsline {paragraph}{La figure des multipôles des classes.}{9}{section*.31}%
-\contentsline {paragraph}{Pourquoi elle ne ressemble pas à la figure DS de la V1.}{10}{section*.32}%
+\contentsline {section}{\numberline {11}Relecture : sections 3 à 6 de l'article}{9}{section.11}%
+\contentsline {subsection}{\numberline {11.1}Section 3 : les environnements}{9}{subsection.11.1}%
+\contentsline {paragraph}{La corrélation de Spearman et la valeur 0.72.}{9}{section*.29}%
+\contentsline {paragraph}{La figure 5 : pourquoi le density split bouge beaucoup plus qu'ASTRA ?}{9}{section*.30}%
+\contentsline {paragraph}{Qu'en déduire ? Le clustering d'ASTRA ne se fait-il pas sur $r$ ?}{10}{section*.31}%
+\contentsline {subsection}{\numberline {11.2}Section 4 : les corrélations}{10}{subsection.11.2}%
+\contentsline {paragraph}{RR et les « $5\times $ le nombre de galaxies ».}{10}{section*.32}%
+\contentsline {paragraph}{« La moyenne des quatre corrélations croisées des quartiles de galaxies est exactement la 2PCF ».}{10}{section*.33}%
+\contentsline {paragraph}{Pourquoi les auto-corrélations des quartiles extrêmes sont amplifiées.}{10}{section*.34}%
+\contentsline {paragraph}{Pourquoi les quadrupôles de Q1 et Q4 ont des signes opposés.}{10}{section*.35}%
+\contentsline {paragraph}{Pourquoi les signaux ASTRA sont 1.6 fois plus faibles.}{10}{section*.36}%
+\contentsline {paragraph}{Espace réel et espace des redshifts : pourquoi les amplitudes sont plus faibles en espace réel.}{11}{section*.37}%
+\contentsline {paragraph}{« Les environnements ASTRA sont moins contrastés mais leur anisotropie est relativement plus forte ».}{11}{section*.38}%
+\contentsline {subsection}{\numberline {11.3}Section 5 : covariance}{11}{subsection.11.3}%
+\contentsline {paragraph}{Lire une matrice de corrélation (figure 11).}{11}{section*.39}%
+\contentsline {paragraph}{Pourquoi un bruit commun rend ASTRA et le density split complémentaires.}{11}{section*.40}%
+\contentsline {paragraph}{Le facteur de Hartlap.}{11}{section*.41}%
+\contentsline {subsection}{\numberline {11.4}Section 5 : dérivées}{11}{subsection.11.4}%
+\contentsline {paragraph}{Le passage sur les paires (vulgarisé).}{11}{section*.42}%
+\contentsline {paragraph}{Terme HOD et terme cosmologique : de quoi parle-t-on ?}{12}{section*.43}%
+\contentsline {paragraph}{« Même 8\% laissent un résidu comparable au signal ».}{12}{section*.44}%
+\contentsline {paragraph}{À quoi servent encore les différences finies ?}{12}{section*.45}%
+\contentsline {paragraph}{Pourquoi un émulateur (le paragraphe SUNBIRD).}{12}{section*.46}%
+\contentsline {paragraph}{Les choix d'architecture.}{12}{section*.47}%
+\contentsline {paragraph}{La précision de l'émulateur est-elle bonne ?}{12}{section*.48}%
+\contentsline {paragraph}{Le test hors échantillon et la densification.}{12}{section*.49}%
+\contentsline {paragraph}{L'entraînement sur les différences.}{13}{section*.50}%
+\contentsline {paragraph}{La figure des dérivées (figure 16).}{13}{section*.51}%
+\contentsline {paragraph}{Les figures 17 et 18 et le panneau vide.}{13}{section*.52}%
+\contentsline {paragraph}{La régression « sous-volume par sous-volume » et le bootstrap.}{13}{section*.53}%
+\contentsline {paragraph}{L'espace HOD réduit, en termes statistiques généraux.}{13}{section*.54}%
+\contentsline {paragraph}{Pourquoi on ajoute l'erreur de l'émulateur à la covariance.}{13}{section*.55}%
+\contentsline {paragraph}{Fisher et compression en deux mots.}{13}{section*.56}%
+\contentsline {paragraph}{« La marginalisation sur la HOD dégrade les contraintes de moins de 30\% ».}{14}{section*.57}%
+\contentsline {subsection}{\numberline {11.5}Section 6 : le tableau de l'évolution de l'analyse (tableau 5)}{14}{subsection.11.5}%
+\contentsline {section}{\numberline {12}Questions sur l'article}{14}{section.12}%
+\contentsline {paragraph}{Cette organisation (annexes « reproduire », « maths », « cheminement ») est-elle usuelle ?}{14}{section*.58}%
+\contentsline {paragraph}{Faut-il dire que le but initial n'est pas entièrement atteint ?}{14}{section*.59}%
+\contentsline {paragraph}{La figure des multipôles des classes.}{15}{section*.60}%
+\contentsline {paragraph}{Pourquoi elle ne ressemble pas à la figure DS de la V1.}{15}{section*.61}%

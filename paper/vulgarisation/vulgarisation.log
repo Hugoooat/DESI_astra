@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.12.19)  16 OCT 2026 23:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.12.19)  23 OCT 2026 15:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -602,66 +602,78 @@ Underfull \hbox (badness 1424) in paragraph at lines 136--136
 
 [7]
 
-[8]
+[8] (./relecture_s3_s6.tex
 
 [9]
-<../figures/env_maps.png, id=210, 1156.32pt x 794.97pt>
+
+[10]
+
+[11]
+
+[12]
+
+[13])
+
+[14]
+<../figures/env_maps.png, id=296, 1156.32pt x 794.97pt>
 File: ../figures/env_maps.png Graphic file (type png)
 <use ../figures/env_maps.png>
-Package pdftex.def Info: ../figures/env_maps.png  used on input line 227.
+Package pdftex.def Info: ../figures/env_maps.png  used on input line 230.
 (pdftex.def)             Requested size: 448.6987pt x 308.47224pt.
 
 
-[10 <../figures/env_maps.png>] (./vulgarisation.aux)
+[15 <../figures/env_maps.png>] (./vulgarisation.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2024-11-02>
  ***********
 Package rerunfilecheck Info: File `vulgarisation.out' has not changed.
-(rerunfilecheck)             Checksum: A660D4AD388EC705584C882A8C6CE605;4431.
+(rerunfilecheck)             Checksum: D786788B7DA6ECEE0087E38ECE99853F;5895.
  ) 
 Here is how much of TeX's memory you used:
- 13291 strings out of 473330
- 217840 string characters out of 5676676
- 635814 words of memory out of 5000000
- 36188 multiletter control sequences out of 15000+600000
- 573806 words of font info for 79 fonts, out of 8000000 for 9000
+ 13374 strings out of 473330
+ 218921 string characters out of 5676676
+ 636817 words of memory out of 5000000
+ 36214 multiletter control sequences out of 15000+600000
+ 576576 words of font info for 88 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,9n,79p,1029b,568s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,9n,79p,1094b,576s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0a
 b76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></global/common/s
 oftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist
 /fonts/type1/public/amsfonts/cm/cmmi10.pfb></global/common/software/nersc9/texl
 ive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public
 /amsfonts/cm/cmmi8.pfb></global/common/software/nersc9/texlive/2024-17c650b50c0
-5ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.p
+5ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10
+.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103e
+d0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></global/common
+/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmr8.pfb></global/common/software/nersc9/texl
+ive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmsy10.pfb></global/common/software/nersc9/texlive/2024-17c650b50c
+05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.
+pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed
+0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></global/common/
+software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dis
+t/fonts/type1/public/cm-super/sfbx1200.pfb></global/common/software/nersc9/texl
+ive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public
+/cm-super/sfbx1440.pfb></global/common/software/nersc9/texlive/2024-17c650b50c0
+5ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfcc1095.p
 fb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0
-ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></global/common/so
-ftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmsy10.pfb></global/common/software/nersc9/texli
+ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></global/common/s
+oftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist
+/fonts/type1/public/cm-super/sfrm1095.pfb></global/common/software/nersc9/texli
 ve/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmsy8.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05
-ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pf
+cm-super/sfrm1200.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05
+ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pf
 b></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0a
-b76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></global/common/so
+b76a21df/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></global/common/so
 ftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/
-fonts/type1/public/cm-super/sfbx1440.pfb></global/common/software/nersc9/texliv
-e/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/c
-m-super/sfcc1095.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05e
-e823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb
-></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab
-76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></global/common/sof
-tware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/f
-onts/type1/public/cm-super/sfrm1200.pfb></global/common/software/nersc9/texlive
-/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm
--super/sfrm1728.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee
-823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb>
-</global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab7
-6a21df/texmf-dist/fonts/type1/public/cm-super/sftt1095.pfb>
-Output written on vulgarisation.pdf (10 pages, 564578 bytes).
+fonts/type1/public/cm-super/sftt1095.pfb>
+Output written on vulgarisation.pdf (15 pages, 604879 bytes).
 PDF statistics:
- 310 PDF objects out of 1000 (max. 8388607)
- 259 compressed objects within 3 object streams
- 68 named destinations out of 1000 (max. 500000)
- 198 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 410 PDF objects out of 1000 (max. 8388607)
+ 351 compressed objects within 4 object streams
+ 113 named destinations out of 1000 (max. 500000)
+ 246 words of extra memory for PDF output out of 10000 (max. 10000000)
 

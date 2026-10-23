@@ -2,9 +2,19 @@
 \label{app:maths}
 % =====================================================================
 
-\paragraph{Fisher matrix and Hartlap factor.} For a data vector $\boldsymbol d$ with covariance $C$ estimated from $N_s$ samples, $F_{ij} = \partial_i\boldsymbol d^T \hat C^{-1}\partial_j\boldsymbol d$ with $\hat C^{-1} = \frac{N_s-N_d-2}{N_s-1}C^{-1}$ \cite{Hartlap2007}; the marginalised errors are $\sigma_i=\sqrt{(F^{-1})_{ii}}$ and the errors at fixed other parameters $1/\sqrt{F_{ii}}$. HOD parameters are marginalised by adding a Gaussian prior $P_h$ to the HOD block and inverting the full matrix.
+\paragraph{Fisher matrix.} For a data vector $\boldsymbol d$ (the measured statistics), the Fisher matrix of the parameters $p=(\boldsymbol\theta,\boldsymbol h)$ is
+\begin{equation}
+F = D^T C^{-1} D + P_h, \qquad D_{ai} = \frac{\partial d_a}{\partial p_i}.
+\end{equation}
+Each ingredient has a role: $D$ (one column per parameter) says how much each element of the data vector moves when a parameter moves; $C^{-1}$ weights these movements by the inverse of the noise, so that a change counts in proportion to its significance, with the correlations between bins taken into account; $P_h$ adds the prior knowledge on the HOD parameters (here a Gaussian of the width of their uniform prior, on the HOD block only). $F$ is the inverse of the parameter covariance expected for an unbiased, optimal analysis: the marginalised errors are $\sigma_i=\sqrt{(F^{-1})_{ii}}$ (all other parameters free) and the errors at fixed other parameters $1/\sqrt{F_{ii}}$. Comparing two statistics amounts to comparing their $\sigma_i$.
 
-\paragraph{Compression.} $\boldsymbol t = W^T\boldsymbol d$, $W=\tilde C^{-1}D$, with $D$ the derivatives with respect to the 16 parameters and $\tilde C$ a Ledoit--Wolf shrinkage covariance. If $\tilde C=C$, $\boldsymbol t$ keeps all the Fisher information of $\boldsymbol d$; otherwise it keeps less, without bias. The covariance of $\boldsymbol t$ is estimated from the samples, with a Hartlap factor close to unity.
+\paragraph{Hartlap factor.} The covariance is estimated from $N_s$ simulated samples. The inverse of an estimated covariance is biased: with noise, $\hat C$ has some accidentally small eigenvalues, so $\hat C^{-1}$ is on average too large, and the Fisher errors too small. For Gaussian data the bias is known exactly, and it is removed by the factor \cite{Hartlap2007}
+\begin{equation}
+\hat C^{-1}_{\rm unbiased} = \frac{N_s-N_d-2}{N_s-1}\,\hat C^{-1},
+\end{equation}
+where $N_d$ is the length of the data vector. The factor approaches 1 when $N_s\gg N_d$, and decreases quickly when $N_d$ approaches $N_s$: with 192 samples it is 0.72 for $N_d=52$ but 0.31 for $N_d=130$, which also increases the noise of the forecast. This is why we compress long data vectors, and why 1786 independent boxes (factor 0.99 after compression) are much better than 192 subvolumes.
+
+\paragraph{Compression.} $\boldsymbol t = W^T\boldsymbol d$, $W=\tilde C^{-1}D$, with $D$ the derivatives with respect to the 18 parameters and $\tilde C$ a Ledoit--Wolf shrinkage covariance: $\boldsymbol t$ has one element per parameter, each a weighted sum of the data designed to be as sensitive as possible to that parameter. If $\tilde C=C$, $\boldsymbol t$ keeps all the Fisher information of $\boldsymbol d$. If $\tilde C$ is only an approximation, the weights are not optimal and $\boldsymbol t$ keeps less information. This cannot bias the forecast towards optimism: $\boldsymbol t$ is a linear function of the data, its derivatives are $W^TD$ and its covariance $W^TCW$ is measured from the samples, so its Fisher matrix $(W^TD)^T(W^TCW)^{-1}(W^TD)$ is exact for $\boldsymbol t$, and it is always smaller than or equal to that of $\boldsymbol d$. A poor compression can only make the errors larger. The covariance of $\boldsymbol t$ is short (18 elements), so its Hartlap factor is close to unity.
 
 \paragraph{Noise of the derivatives.} Derivatives estimated as an average over $N$ pairs are $\hat D = D + \epsilon$, with a noise of covariance $\Sigma_D/N$. The standard Fisher estimator then has the expectation
 \begin{equation}
