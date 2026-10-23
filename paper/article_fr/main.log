@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.12.19)  16 OCT 2026 23:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.12.19)  23 OCT 2026 15:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -764,22 +764,22 @@ t line 38.
 (pdftex.def)             Requested size: 510.78302pt x 272.41452pt.
 
 
-<../figures/v2_environment.png, id=245, 1160.4497pt x 355.15543pt>
+<../figures/v2_environment.png, id=246, 1160.4497pt x 355.15543pt>
 File: ../figures/v2_environment.png Graphic file (type png)
 <use ../figures/v2_environment.png>
 Package pdftex.def Info: ../figures/v2_environment.png  used on input line 51.
 (pdftex.def)             Requested size: 485.24231pt x 148.50853pt.
-<../figures/env_maps.png, id=246, 1156.32pt x 794.97pt>
+<../figures/env_maps.png, id=247, 1156.32pt x 794.97pt>
 File: ../figures/env_maps.png Graphic file (type png)
 <use ../figures/env_maps.png>
 Package pdftex.def Info: ../figures/env_maps.png  used on input line 58.
 (pdftex.def)             Requested size: 510.78302pt x 351.1586pt.
-<../figures/v2_env_hist.png, id=247, 794.97pt x 274.626pt>
+<../figures/v2_env_hist.png, id=248, 794.97pt x 274.626pt>
 File: ../figures/v2_env_hist.png Graphic file (type png)
 <use ../figures/v2_env_hist.png>
 Package pdftex.def Info: ../figures/v2_env_hist.png  used on input line 65.
 (pdftex.def)             Requested size: 434.16867pt x 149.98877pt.
-<../figures/v2_response.png, id=248, 867.24pt x 289.08pt>
+<../figures/v2_response.png, id=249, 867.24pt x 289.08pt>
 File: ../figures/v2_response.png Graphic file (type png)
 <use ../figures/v2_response.png>
 Package pdftex.def Info: ../figures/v2_response.png  used on input line 72.
@@ -793,57 +793,43 @@ Underfull \hbox (badness 7595) in paragraph at lines 7--8
 
 
 [5]
+
+
 Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-
-
-Underfull \vbox (badness 2790) has occurred while \output is active []
 
 
 
 [6 <../figures/classes_abacus_multipoles.png> <../figures/v2_environment.png>]
 [7 <../figures/env_maps.png> <../figures/v2_env_hist.png>]
-<../figures/v2_multipoles_rand.png, id=287, 1156.32pt x 505.89pt>
-File: ../figures/v2_multipoles_rand.png Graphic file (type png)
-<use ../figures/v2_multipoles_rand.png>
-Package pdftex.def Info: ../figures/v2_multipoles_rand.png  used on input line 
-27.
-(pdftex.def)             Requested size: 510.78302pt x 223.46455pt.
-<../figures/v1style_multipoles_astra.png, id=288, 722.7pt x 578.16pt>
-File: ../figures/v1style_multipoles_astra.png Graphic file (type png)
-<use ../figures/v1style_multipoles_astra.png>
-Package pdftex.def Info: ../figures/v1style_multipoles_astra.png  used on input
- line 34.
-(pdftex.def)             Requested size: 250.39151pt x 200.31232pt.
-<../figures/v1style_multipoles_ds.png, id=289, 722.7pt x 578.16pt>
-File: ../figures/v1style_multipoles_ds.png Graphic file (type png)
-<use ../figures/v1style_multipoles_ds.png>
-Package pdftex.def Info: ../figures/v1style_multipoles_ds.png  used on input li
-ne 41.
-(pdftex.def)             Requested size: 250.39151pt x 200.31232pt.
-<../figures/v2_multipoles_gal.png, id=292, 1156.32pt x 505.89pt>
-File: ../figures/v2_multipoles_gal.png Graphic file (type png)
-<use ../figures/v2_multipoles_gal.png>
-Package pdftex.def Info: ../figures/v2_multipoles_gal.png  used on input line 4
-8.
-(pdftex.def)             Requested size: 510.78302pt x 223.46455pt.
-
-
-<../figures/v2_real_vs_redshift.png, id=296, 1011.78pt x 505.89pt>
-File: ../figures/v2_real_vs_redshift.png Graphic file (type png)
-<use ../figures/v2_real_vs_redshift.png>
-Package pdftex.def Info: ../figures/v2_real_vs_redshift.png  used on input line
- 59.
-(pdftex.def)             Requested size: 510.78302pt x 255.39137pt.
-) (./sections/05_covariance_derivatives_and_fis.tex
-Underfull \hbox (badness 1888) in paragraph at lines 1--1
-[]\T1/cmr/bx/n/14.4 Covariance, dé-ri-vées et pré-vi-
- []
 
 
 
 [8 <../figures/v2_response.png>]
+<../figures/v2_multipoles_rand.png, id=294, 1156.32pt x 505.89pt>
+File: ../figures/v2_multipoles_rand.png Graphic file (type png)
+<use ../figures/v2_multipoles_rand.png>
+Package pdftex.def Info: ../figures/v2_multipoles_rand.png  used on input line 
+32.
+(pdftex.def)             Requested size: 510.78302pt x 223.46455pt.
+<../figures/v1style_multipoles_astra.png, id=295, 722.7pt x 578.16pt>
+File: ../figures/v1style_multipoles_astra.png Graphic file (type png)
+<use ../figures/v1style_multipoles_astra.png>
+Package pdftex.def Info: ../figures/v1style_multipoles_astra.png  used on input
+ line 39.
+(pdftex.def)             Requested size: 250.39151pt x 200.31232pt.
+<../figures/v1style_multipoles_ds.png, id=296, 722.7pt x 578.16pt>
+File: ../figures/v1style_multipoles_ds.png Graphic file (type png)
+<use ../figures/v1style_multipoles_ds.png>
+Package pdftex.def Info: ../figures/v1style_multipoles_ds.png  used on input li
+ne 46.
+(pdftex.def)             Requested size: 250.39151pt x 200.31232pt.
+<../figures/v2_multipoles_gal.png, id=299, 1156.32pt x 505.89pt>
+File: ../figures/v2_multipoles_gal.png Graphic file (type png)
+<use ../figures/v2_multipoles_gal.png>
+Package pdftex.def Info: ../figures/v2_multipoles_gal.png  used on input line 5
+3.
+(pdftex.def)             Requested size: 510.78302pt x 223.46455pt.
+
 
 
 Underfull \vbox (badness 1701) has occurred while \output is active []
@@ -851,119 +837,122 @@ Underfull \vbox (badness 1701) has occurred while \output is active []
 
 
 [9 <../figures/v2_multipoles_rand.png> <../figures/v1style_multipoles_astra.png
-> <../figures/v1style_multipoles_ds.png>]
+>]
+<../figures/v2_real_vs_redshift.png, id=310, 1011.78pt x 505.89pt>
+File: ../figures/v2_real_vs_redshift.png Graphic file (type png)
+<use ../figures/v2_real_vs_redshift.png>
+Package pdftex.def Info: ../figures/v2_real_vs_redshift.png  used on input line
+ 64.
+(pdftex.def)             Requested size: 510.78302pt x 255.39137pt.
+) (./sections/05_covariance_derivatives_and_fis.tex
+Underfull \hbox (badness 1888) in paragraph at lines 1--1
+[]\T1/cmr/bx/n/14.4 Covariance, dé-ri-vées et pré-vi-
+ []
 
-<../figures/v2_corr.png, id=318, 505.89pt x 433.62pt>
-File: ../figures/v2_corr.png Graphic file (type png)
-<use ../figures/v2_corr.png>
-Package pdftex.def Info: ../figures/v2_corr.png  used on input line 15.
-(pdftex.def)             Requested size: 250.39151pt x 214.62602pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[10 <../figures/v2_multipoles_gal.png> <../figures/v2_real_vs_redshift.png>]
-Overfull \hbox (61.72714pt too wide) in paragraph at lines 27--38
- [][] 
- []
+
+
+[10 <../figures/v1style_multipoles_ds.png>]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
+<../figures/v2_corr.png, id=328, 505.89pt x 433.62pt>
+File: ../figures/v2_corr.png Graphic file (type png)
+<use ../figures/v2_corr.png>
+Package pdftex.def Info: ../figures/v2_corr.png  used on input line 17.
+(pdftex.def)             Requested size: 250.39151pt x 214.62602pt.
 
-Underfull \hbox (badness 1152) in paragraph at lines 49--50
+
+[11 <../figures/v2_multipoles_gal.png> <../figures/v2_real_vs_redshift.png>]
+
+
+Underfull \hbox (badness 1152) in paragraph at lines 52--53
  []\T1/cmr/bx/n/10.95 Pourquoi un ému-la-teur.[] \T1/cmr/m/n/10.95 Comme dans S
 UN-
  []
 
 
 
-[11 <../figures/v2_corr.png>]
+[12 <../figures/v2_corr.png>]
 
 
-Overfull \hbox (28.39319pt too wide) in paragraph at lines 65--74
+
+[13]
+Overfull \hbox (28.39319pt too wide) in paragraph at lines 68--77
  [][] 
  []
 
-
-
-[12]
-<../figures/readable_emulator_validation.png, id=366, 1156.32pt x 260.172pt>
+<../figures/readable_emulator_validation.png, id=372, 1156.32pt x 260.172pt>
 File: ../figures/readable_emulator_validation.png Graphic file (type png)
 <use ../figures/readable_emulator_validation.png>
 Package pdftex.def Info: ../figures/readable_emulator_validation.png  used on i
-nput line 82.
+nput line 85.
 (pdftex.def)             Requested size: 510.78302pt x 114.92462pt.
-<../figures/v2_derivatives_loco.png, id=367, 1192.455pt x 751.608pt>
+<../figures/v2_derivatives_loco.png, id=373, 1192.455pt x 751.608pt>
 File: ../figures/v2_derivatives_loco.png Graphic file (type png)
 <use ../figures/v2_derivatives_loco.png>
 Package pdftex.def Info: ../figures/v2_derivatives_loco.png  used on input line
- 89.
+ 92.
 (pdftex.def)             Requested size: 510.78302pt x 321.94653pt.
-<../figures/v2_emulator_vs_pairs.png, id=368, 1192.455pt x 751.608pt>
+<../figures/v2_emulator_vs_pairs.png, id=374, 1192.455pt x 751.608pt>
 File: ../figures/v2_emulator_vs_pairs.png Graphic file (type png)
 <use ../figures/v2_emulator_vs_pairs.png>
 Package pdftex.def Info: ../figures/v2_emulator_vs_pairs.png  used on input lin
-e 96.
+e 99.
 (pdftex.def)             Requested size: 510.78302pt x 321.94653pt.
-<../figures/v2_validate_local.png, id=369, 650.43pt x 289.08pt>
+<../figures/v2_validate_local.png, id=375, 650.43pt x 289.08pt>
 File: ../figures/v2_validate_local.png Graphic file (type png)
 <use ../figures/v2_validate_local.png>
 Package pdftex.def Info: ../figures/v2_validate_local.png  used on input line 1
-03.
+06.
 (pdftex.def)             Requested size: 250.39151pt x 111.28511pt.
-<../figures/v2_derivatives.png, id=372, 1647.2742pt x 433.62pt>
+<../figures/v2_derivatives.png, id=378, 1647.2742pt x 433.62pt>
 File: ../figures/v2_derivatives.png Graphic file (type png)
 <use ../figures/v2_derivatives.png>
-Package pdftex.def Info: ../figures/v2_derivatives.png  used on input line 110.
+Package pdftex.def Info: ../figures/v2_derivatives.png  used on input line 113.
 
 (pdftex.def)             Requested size: 510.78302pt x 134.45389pt.
-<../figures/v1style_derivatives_astra.png, id=373, 867.24pt x 1084.05pt>
+<../figures/v1style_derivatives_astra.png, id=379, 867.24pt x 1084.05pt>
 File: ../figures/v1style_derivatives_astra.png Graphic file (type png)
 <use ../figures/v1style_derivatives_astra.png>
 Package pdftex.def Info: ../figures/v1style_derivatives_astra.png  used on inpu
-t line 117.
+t line 120.
 (pdftex.def)             Requested size: 250.39151pt x 312.97699pt.
-<../figures/v1style_derivatives_ds.png, id=374, 867.24pt x 1084.05pt>
+<../figures/v1style_derivatives_ds.png, id=380, 867.24pt x 1084.05pt>
 File: ../figures/v1style_derivatives_ds.png Graphic file (type png)
 <use ../figures/v1style_derivatives_ds.png>
 Package pdftex.def Info: ../figures/v1style_derivatives_ds.png  used on input l
-ine 124.
+ine 127.
 (pdftex.def)             Requested size: 250.39151pt x 312.97699pt.
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-
+[14]
 Underfull \vbox (badness 3884) has occurred while \output is active []
 
 
 
-[13 <../figures/readable_emulator_validation.png> <../figures/v2_derivatives_lo
-co.png>]
+
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-
-
-[14 <../figures/v2_emulator_vs_pairs.png> <../figures/v2_validate_local.png>]
-Underfull \vbox (badness 8189) has occurred while \output is active []
-
-
-
-
-Underfull \hbox (badness 1838) in paragraph at lines 141--142
+[15 <../figures/readable_emulator_validation.png> <../figures/v2_derivatives_lo
+co.png>]) (./sections/06_analysis_choices_and_how_the_r.tex
+Underfull \hbox (badness 1838) in paragraph at lines 144--1
  []\T1/cmr/bx/n/10.95 Compression.[] \T1/cmr/m/n/10.95 Chaque vec-teur de don-n
 ées est
  []
 
 
 
-[15 <../figures/v2_derivatives.png> <../figures/v1style_derivatives_astra.png> 
-<../figures/v1style_derivatives_ds.png>])
-(./sections/06_analysis_choices_and_how_the_r.tex
+
 Underfull \hbox (badness 6236) in paragraph at lines 15--15
 []\T1/cmr/m/n/10 Émulateur $\OMS/cmsy/m/n/10 !$ \T1/cmr/m/n/10 ému-la-teur
  []
@@ -1015,7 +1004,11 @@ Overfull \hbox (3.22334pt too wide) in paragraph at lines 9--22
 
 
 
+[16 <../figures/v2_emulator_vs_pairs.png> <../figures/v2_validate_local.png>]
 
+
+
+[17 <../figures/v2_derivatives.png>]
 Overfull \hbox (44.70038pt too wide) in paragraph at lines 34--44
  [][] 
  []
@@ -1026,11 +1019,14 @@ Overfull \hbox (64.62962pt too wide) in paragraph at lines 50--61
  []
 
 ) (./sections/07_results.tex
-Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+Underfull \vbox (badness 3088) has occurred while \output is active []
 
 
 
-[16]
+[18 <../figures/v1style_derivatives_astra.png> <../figures/v1style_derivatives_
+ds.png>]
 Overfull \hbox (52.99947pt too wide) in paragraph at lines 11--22
  [][] 
  []
@@ -1041,8 +1037,6 @@ Underfull \hbox (badness 1057) in paragraph at lines 22--22
  []
 
 
-
-
 Underfull \hbox (badness 2302) in paragraph at lines 28--29
  []\T1/cmr/bx/n/10.95 Quartiles in-di-vi-duels.[] \T1/cmr/m/n/10.95 Les Fi-gure
 s []20[] et []21[]
@@ -1050,74 +1044,69 @@ s []20[] et []21[]
 
 
 
-[17]
+
 Overfull \hbox (111.45741pt too wide) in paragraph at lines 38--48
  [][] 
  []
 
-<../figures/v2_triangle.png, id=452, 570.933pt x 570.933pt>
+<../figures/v2_triangle.png, id=451, 570.933pt x 570.933pt>
 File: ../figures/v2_triangle.png Graphic file (type png)
 <use ../figures/v2_triangle.png>
 Package pdftex.def Info: ../figures/v2_triangle.png  used on input line 54.
 (pdftex.def)             Requested size: 250.39151pt x 250.39238pt.
-<../figures/v1style_quartiles_astra.png, id=453, 642.4803pt x 643.203pt>
+<../figures/v1style_quartiles_astra.png, id=452, 642.4803pt x 643.203pt>
 File: ../figures/v1style_quartiles_astra.png Graphic file (type png)
 <use ../figures/v1style_quartiles_astra.png>
 Package pdftex.def Info: ../figures/v1style_quartiles_astra.png  used on input 
 line 61.
 (pdftex.def)             Requested size: 250.39151pt x 250.6715pt.
-<../figures/v1style_quartiles_ds.png, id=454, 642.4803pt x 643.203pt>
+<../figures/v1style_quartiles_ds.png, id=453, 642.4803pt x 643.203pt>
 File: ../figures/v1style_quartiles_ds.png Graphic file (type png)
 <use ../figures/v1style_quartiles_ds.png>
 Package pdftex.def Info: ../figures/v1style_quartiles_ds.png  used on input lin
 e 68.
 (pdftex.def)             Requested size: 250.39151pt x 250.6715pt.
-<../figures/v1style_constraints_astra.png, id=457, 642.4803pt x 643.203pt>
+<../figures/v1style_constraints_astra.png, id=456, 642.4803pt x 643.203pt>
 File: ../figures/v1style_constraints_astra.png Graphic file (type png)
 <use ../figures/v1style_constraints_astra.png>
 Package pdftex.def Info: ../figures/v1style_constraints_astra.png  used on inpu
 t line 75.
 (pdftex.def)             Requested size: 250.39151pt x 250.6715pt.
-<../figures/v1style_constraints_ds.png, id=458, 642.4803pt x 643.203pt>
+<../figures/v1style_constraints_ds.png, id=457, 642.4803pt x 643.203pt>
 File: ../figures/v1style_constraints_ds.png Graphic file (type png)
 <use ../figures/v1style_constraints_ds.png>
 Package pdftex.def Info: ../figures/v1style_constraints_ds.png  used on input l
 ine 82.
 (pdftex.def)             Requested size: 250.39151pt x 250.6715pt.
-<../figures/v2_quartiles.png, id=461, 1647.2742pt x 260.172pt>
+<../figures/v2_quartiles.png, id=460, 1647.2742pt x 260.172pt>
 File: ../figures/v2_quartiles.png Graphic file (type png)
 <use ../figures/v2_quartiles.png>
 Package pdftex.def Info: ../figures/v2_quartiles.png  used on input line 89.
 (pdftex.def)             Requested size: 510.78302pt x 80.67232pt.
-<../figures/v1style_autocross.png, id=462, 642.4803pt x 643.203pt>
+<../figures/v1style_autocross.png, id=461, 642.4803pt x 643.203pt>
 File: ../figures/v1style_autocross.png Graphic file (type png)
 <use ../figures/v1style_autocross.png>
 Package pdftex.def Info: ../figures/v1style_autocross.png  used on input line 9
 6.
 (pdftex.def)             Requested size: 250.39151pt x 250.6715pt.
-<../figures/v1style_smin.png, id=463, 722.7pt x 867.24pt>
+<../figures/v1style_smin.png, id=462, 722.7pt x 867.24pt>
 File: ../figures/v1style_smin.png Graphic file (type png)
 <use ../figures/v1style_smin.png>
 Package pdftex.def Info: ../figures/v1style_smin.png  used on input line 103.
 (pdftex.def)             Requested size: 250.39151pt x 300.46849pt.
-<../figures/v2_compare_ratios.png, id=464, 1011.78pt x 274.626pt>
+<../figures/v2_compare_ratios.png, id=463, 1011.78pt x 274.626pt>
 File: ../figures/v2_compare_ratios.png Graphic file (type png)
 <use ../figures/v2_compare_ratios.png>
 Package pdftex.def Info: ../figures/v2_compare_ratios.png  used on input line 1
 10.
 (pdftex.def)             Requested size: 510.78302pt x 138.64102pt.
-<../figures/v2_compare_combined.png, id=465, 1011.78pt x 469.755pt>
+<../figures/v2_compare_combined.png, id=464, 1011.78pt x 469.755pt>
 File: ../figures/v2_compare_combined.png Graphic file (type png)
 <use ../figures/v2_compare_combined.png>
 Package pdftex.def Info: ../figures/v2_compare_combined.png  used on input line
  117.
 (pdftex.def)             Requested size: 510.78302pt x 237.14914pt.
 
-
-
-
-[18 <../figures/v2_triangle.png> <../figures/v1style_quartiles_astra.png> <../f
-igures/v1style_quartiles_ds.png>]
 Underfull \hbox (badness 3323) in paragraph at lines 127--128
  []\T1/cmr/bx/n/10.95 Appariement.[] \T1/cmr/m/n/10.95 Les réa-li-sa-tions $\OM
 S/cmsy/m/n/10.95 ^^F$ \T1/cmr/m/n/10.95 d'un in-dice
@@ -1125,50 +1114,57 @@ S/cmsy/m/n/10.95 ^^F$ \T1/cmr/m/n/10.95 d'un in-dice
 
 
 
+[19]
 
+
+
+[20 <../figures/v2_triangle.png> <../figures/v1style_quartiles_astra.png> <../f
+igures/v1style_quartiles_ds.png> <../figures/v1style_constraints_astra.png>]
 Underfull \hbox (badness 1354) in paragraph at lines 138--139
 \T1/cmr/m/n/10.95 bins de $\OT1/cmr/m/n/10.95 20 \OML/cmm/m/it/10.95 h[][]$\T1/
 cmr/m/n/10.95 , mo-no-pôle seul ; Fi-gure []29[]).
  []
 
 
+Underfull \vbox (badness 1466) has occurred while \output is active []
 
-[19 <../figures/v1style_constraints_astra.png> <../figures/v1style_constraints_
-ds.png>]
+
 
 
 Overfull \hbox (59.88078pt too wide) in paragraph at lines 144--156
  [][] 
  []
 
-<../figures/v2_quijote_subsets.png, id=496, 1084.05pt x 303.534pt>
+<../figures/v2_quijote_subsets.png, id=500, 1084.05pt x 303.534pt>
 File: ../figures/v2_quijote_subsets.png Graphic file (type png)
 <use ../figures/v2_quijote_subsets.png>
 Package pdftex.def Info: ../figures/v2_quijote_subsets.png  used on input line 
 162.
 (pdftex.def)             Requested size: 510.78302pt x 143.01762pt.
 
-Underfull \vbox (badness 1675) has occurred while \output is active []
+
+[21 <../figures/v1style_constraints_ds.png>]
+
+
+Underfull \vbox (badness 4242) has occurred while \output is active []
 
 
 
-[20 <../figures/v2_quartiles.png> <../figures/v1style_autocross.png> <../figure
-s/v1style_smin.png>] [21 <../figures/v2_compare_ratios.png> <../figures/v2_comp
+[22 <../figures/v2_quartiles.png> <../figures/v1style_autocross.png> <../figure
+s/v1style_smin.png>] [23 <../figures/v2_compare_ratios.png> <../figures/v2_comp
 are_combined.png> <../figures/v2_quijote_subsets.png>]
 Underfull \hbox (badness 10000) in paragraph at lines 196--197
  []\T1/cmr/bx/n/10.95 Interprétation.[] \T1/cmr/m/n/10.95 Le gain pro-vient des
  auto-
  []
 
-
-
-<../figures/classes_response.png, id=517, 867.24pt x 289.08pt>
+<../figures/classes_response.png, id=536, 867.24pt x 289.08pt>
 File: ../figures/classes_response.png Graphic file (type png)
 <use ../figures/classes_response.png>
 Package pdftex.def Info: ../figures/classes_response.png  used on input line 20
 0.
 (pdftex.def)             Requested size: 510.78302pt x 170.26459pt.
-<../figures/classes_fisher.png, id=518, 1011.78pt x 303.534pt>
+<../figures/classes_fisher.png, id=537, 1011.78pt x 303.534pt>
 File: ../figures/classes_fisher.png Graphic file (type png)
 <use ../figures/classes_fisher.png>
 Package pdftex.def Info: ../figures/classes_fisher.png  used on input line 207.
@@ -1176,14 +1172,13 @@ Package pdftex.def Info: ../figures/classes_fisher.png  used on input line 207.
 (pdftex.def)             Requested size: 510.78302pt x 153.23482pt.
 
 
-[22]
-<../figures/v2_mcmc_widths.png, id=534, 722.7pt x 274.626pt>
+<../figures/v2_mcmc_widths.png, id=541, 722.7pt x 274.626pt>
 File: ../figures/v2_mcmc_widths.png Graphic file (type png)
 <use ../figures/v2_mcmc_widths.png>
 Package pdftex.def Info: ../figures/v2_mcmc_widths.png  used on input line 221.
 
 (pdftex.def)             Requested size: 250.39151pt x 95.14835pt.
-<../figures/readable_mcmc_official.png, id=535, 1084.05pt x 245.718pt>
+<../figures/readable_mcmc_official.png, id=542, 1084.05pt x 245.718pt>
 File: ../figures/readable_mcmc_official.png Graphic file (type png)
 <use ../figures/readable_mcmc_official.png>
 Package pdftex.def Info: ../figures/readable_mcmc_official.png  used on input l
@@ -1196,15 +1191,15 @@ de quatre pa-ra-mètres cos-mo-lo-giques pour un sous-volume de
  []
 
 ) (./sections/08_robustness_tests.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+
+[24 <../figures/classes_response.png>]
 Underfull \hbox (badness 3838) in paragraph at lines 7--8
  []\T1/cmr/bx/n/10.95 Extension pé-rio-dique.[] \T1/cmr/m/n/10.95 Aug-men-ter l
 'ex-ten-sion
  []
-
-
-Underfull \vbox (badness 4518) has occurred while \output is active []
-
-
 
 
 Underfull \hbox (badness 6428) in paragraph at lines 9--10
@@ -1219,19 +1214,26 @@ Underfull \hbox (badness 1259) in paragraph at lines 9--10
 
 
 
-[23 <../figures/classes_response.png> <../figures/classes_fisher.png> <../figur
-es/v2_mcmc_widths.png>]
-<../figures/readable_robustness.png, id=547, 1156.32pt x 469.755pt>
+<../figures/readable_robustness.png, id=553, 1156.32pt x 469.755pt>
 File: ../figures/readable_robustness.png Graphic file (type png)
 <use ../figures/readable_robustness.png>
 Package pdftex.def Info: ../figures/readable_robustness.png  used on input line
  17.
 (pdftex.def)             Requested size: 510.78302pt x 207.5028pt.
 ) (./sections/09_discussion.tex
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
-[24 <../figures/readable_mcmc_official.png>]
+[25 <../figures/classes_fisher.png> <../figures/v2_mcmc_widths.png>]
+Underfull \vbox (badness 5985) has occurred while \output is active []
+
+
+
+
+
+[26 <../figures/readable_mcmc_official.png> <../figures/readable_robustness.png
+>]
 Underfull \hbox (badness 10000) in paragraph at lines 11--12
  []\T1/cmr/bx/n/10.95 Améliorations.[] \T1/cmr/m/n/10.95 Une courbe d'ap-pren-t
 is-sage
@@ -1245,13 +1247,13 @@ Underfull \hbox (badness 1057) in paragraph at lines 4--5
  []
 
 
-
-[25 <../figures/readable_robustness.png>]
 Underfull \hbox (badness 1057) in paragraph at lines 10--11
 \T1/cmr/m/n/10.95 HOD in-dé-pen-dante par cos-mo-lo-gie ne per-
  []
 
-) (./appendices/11_reproducing_this_paper.tex
+
+
+[27]) (./appendices/11_reproducing_this_paper.tex
 (/global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab7
 6a21df/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2024/09/23 1.10c listings language file
@@ -1264,11 +1266,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 5--6
 \T1/cmtt/m/n/10.95 com / Hugoooat / DESI _ astra / tree / astra _ hugo _ v2$[]\
 T1/cmr/m/n/10.95 ,
  []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
 (Font)              Font shape `T1/cmtt/m/n' tried instead on input line 7.
@@ -1334,6 +1331,8 @@ Overfull \hbox (113.79138pt too wide) in paragraph at lines 14--15
  []
 
 
+
+
 Underfull \hbox (badness 5711) in paragraph at lines 15--16
 []\T1/cmr/bx/n/10.95 Quijote \T1/cmr/m/n/10.95 : ca-ta-logues de ha-los Rocks-t
 ar
@@ -1380,8 +1379,6 @@ ions .
  []
 
 
-
-[26]
 Underfull \hbox (badness 1210) in paragraph at lines 17--18
 \T1/cmr/m/n/10.95 Les pro-duits in-ter-mé-diaires (me-sures, ému-la-teurs
  []
@@ -1399,6 +1396,8 @@ nt
  []
 
 
+
+[28]
 Overfull \hbox (77.52887pt too wide) in paragraph at lines 42--57
  [][] 
  []
@@ -1407,8 +1406,8 @@ Overfull \hbox (77.52887pt too wide) in paragraph at lines 42--57
 
 
 
-[27]
-Overfull \hbox (18.3624pt too wide) detected at line 25
+[29]
+Overfull \hbox (18.3624pt too wide) detected at line 35
 [][][]\OMS/cmsy/m/n/10.95 L \OT1/cmr/m/n/10.95 = [][][] + \OML/cmm/m/it/10.95 ^
 ^U[][][];
  []
@@ -1428,7 +1427,7 @@ s aux HOD
 
 
 
-[28]) (./bibliography.tex
+[30]) (./bibliography.tex
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 4--5
@@ -1448,7 +1447,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 4--5
 
 )
 
-[29] (./main.aux)
+[31] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2024-11-02>
@@ -1457,65 +1456,63 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 8231220C0297CC09F387C743CAF9B852;7001.
  ) 
 Here is how much of TeX's memory you used:
- 16897 strings out of 473330
- 285021 string characters out of 5676676
- 1107114 words of memory out of 5000000
+ 16902 strings out of 473330
+ 285067 string characters out of 5676676
+ 1116462 words of memory out of 5000000
  39559 multiletter control sequences out of 15000+600000
  577204 words of font info for 90 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,12n,79p,2156b,1269s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,12n,79p,2617b,1269s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0a
 b76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></global/common/s
 oftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist
 /fonts/type1/public/amsfonts/cm/cmmi10.pfb></global/common/software/nersc9/texl
 ive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmmi6.pfb></global/common/software/nersc9/texlive/2024-17c650b50c0
-5ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.p
+/amsfonts/cm/cmmi7.pfb></global/common/software/nersc9/texlive/2024-17c650b50c0
+5ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.p
 fb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0
-ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></global/common/s
-oftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmmib10.pfb></global/common/software/nersc9/tex
-live/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmr10.pfb></global/common/software/nersc9/texlive/2024-17c650b50c
-05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.p
-fb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0
-ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></global/common/so
-ftware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmr8.pfb></global/common/software/nersc9/texlive
-/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmsy10.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05e
-e823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb
-></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab
-76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></global/common/sof
-tware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/f
-onts/type1/public/amsfonts/cm/cmsy8.pfb></global/common/software/nersc9/texlive
-/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/am
-sfonts/symbols/msam10.pfb></global/common/software/nersc9/texlive/2024-17c650b5
-0c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx109
-5.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103
-ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></global/commo
-n/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-d
-ist/fonts/type1/public/cm-super/sfbx1440.pfb></global/common/software/nersc9/te
-xlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/publ
-ic/cm-super/sfcc1095.pfb></global/common/software/nersc9/texlive/2024-17c650b50
-c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfit1000
-.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103e
-d0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></global/common
+ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></global/common
 /software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-di
-st/fonts/type1/public/cm-super/sfrm1095.pfb></global/common/software/nersc9/tex
+st/fonts/type1/public/amsfonts/cm/cmr10.pfb></global/common/software/nersc9/tex
 live/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/publi
-c/cm-super/sfrm1200.pfb></global/common/software/nersc9/texlive/2024-17c650b50c
-05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1728.
+c/amsfonts/cm/cmr6.pfb></global/common/software/nersc9/texlive/2024-17c650b50c0
+5ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pf
+b></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0a
+b76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></global/common/sof
+tware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmsy10.pfb></global/common/software/nersc9/texliv
+e/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmsy6.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05e
+e823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb
+></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab
+76a21df/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></global/common/sof
+tware/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/f
+onts/type1/public/amsfonts/symbols/msam10.pfb></global/common/software/nersc9/t
+exlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/pub
+lic/cm-super/sfbx1095.pfb></global/common/software/nersc9/texlive/2024-17c650b5
+0c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx120
+0.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103
+ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></global/commo
+n/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-d
+ist/fonts/type1/public/cm-super/sfcc1095.pfb></global/common/software/nersc9/te
+xlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/publ
+ic/cm-super/sfit1000.pfb></global/common/software/nersc9/texlive/2024-17c650b50
+c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1000
+.pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103e
+d0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb></global/common
+/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-di
+st/fonts/type1/public/cm-super/sfrm1200.pfb></global/common/software/nersc9/tex
+live/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/publi
+c/cm-super/sfrm1728.pfb></global/common/software/nersc9/texlive/2024-17c650b50c
+05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfti1095.
 pfb></global/common/software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed
-0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></global/common/
+0ab76a21df/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb></global/common/
 software/nersc9/texlive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dis
-t/fonts/type1/public/cm-super/sftt1000.pfb></global/common/software/nersc9/texl
-ive/2024-17c650b50c05ee823c6093081103ed0ab76a21df/texmf-dist/fonts/type1/public
-/cm-super/sftt1095.pfb>
-Output written on main.pdf (29 pages, 6737375 bytes).
+t/fonts/type1/public/cm-super/sftt1095.pfb>
+Output written on main.pdf (31 pages, 6807161 bytes).
 PDF statistics:
- 819 PDF objects out of 1000 (max. 8388607)
- 653 compressed objects within 7 object streams
- 218 named destinations out of 1000 (max. 500000)
+ 833 PDF objects out of 1000 (max. 8388607)
+ 667 compressed objects within 7 object streams
+ 223 named destinations out of 1000 (max. 500000)
  443 words of extra memory for PDF output out of 10000 (max. 10000000)
 

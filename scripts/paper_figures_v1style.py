@@ -37,6 +37,7 @@ QCOL = ['#1f77b4', '#ff4f6d', '#2ca02c', '#c9a800']            # Q1..Q4, as in t
 NAME = {'astra': 'ASTRA split', 'ds': 'Density split'}
 PTEX = {'omega_b': r'\omega_b', 'omega_cdm': r'\omega_{\rm cdm}', 'n_s': 'n_s', 'sigma8': r'\sigma_8', 'w0': 'w_0', 'wa': 'w_a'}
 PARAMS = ['omega_b', 'omega_cdm', 'n_s', 'sigma8']
+STEP = {'omega_b': 0.001, 'omega_cdm': 0.005, 'n_s': 0.02, 'sigma8': 0.02, 'w0': 0.1, 'wa': 0.2}
 
 
 def st(m, kind, i, pop='rand'):
@@ -84,14 +85,14 @@ def fig_derivatives(fc):
             for i in range(1, 5):
                 name = st(m, 'cross', i)
                 sig = covariance_samples('covbox', [name]).std(0, ddof=1)[:ns]
-                der = fc.jac(name).mean(0)[:ns, ip] * fc.x0[ip] / sig      # d xi_0 / d ln theta, in sigma
+                der = fc.jac(name).mean(0)[:ns, ip] * STEP[p] / sig       # change for a step STEP[p], in sigma
                 ax.plot(s, der, color=QCOL[i - 1], label=f'Q{i}')
             ax.axhline(0, color='k', lw=0.5, ls='--')
-            ax.set_title(rf'$\partial\xi_0/\partial\ln {PTEX[p]}$')
+            ax.set_title(rf'$\Delta\xi_0$ for $\Delta {PTEX[p]} = {STEP[p]}$')
             ax.set_xlabel(r'$s$ [$h^{-1}$ Mpc]')
-            ax.set_ylabel(r'derivative / $\sigma$')
+            ax.set_ylabel(r'$\Delta\xi_0/\sigma$')
             ax.legend(fontsize=8)
-        fig.suptitle(f'Normalised derivatives of the quartile-galaxy cross monopoles — {NAME[m]}\n'
+        fig.suptitle(f'Response of the quartile-galaxy cross monopoles to a small change of each parameter — {NAME[m]}\n'
                      r'(emulator at the official fiducial point, in units of the error of one $(500\,h^{-1}$Mpc$)^3$ volume)')
         fig.tight_layout()
         fig.savefig(PLOTS / f'v1style_derivatives_{m}.png', dpi=140)
