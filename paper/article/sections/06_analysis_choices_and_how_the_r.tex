@@ -6,6 +6,7 @@ The framework above is the result of successive corrections, each motivated by a
 
 \begin{table*}[!tp]
 \centering\small
+\begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{p{4.2cm}p{6.3cm}p{6.3cm}}
 \toprule
 Change & Problem solved & Effect on ASTRA vs DS \\
@@ -19,6 +20,7 @@ ASTRA classes $\to$ quartiles (main analysis), classes revisited with Quijote & 
 Quijote, 6 parameters $\to$ reliable subsets & derivative noise dominates the degenerate directions ($\Omega_b$, $h$, $M_\nu$) & ranking stable only for $(\Omega_m,\sigma_8)$, $(\Omega_m,n_s,\sigma_8)$ \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{The main changes of the analysis, the problem each solved, and its effect on the comparison.}
 \label{tab:evolution}
 \end{table*}
@@ -31,6 +33,7 @@ Quijote, 6 parameters $\to$ reliable subsets & derivative noise dominates the de
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{llcccc}
 \toprule
 quart. & deriv. & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
@@ -41,12 +44,14 @@ galaxy & emulator & $0.80(9)$ & $0.91(8)$ & $0.92(7)$ & $0.96(2)$ \\
 galaxy & regression & $1.08(16)$ & $1.15(10)$ & $1.10(13)$ & $1.00(12)$ \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Superseded: $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ with the 192-subvolume covariance (Q1+Q4 cross-correlations, HOD marginalised); above 1 favours ASTRA. In parentheses: uncertainty from the emulator ensemble or the bootstrap of the subvolumes.}
 \label{tab:ratio}
 \end{table}
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lcccc}
 \toprule
 data vector & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
@@ -58,6 +63,7 @@ A + DS & .0075/.0014 & .013/.0052 & .090/.039 & .11/.061 \\
 all & .0066/.0011 & .010/.0042 & .081/.032 & .10/.052 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Superseded: marginalised errors with the 192-subvolume covariance, emulator / regression derivatives (random quartiles, compressed, HOD marginalised, one $(500\Mpch)^3$ volume).}
 \label{tab:sigma_sub}
 \end{table}

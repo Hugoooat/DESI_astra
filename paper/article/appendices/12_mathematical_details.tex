@@ -30,9 +30,10 @@ The second term is a positive bias: the noise adds spurious information. It is r
 \paragraph{Volume.} The forecasts are computed for one $(500\Mpch)^3$ volume, where the absolute errors are comparable to the prior widths; this is the nature of a comparison of information content and is not corrected. The ratios $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ do not depend on the volume as long as the covariance scales as $1/V$ and the emulator error is negligible, which holds at this volume.
 
 \paragraph{Emulator loss.} With outputs standardised by the statistical error of a $2\,h^{-1}$Gpc box $\sigma_{\rm box}$,
-\begin{equation}
-\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle + \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
-\end{equation}
+\begin{multline}
+\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle \\
++ \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
+\end{multline}
 where the second average runs over the 2544 pairs of catalogues, $\sigma_{ij}$ is the error of their difference (64 paired subvolumes), $\lambda=1$, $\epsilon=0.05\,\sigma_{\rm box}$.
 
 \paragraph{Regression over pairs.} $\boldsymbol d_c(h) = \boldsymbol a_c + G\,V(h-h_0)$ for $c=c_\pm$, with a shared response $G$ and $V$ the 3 leading directions of the HOD space (singular vectors of the HOD response of the 72 fiducial catalogues); derivative $(\boldsymbol a_+-\boldsymbol a_-)/(\theta_+-\theta_-)$; errors by bootstrap over subvolumes.

@@ -1,0 +1,52 @@
+% ======================================================================
+\section{Relecture : sections 7 à 10 de l'article}
+
+\subsection{Lire un graphe de Fisher (« triangle »)}
+Un graphe de Fisher est une grille de panneaux. Sur la diagonale, chaque courbe en cloche montre l'incertitude sur un seul paramètre : plus la cloche est étroite, mieux le paramètre est contraint. Hors de la diagonale, chaque panneau croise deux paramètres : les ellipses entourent les valeurs compatibles avec les données, à 68\% (ellipse intérieure) et 95\% (extérieure) de confiance, tous les autres paramètres étant laissés libres (« marginalisés »).
+\begin{itemize}
+\item Une ellipse \textbf{petite} : les deux paramètres sont bien contraints.
+\item Une ellipse \textbf{allongée et inclinée} : une \emph{dégénérescence}. On peut augmenter un paramètre et compenser en changeant l'autre sans que les données le voient (par exemple $w_0$ et $w_a$, très anti-corrélés). Une statistique qui « lève une dégénérescence » rend l'ellipse plus ronde.
+\item Plusieurs couleurs : plusieurs statistiques. Quand on combine deux statistiques dont les ellipses sont inclinées différemment, l'intersection est beaucoup plus petite que chacune : c'est la complémentarité.
+\item Sur nos figures, les ellipses sont centrées sur les valeurs de référence (ce sont des prévisions, pas des mesures) ; seule leur taille et leur forme comptent.
+\end{itemize}
+
+\subsection{Émulateur et MCMC : qui fait quoi ?}
+Ton intuition est juste. L'\textbf{émulateur} va « vers l'avant » : on lui donne des paramètres (cosmologie + HOD), il prédit les statistiques qu'on mesurerait, en une fraction de seconde. Le \textbf{MCMC} fait la « remontée » : on lui donne une mesure, et il cherche quels paramètres l'expliquent. Pour cela, il propose des milliers de jeux de paramètres, demande à chaque fois à l'émulateur la prédiction correspondante, la compare à la mesure (avec la covariance pour savoir quel écart est acceptable), et garde les jeux de paramètres en proportion de leur accord. L'ensemble des jeux gardés forme la distribution finale (le « postérieur »). L'émulateur est donc le modèle, et le MCMC l'algorithme qui inverse ce modèle. Sans émulateur, il faudrait lancer une simulation à chaque proposition du MCMC, ce qui est impossible.
+
+\subsection{La régression sur les paires}
+C'est une deuxième façon, indépendante de l'émulateur, d'obtenir les dérivées. Dans chaque cosmologie de la grille ($+$ et $-$), on dispose d'une vingtaine de catalogues avec des HOD proches mais différentes. On ajuste, dans chaque cosmologie, une relation linéaire « statistiques en fonction des paramètres HOD » ; on impose que la pente (l'effet de la HOD) soit la même dans les deux cosmologies. La différence entre les deux cosmologies \emph{au même point HOD} (la HOD de référence) est alors l'effet du seul paramètre cosmologique. C'est l'idée d'une comparaison « toutes choses égales par ailleurs », obtenue par régression au lieu d'un émulateur. Elle donne le même classement ASTRA / density split que l'émulateur, ce qui renforce ce classement, mais des erreurs absolues différentes (facteurs 2 à 6), ce qui montre que les valeurs absolues sont moins sûres que les comparaisons.
+
+\subsection{Les trois compressions}
+Une même mesure peut être résumée par plus ou moins de nombres : des bins de distance de 10 ou de $20\Mpch$, avec ou sans le quadrupôle. Moins de nombres, c'est un peu moins d'information, mais surtout beaucoup moins de bruit dans les dérivées de Quijote. Nous avons utilisé trois versions (26, 12 et 6 nombres par statistique). Une conclusion qui reste la même pour les trois ne dépend pas de ce choix : c'est le sens de « robuste vis-à-vis de la compression ».
+
+\subsection{Pourquoi les classes ASTRA gagnent (et seulement avec les auto-corrélations)}
+Ce qui est mesuré : avec les seules corrélations croisées, les classes ne font pas mieux que les quartiles ; avec les auto-corrélations, elles font beaucoup mieux sur $\sigma_8$. Deux explications possibles, que nous n'avons pas testées séparément :
+\begin{itemize}
+\item \textbf{Taille des échantillons.} Un quartile contient 25\% des points. Avec des seuils fixes, les feuillets en contiennent 72\% et les filaments 27\%. Une auto-corrélation calculée sur plus de points a moins de « bruit de comptage » (shot noise) : elle est plus précise.
+\item \textbf{Réponse du volume.} Un quartile contient toujours un quart des points, quelle que soit la cosmologie : c'est imposé. Avec un seuil fixe, la proportion de points au-dessus du seuil change avec la cosmologie (figure de la réponse des fractions) : dans un Univers plus grumeleux, il y a plus de points « filament ». Ce changement de \emph{qui} est dans la classe modifie la corrélation mesurée, et apporte une information que les quartiles effacent.
+\end{itemize}
+Pour séparer les deux, il faudrait comparer avec un découpage en deux moitiés égales de $r$ (même taille, sans réponse du volume).
+
+\paragraph{« Robuste vis-à-vis de la compression, de l'ensemble de paramètres et du nombre de réalisations ».} Le gain sur $\sigma_8$ (facteur 2--3 sur le density split) se retrouve : avec les trois compressions, avec 2 ou 3 paramètres libres, et avec 1000 ou 4000 simulations pour la covariance (changement de moins de 1\%). Il ne dépend donc d'aucun de ces choix. Le gain sur $\Omega_m$ et $n_s$, lui, change avec la compression (de 1.0 à 1.9) : on ne peut pas l'affirmer.
+
+\subsection{Pourquoi le Fisher est « gaussien et local »}
+Le Fisher regarde seulement comment les statistiques varient \emph{autour} du point de référence, et suppose que cette variation est linéaire (une droite). Cela revient à supposer que la distribution des paramètres compatibles est une cloche de Gauss (une ellipse). C'est une approximation : si la vraie distribution est asymétrique, courbée, ou bute contre les limites du prior, le Fisher ne le voit pas. Le MCMC, lui, explore vraiment l'espace des paramètres et n'a pas ces limitations.
+
+\subsection{« Les postérieurs sont non biaisés et calibrés » : a-t-on fait quelque chose pour ça ?}
+Non, rien ne l'impose : c'est le résultat d'un test. On applique le MCMC à des mesures dont on connaît les vrais paramètres (des simulations que l'émulateur n'a jamais vues) et on regarde deux choses. \textbf{Biais} : en moyenne, la valeur trouvée tombe-t-elle sur la vraie ? Ici l'écart moyen est inférieur à 0.4 fois la barre d'erreur : pas de biais notable. \textbf{Calibration} : une barre d'erreur à 68\% doit contenir la vraie valeur dans 68\% des cas ; si c'est moins, les barres sont trop petites (trop optimistes), si c'est plus, trop grandes (prudentes). Ici c'est 69 à 100\%. \emph{Mais} ce test est peu exigeant ici : les distributions trouvées sont presque aussi larges que le prior, et une barre d'erreur presque aussi large que tout l'intervalle permis contient la vraie valeur presque à coup sûr.
+
+\subsection{Les limitations, expliquées sans prérequis}
+\begin{itemize}
+\item \textbf{Prior.} Ce qu'on sait d'un paramètre avant la mesure ; ici, l'intervalle dans lequel les simulations ont été faites. Si la mesure n'apprend presque rien, la distribution finale ressemble au prior.
+\item \textbf{« Contenu en information » vs « contraintes réalistes ».} Nos prévisions sont faites pour un petit volume, $(500\Mpch)^3$, bien plus petit qu'un relevé réel. Les barres d'erreur y sont énormes (aussi larges que le prior) : elles ne disent pas ce que DESI mesurera. En revanche, le \emph{rapport} des barres d'erreur entre deux méthodes ne dépend pas du volume : c'est une mesure fiable de laquelle extrait le plus d'information.
+\item \textbf{Erreur de l'émulateur.} L'émulateur se trompe un peu. Tant que cette erreur est petite devant le bruit de la mesure, ce n'est pas grave. Plus le volume analysé est grand, plus le bruit de mesure est petit ; pour une grande boîte, l'erreur de l'émulateur devient comparable et limite l'analyse.
+\item \textbf{Une seule HOD par point, bruit d'échantillonnage.} Dans un catalogue simulé, chaque halo reçoit des galaxies par tirage au sort (la HOD donne seulement des probabilités). Deux tirages avec exactement la même HOD donnent des catalogues un peu différents : c'est le bruit d'échantillonnage. Comme la suite d'émulation n'a qu'un seul tirage par jeu de paramètres, l'émulateur apprend ce bruit avec le signal, et ne peut pas descendre en dessous. Plusieurs tirages par point permettraient de le moyenner.
+\item \textbf{Quijote plus dilué.} Les halos de Quijote sont dix fois plus rares que nos galaxies ; ASTRA s'adaptant à la densité, il y travaille à une échelle plus grande. Les conclusions Quijote portent donc sur un autre régime.
+\end{itemize}
+
+\subsection{Les habitudes d'écriture d'un article scientifique}
+\paragraph{Tableaux et texte.} L'usage est de mettre les chiffres dans des tableaux et figures, et de réserver le texte aux messages : ce qu'il faut retenir, avec seulement les chiffres clés qui le soutiennent. Une liste de six rapports dans une phrase est à éviter : nous avons ajouté une ligne « $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ » au tableau des erreurs, et le texte ne garde que les conclusions et les ordres de grandeur.
+
+\paragraph{Séparer « résultats » et « interprétation » ?} Les deux usages existent. Beaucoup d'articles d'astrophysique mêlent résultats et interprétation dans la même section (« Results and discussion »), en renvoyant aux tableaux ; d'autres gardent une section « Discussion » séparée pour la mise en perspective globale. C'est ce que nous faisons : chaque sous-section de résultats contient son interprétation (le paragraphe « Interprétation » des classes a été fondu dans le texte), et la section Discussion ne garde que ce qui est transversal (ce qui est robuste, les limites, les suites).
+
+\paragraph{Ce qui est affirmé.} Une règle de base : tout ce qui est affirmé doit être soit démontré (chiffre, figure, référence), soit présenté explicitement comme une hypothèse (« plausiblement », « nous n'avons pas testé »). C'est ce qui a guidé la relecture des sections 7 à 10 : plusieurs phrases ont été corrigées après vérification des chiffres (par exemple, la convergence de la covariance Quijote a été recalculée pour les ensembles de paramètres réellement utilisés).

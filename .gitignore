@@ -8,3 +8,10 @@ paper/*.out
 paper/*.pdf
 models*/
 astra_ds_paper_overleaf.zip
+
+# LaTeX build products
+paper/**/*.aux
+paper/**/*.log
+paper/**/*.out
+paper/**/*.toc
+paper/**/*.pdf

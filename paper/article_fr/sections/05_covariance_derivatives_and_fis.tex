@@ -26,7 +26,7 @@ La grille de dérivées d'AbacusSummit fournit, pour chaque paramètre, deux sim
 
 \begin{table}[!htbp]
 \centering\small
-\resizebox{\linewidth}{!}{%
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccc}
 \toprule
 Paramètre & Fichiers de HOD & $|\Delta h|$ & paires aléatoires \\
@@ -37,7 +37,8 @@ $\omega_{\rm cdm}$ & c102\_hod589 / c103\_hod841 & 0.58 & 1.38 \\
 $n_s$ & c104\_hod308 / c105\_hod735 & 0.65 & 1.37 \\
 $\sigma_8$ & c112\_hod230 / c113\_hod204 & 0.65 & 1.39 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+\end{adjustbox}
 \caption{Catalogues de HOD des paires de différences finies. $|\Delta h|$ est la distance entre les deux vecteurs de paramètres de HOD normalisée à l'étendue du prior (12 paramètres) ; la dernière colonne donne la médiane pour des paires aléatoires.}
 \label{tab:hods}
 \end{table}
@@ -65,6 +66,7 @@ Ces différences finies restent utiles de trois façons. Premièrement, elles me
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccccc}
 \toprule
  & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\alpha_s$ & $w_0$ & $w_0,w_a$ & $\sigma_8$ \\
@@ -74,6 +76,7 @@ terme de diff. & 10 & 11 & 27 & 10 & 12 & 10 & 7 \\
 + petites échelles & 8 & 11 & 26 & 9 & 11 & 8 & 7 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Erreur relative médiane (\%) de la prédiction par l'émulateur des différences entre catalogues locaux exclus des paires $\pm$ de la grille de dérivées, pour les trois variantes d'entraînement.}
 \label{tab:local}
 \end{table}
