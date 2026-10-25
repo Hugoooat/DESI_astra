@@ -6,6 +6,7 @@ Table~\ref{tab:datasets} summarises the data used, their versions and their role
 
 \begin{table*}[!tp]
 \centering\small
+\begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{p{3.3cm}p{4.6cm}p{4.3cm}p{4.3cm}}
 \toprule
 Data set & Version / content & Used & Role \\
@@ -15,6 +16,7 @@ Official DESI AbacusHOD mocks & \texttt{AbacusHOD\_mocks/v1}, LRG, $z=0.5$, mode
 Quijote & $1\,h^{-1}$Gpc, $512^3$ particles, Rockstar halos, snapshot 3 ($z=0.5$, \texttt{out\_3\_pid.list}) & 4000 \texttt{fiducial}; 500 each of \texttt{Om}, \texttt{Ob2}, \texttt{h}, \texttt{ns}, \texttt{s8} ($\pm$), \texttt{Mnu\_p/pp/ppp}, \texttt{fiducial\_ZA} & clean finite-difference Fisher forecasts \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Data sets used in this work.}
 \label{tab:datasets}
 \end{table*}
@@ -34,6 +36,7 @@ Different HOD files therefore cannot be used as independent realisations of the 
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccc}
 \toprule
 Parameter & fiducial & $+$ / $-$ & step $\theta_+-\theta_-$ \\
@@ -44,6 +47,7 @@ $n_s$ & 0.9649 & c104 / c105 & 0.0200 \\
 $\sigma_8$ & 0.808 & c112 / c113 & 0.0320 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{AbacusSummit cosmologies of the derivative grid for the four $\Lambda$CDM parameters; the pairs \texttt{c106}--\texttt{c111} vary $\alpha_s$, $w_0$ and $(w_0, w_a)$.}
 \label{tab:cosmo}
 \end{table}

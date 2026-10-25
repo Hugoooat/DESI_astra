@@ -26,7 +26,7 @@ The AbacusSummit derivative grid provides, for each parameter, two simulations d
 
 \begin{table}[!htbp]
 \centering\small
-\resizebox{\linewidth}{!}{%
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccc}
 \toprule
 Parameter & HOD files & $|\Delta h|$ & random pairs \\
@@ -37,7 +37,8 @@ $\omega_{\rm cdm}$ & c102\_hod589 / c103\_hod841 & 0.58 & 1.38 \\
 $n_s$ & c104\_hod308 / c105\_hod735 & 0.65 & 1.37 \\
 $\sigma_8$ & c112\_hod230 / c113\_hod204 & 0.65 & 1.39 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+\end{adjustbox}
 \caption{HOD catalogues of the finite-difference pairs. $|\Delta h|$ is the distance between the two HOD parameter vectors normalised to the prior range (12 parameters); the last column gives the median for random pairs.}
 \label{tab:hods}
 \end{table}
@@ -65,6 +66,7 @@ These finite differences remain useful in three ways. First, they measure the pr
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccccccc}
 \toprule
  & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\alpha_s$ & $w_0$ & $w_0,w_a$ & $\sigma_8$ \\
@@ -74,6 +76,7 @@ diff. term & 10 & 11 & 27 & 10 & 12 & 10 & 7 \\
 + small scales & 8 & 11 & 26 & 9 & 11 & 8 & 7 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Median relative error (\%) of the emulator prediction of the differences between held-out local catalogues of the $\pm$ pairs of the derivative grid, for the three training variants.}
 \label{tab:local}
 \end{table}

@@ -30,9 +30,10 @@ Le second terme est un biais positif : le bruit ajoute de l'information parasite
 \paragraph{Volume.} Les prévisions sont calculées pour un volume de $(500\Mpch)^3$, où les erreurs absolues sont comparables aux largeurs des priors ; c'est la nature d'une comparaison de contenu en information et ce n'est pas corrigé. Les rapports $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ ne dépendent pas du volume tant que la covariance varie comme $1/V$ et que l'erreur de l'émulateur est négligeable, ce qui est vrai à ce volume.
 
 \paragraph{Perte de l'émulateur.} Avec des sorties standardisées par l'erreur statistique d'une boîte de $2\,h^{-1}$Gpc $\sigma_{\rm box}$,
-\begin{equation}
-\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle + \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
-\end{equation}
+\begin{multline}
+\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle \\
++ \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
+\end{multline}
 où la seconde moyenne porte sur les 2544 paires de catalogues, $\sigma_{ij}$ est l'erreur de leur différence (64 sous-volumes appariés), $\lambda=1$, $\epsilon=0.05\,\sigma_{\rm box}$.
 
 \paragraph{Régression sur les paires.} $\boldsymbol d_c(h) = \boldsymbol a_c + G\,V(h-h_0)$ pour $c=c_\pm$, avec une réponse $G$ partagée et $V$ les 3 directions principales de l'espace de HOD (vecteurs singuliers de la réponse à la HOD des 72 catalogues fiduciels) ; dérivée $(\boldsymbol a_+-\boldsymbol a_-)/(\theta_+-\theta_-)$ ; erreurs par bootstrap sur les sous-volumes.

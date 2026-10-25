@@ -6,6 +6,7 @@ Le cadre ci-dessus est le résultat de corrections successives, chacune motivée
 
 \begin{table*}[!tp]
 \centering\small
+\begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{p{4.2cm}p{6.3cm}p{6.3cm}}
 \toprule
 Changement & Problème résolu & Effet sur ASTRA vs DS \\
@@ -19,6 +20,7 @@ Classes ASTRA $\to$ quartiles (analyse principale), classes réexaminées avec Q
 Quijote, 6 paramètres $\to$ sous-ensembles fiables & le bruit des dérivées domine les directions dégénérées ($\Omega_b$, $h$, $M_\nu$) & classement stable seulement pour $(\Omega_m,\sigma_8)$, $(\Omega_m,n_s,\sigma_8)$ \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Les principaux changements de l'analyse, le problème résolu par chacun, et son effet sur la comparaison.}
 \label{tab:evolution}
 \end{table*}
@@ -31,6 +33,7 @@ Quijote, 6 paramètres $\to$ sous-ensembles fiables & le bruit des dérivées do
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{llcccc}
 \toprule
 quart. & dériv. & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
@@ -41,12 +44,14 @@ galaxie & émulateur & $0.80(9)$ & $0.91(8)$ & $0.92(7)$ & $0.96(2)$ \\
 galaxie & régression & $1.08(16)$ & $1.15(10)$ & $1.10(13)$ & $1.00(12)$ \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Obsolète : $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ avec la covariance de 192 sous-volumes (corrélations croisées Q1+Q4, HOD marginalisée) ; au-dessus de 1 : avantage à ASTRA. Entre parenthèses : incertitude due à l'ensemble d'émulateurs ou au bootstrap des sous-volumes.}
 \label{tab:ratio}
 \end{table}
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lcccc}
 \toprule
 vecteur de données & $\omega_b$ & $\omega_{\rm cdm}$ & $n_s$ & $\sigma_8$ \\
@@ -58,6 +63,7 @@ A + DS & .0075/.0014 & .013/.0052 & .090/.039 & .11/.061 \\
 tous & .0066/.0011 & .010/.0042 & .081/.032 & .10/.052 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Obsolète : erreurs marginalisées avec la covariance de 192 sous-volumes, dérivées de l'émulateur / de la régression (quartiles aléatoires, comprimé, HOD marginalisée, un volume de $(500\Mpch)^3$).}
 \label{tab:sigma_sub}
 \end{table}
