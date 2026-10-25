@@ -6,6 +6,7 @@ Le Tableau~\ref{tab:datasets} résume les données utilisées, leurs versions et
 
 \begin{table*}[!tp]
 \centering\small
+\begin{adjustbox}{max width=\textwidth}
 \begin{tabular}{p{3.3cm}p{4.6cm}p{4.3cm}p{4.3cm}}
 \toprule
 Jeu de données & Version / contenu & Utilisé & Rôle \\
@@ -15,6 +16,7 @@ Mocks officiels DESI AbacusHOD & \texttt{AbacusHOD\_mocks/v1}, LRG, $z=0.5$, mod
 Quijote & $1\,h^{-1}$Gpc, $512^3$ particules, halos Rockstar, snapshot 3 ($z=0.5$, \texttt{out\_3\_pid.list}) & 4000 \texttt{fiducial} ; 500 chacune de \texttt{Om}, \texttt{Ob2}, \texttt{h}, \texttt{ns}, \texttt{s8} ($\pm$), \texttt{Mnu\_p/pp/ppp}, \texttt{fiducial\_ZA} & prévisions de Fisher propres par différences finies \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Jeux de données utilisés dans ce travail.}
 \label{tab:datasets}
 \end{table*}
@@ -34,6 +36,7 @@ Les différents fichiers de HOD ne peuvent donc pas être utilisés comme réali
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lccc}
 \toprule
 Paramètre & fiducielle & $+$ / $-$ & pas $\theta_+-\theta_-$ \\
@@ -44,6 +47,7 @@ $n_s$ & 0.9649 & c104 / c105 & 0.0200 \\
 $\sigma_8$ & 0.808 & c112 / c113 & 0.0320 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Cosmologies AbacusSummit de la grille de dérivées pour les quatre paramètres $\Lambda$CDM ; les paires \texttt{c106}--\texttt{c111} font varier $\alpha_s$, $w_0$ et $(w_0, w_a)$.}
 \label{tab:cosmo}
 \end{table}
