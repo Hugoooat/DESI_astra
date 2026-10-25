@@ -10,11 +10,11 @@ Le code est organisé en trois modules et un ensemble de scripts : \texttt{astra
 
 \paragraph{Données.} Les trois jeux de données du Tableau~\ref{tab:datasets} sont lus aux emplacements suivants sur NERSC :
 \begin{itemize}
-\item \textbf{Suite d'émulation AbacusSummit} : \texttt{/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23\_prior/c\{CCC\}\_ph000/seed0/hod\{NNN\}.fits} (85 répertoires de cosmologies, \texttt{hod000}--\texttt{hod499}) ; paramètres cosmologiques dans \texttt{config/cosmologies.csv}. Les catalogues mesurés sont listés, une ligne par catalogue (cosmologie, HOD, espace, ligne de visée), dans \texttt{config/runs\_emulator*.txt} (8 HOD par cosmologie), \texttt{runs\_hod\_calibration.txt} (72), \texttt{runs\_local\_*.txt} (240), \texttt{runs\_extra.txt} (54) et \texttt{runs\_real\_space.txt} (27) ; le catalogue fiduciel et les paires appariées en HOD sont dans \texttt{config/hod\_selection.json}.
-\item \textbf{Mocks officiels DESI} : \texttt{/global/cfs/cdirs/desi/cosmosim/AbacusHOD\_mocks/v1/CovBox/LRG/z0.500/catalog\_rsd\_xi2d\_lrg\_main\_z0.5\_velbias\_mockcov\_ph\{3000+\}.fits} (1786 fichiers) et \texttt{.../CubicBox/LRG/z0.500/AbacusSummit\_base\_c000\_ph\{000--024\}/}.
-\item \textbf{Quijote} : catalogues de halos Rockstar \texttt{\{set\}/\{i\}/out\_3\_pid.list} pour les ensembles \texttt{fiducial} (réalisations 0--3999), \texttt{fiducial\_ZA}, \texttt{Om\_p/m}, \texttt{Ob2\_p/m}, \texttt{h\_p/m}, \texttt{ns\_p/m}, \texttt{s8\_p/m}, \texttt{Mnu\_p/pp/ppp} (réalisations 0--499), transférés avec Globus depuis les données publiques de Quijote vers \texttt{/pscratch/sd/h/hugon/quijote/}, en suivant les instructions de la documentation de Quijote (\url{https://quijote-simulations.readthedocs.io}).
+\item \textbf{Suite d'émulation AbacusSummit} : \url{/pscratch/sd/n/ntbfin/emulator/hods/z0.5/yuan23_prior/c{CCC}_ph000/seed0/hod{NNN}.fits} (85 répertoires de cosmologies, \texttt{hod000}--\texttt{hod499}) ; paramètres cosmologiques dans \texttt{config/cosmologies.csv}. Les catalogues mesurés sont listés, une ligne par catalogue (cosmologie, HOD, espace, ligne de visée), dans \texttt{config/runs\_emulator*.txt} (8 HOD par cosmologie), \texttt{runs\_hod\_calibration.txt} (72), \texttt{runs\_local\_*.txt} (240), \texttt{runs\_extra.txt} (54) et \texttt{runs\_real\_space.txt} (27) ; le catalogue fiduciel et les paires appariées en HOD sont dans \texttt{config/hod\_selection.json}.
+\item \textbf{Mocks officiels DESI} : \url{/global/cfs/cdirs/desi/cosmosim/AbacusHOD_mocks/v1/CovBox/LRG/z0.500/catalog_rsd_xi2d_lrg_main_z0.5_velbias_mockcov_ph{3000+}.fits} (1786 fichiers) et \url{.../CubicBox/LRG/z0.500/AbacusSummit_base_c000_ph{000--024}/}.
+\item \textbf{Quijote} : catalogues de halos Rockstar \texttt{\{set\}/\{i\}/out\_3\_pid.list} pour les ensembles \texttt{fiducial} (réalisations 0--3999), \texttt{fiducial\_ZA}, \texttt{Om\_p/m}, \texttt{Ob2\_p/m}, \texttt{h\_p/m}, \texttt{ns\_p/m}, \texttt{s8\_p/m}, \texttt{Mnu\_p/pp/ppp} (réalisations 0--499), transférés avec Globus depuis les données publiques de Quijote vers \url{/pscratch/sd/h/hugon/quijote/}, en suivant les instructions de la documentation de Quijote (\url{https://quijote-simulations.readthedocs.io}).
 \end{itemize}
-Les produits intermédiaires (mesures, émulateurs entraînés, chaînes ; $\simeq3$\,GB) sont stockés dans \texttt{/pscratch/sd/h/hugon/astra-ds-store/} et sont régénérés par les étapes ci-dessous.
+Les produits intermédiaires (mesures, émulateurs entraînés, chaînes ; $\simeq3$\,GB) sont stockés dans \url{/pscratch/sd/h/hugon/astra-ds-store/} et sont régénérés par les étapes ci-dessous.
 
 \paragraph{Étapes.}
 \begin{lstlisting}[language=bash]
@@ -39,6 +39,7 @@ L'ensemble complet des mesures coûte $\simeq200$ heures-nœud (1043 catalogues 
 
 \begin{table}[!htbp]
 \centering\small
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lc}
 \toprule
 Réglage & Valeur \\
@@ -54,6 +55,7 @@ Vecteurs de données & $\ell=0,2$, $s\in[20,150]$, $10\Mpch$ \\
 Graine & 42 \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \caption{Réglages numériques.}
 \label{tab:config}
 \end{table}

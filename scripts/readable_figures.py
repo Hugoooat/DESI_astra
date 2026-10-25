@@ -108,15 +108,20 @@ def fig_robustness():
             for t, lab, c in tests:
                 diff = (r[f'{t}/{st}'][:, 0] - base).mean(0) / sigma
                 ax.plot(s[keep], diff[keep], color=c, lw=1.8, label=lab)
-            ax.axhspan(-1, 1, color='0.9', zorder=0)
+            ax.axhspan(-1, 1, color='0.85', zorder=0)
             ax.axhline(0, color='0.5', lw=0.6)
+            ax.set_yscale('symlog', linthresh=1)
+            ax.set_ylim(-60, 60)
+            ax.set_yticks([-50, -10, -1, 0, 1, 10, 50])
+            ax.set_yticklabels(['-50', '-10', '-1', '0', '1', '10', '50'])
+            ax.grid(axis='y', color='0.9', lw=0.5)
             ax.set_title(f'{mname}: {title}', fontsize=9)
             if row == 1:
                 ax.set_xlabel(r'$s$ [$h^{-1}$Mpc]')
         axes[row, 0].set_ylabel(r'$\Delta\xi_0/\sigma$')
     axes[0, 0].legend(fontsize=8, loc='lower right')
     fig.suptitle(r'Change of the cross-correlation monopoles under numerical tests, in units of the error of one '
-                 r'$(500\,h^{-1}$Mpc$)^3$ volume (grey: $\pm1\sigma$)', fontsize=11)
+                 r'$(500\,h^{-1}$Mpc$)^3$ volume; grey: $\pm1\sigma$; axis linear within $\pm1\sigma$, logarithmic beyond', fontsize=11)
     fig.tight_layout()
     fig.savefig(PLOTS / 'readable_robustness.png', dpi=150)
     plt.close(fig)
