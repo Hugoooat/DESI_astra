@@ -1,0 +1,19 @@
+# python: Python 3.12.9
+abacusutils @ file:///global/u2/a/adematti/cosmodesi/cosmodesiconda/cosmodesimodules/build/abacusutils-main
+astropy==7.2.0
+Corrfunc @ file:///global/u2/a/adematti/cosmodesi/cosmodesiconda/cosmodesimodules/build/Corrfunc-desi
+cosmoprimo @ file:///global/u2/a/adematti/cosmodesi/cosmodesiconda/cosmodesimodules/build/cosmoprimo-main
+emcee==3.1.6
+fitsio @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_fitsio_1762985204/work
+getdist==1.7.6
+h5py==3.16.0
+jax==0.9.1
+matplotlib==3.10.8
+mpi4py==4.1.1
+numpy @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_numpy_1773839284/work/dist/numpy-2.4.3-cp312-cp312-linux_x86_64.whl#sha256=bd15e3dc0b3b571b30f62a64a69d71a6d27674e5d0ed5436cde406f2704c93e9
+pandas @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_pandas_1771408991/work
+pycorr @ file:///global/u2/a/adematti/cosmodesi/cosmodesiconda/cosmodesimodules/build/pycorr-main
+pyrecon @ file:///global/u2/a/adematti/cosmodesi/cosmodesiconda/cosmodesimodules/build/pyrecon-mpi
+scikit-learn @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_scikit-learn_1765801245/work/dist/scikit_learn-1.8.0-cp312-cp312-linux_x86_64.whl#sha256=52bcc2137fa95cf1c42b9ba0e99697e403fcf95c9e2289651f38cbb3eae42a70
+scipy @ file:///home/conda/feedstock_root/build_artifacts/scipy-split_1771879143114/work/dist/scipy-1.17.1-cp312-cp312-linux_x86_64.whl#sha256=141f721c574c72812b8184918c7a44890af730e8cea9be70bb2be8428a2b6f25
+torch==2.10.0
