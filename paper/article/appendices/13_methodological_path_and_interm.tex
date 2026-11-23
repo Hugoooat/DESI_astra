@@ -1,0 +1,27 @@
+\section{Methodological path and intermediate results}
+\label{app:path}
+% =====================================================================
+
+This appendix details the steps of Table~\ref{tab:evolution} in chronological order.
+
+\paragraph{1. HOD files are not realisations.} A first version of the pipeline averaged the statistics of 64 different HOD files per cosmology to build ``covariance'' and ``derivative'' sets, and measured them in the central $500\Mpch$ cube of each box. The HOD files are different HOD models, not realisations: their scatter ($\sim55\%$) dominated the cosmological differences ($\sim1\%$), and the finite differences were compatible with noise (median $|S/N|<1$ per bin for $\omega_b$, $n_s$, $\sigma_8$). That version also had five implementation problems, all corrected: pair counts assumed periodic boundary conditions in a non-periodic cut box; the 2PCF used the mid-point line of sight from the centre of the box instead of the axis along which the RSD were applied, which erased the quadrupole; quartiles were computed jointly on galaxies and randoms, giving unequal and realisation-dependent sizes; the Delaunay triangulation was computed on the cut box without periodic padding; and ASTRA was first applied to the random catalogue alone, so that the random quartiles carried no information on the galaxy field and their correlations were consistent with zero.
+
+\paragraph{2. HOD-matched pairs.} We then selected, for each $\pm$ pair, the two catalogues with the closest HODs (twice closer than random pairs, Table~\ref{tab:hods}) and differenced them subvolume by subvolume (Section~\ref{sec:finitediff}). The differences are precise but dominated by the residual HOD mismatch: a 2\% change of $\omega_b$ implied tens of per cent changes of the 2PCF at $s\sim20\Mpch$, and the Fisher matrices were singular.
+
+\paragraph{3. HOD calibration.} The HOD response measured on 72 fiducial catalogues and subtracted from the pairs was predicted with a 45\% (linear) and 8\% (GP) error; with an HOD term ten times the signal, even 8\% leaves a residual of the size of the signal.
+
+\paragraph{4. Emulator.} The first emulator, trained on 8 HOD draws per cosmology, reproduced held-out cosmologies to a fraction of the statistical error, but did not capture the response to $\omega_{\rm cdm}$ below $70\Mpch$ (Figure~\ref{fig:loco}). A preliminary comparison with this emulator gave ASTRA and density split comparable overall, density split ahead in the voids (Q1) for $\omega_b$ and $\omega_{\rm cdm}$, and their combination 15--25\% better than either.
+
+\paragraph{5. Densification.} 240 catalogues with HODs close to the fiducial were added in the cosmologies of the derivative grid; this alone did not stabilise the derivatives (70--170\% scatter between networks).
+
+\paragraph{6. Regression over pairs.} Introduced as an emulator-independent estimator (Section~\ref{sec:regression}); it revealed that the statistics respond essentially to one combination of the HOD parameters.
+
+\paragraph{7. Training on catalogue differences.} Halved the error of the predicted differences between held-out catalogues for $\omega_b$ and $\sigma_8$ (21\%$\to$10\%, 13\%$\to$7\%), down to their noise level (Table~\ref{tab:local}); the small-scale weight was dropped because it destabilised the auto-correlation forecasts. With the 192-subvolume covariance, emulator and regression then agreed on ASTRA being as good as or 0--20\% better than density split (Tables~\ref{tab:ratio} and~\ref{tab:sigma_sub}).
+
+\paragraph{Learning curve.} To decide whether more training catalogues would reduce the emulator error, we retrained the emulator of the 2PCF and of the Q1, Q4 random-quartile cross-correlations on 25, 50, 75 and 100\% of the training set. The median test error, in units of $\sigma_{\rm box}$, drops from 0.7--1.3 to 0.5--0.8 between 25 and 50\%, but only to 0.5--0.7 at 100\% (ASTRA Q1: 1.01, 0.59, 0.55, 0.51; density split Q4: 0.69, 0.51, 0.48, 0.46). The error has reached a plateau at $\simeq0.5\sigma_{\rm box}$, comparable to the sampling noise of a single catalogue: doubling the training set ($\simeq230$ node-hours) would improve it by $\sim10\%$ at most, and we did not do it.
+
+\paragraph{8. Covariance.} With the 1786 independent boxes and the same derivatives, ASTRA's lead disappeared (Table~\ref{tab:covbox}).
+
+\paragraph{9. Quijote.} The forecasts were first computed for all six parameters. An automatic convergence test run overnight reported that the covariance was not converged, because it compared full forecasts in which the derivative noise dominates the change; once the two effects were separated, the covariance was found converged and the extra processing it had triggered was cancelled. The six-parameter forecasts were then found to depend on the derivative noise (standard and compressed estimators differing by factors 2--10), which led to the parameter subsets of Section~\ref{sec:quijote}. A first overnight result, ASTRA tighter than density split on $\sigma_8$ by a factor 2--3 and density split tighter on $\Omega_m$, $\Omega_b$, survives in the reliable subsets only for the auto-correlations and halo quartiles.
+
+\paragraph{10. MCMC.} The first inference runs on full boxes were limited by the emulator error; on one subvolume, they are limited by the prior (Section~\ref{sec:mcmc}).

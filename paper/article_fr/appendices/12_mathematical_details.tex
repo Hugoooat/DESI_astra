@@ -1,0 +1,42 @@
+\section{Détails mathématiques}
+\label{app:maths}
+% =====================================================================
+
+\paragraph{Matrice de Fisher.} Pour un vecteur de données $\boldsymbol d$ (les statistiques mesurées), la matrice de Fisher des paramètres $p=(\boldsymbol\theta,\boldsymbol h)$ est
+\begin{equation}
+F = D^T C^{-1} D + P_h, \qquad D_{ai} = \frac{\partial d_a}{\partial p_i}.
+\end{equation}
+Chaque ingrédient a un rôle : $D$ (une colonne par paramètre) dit de combien chaque élément du vecteur de données bouge quand un paramètre bouge ; $C^{-1}$ pondère ces mouvements par l'inverse du bruit, de sorte qu'un changement compte proportionnellement à sa signification, en tenant compte des corrélations entre bins ; $P_h$ ajoute la connaissance a priori sur les paramètres de HOD (ici une gaussienne de la largeur de leur prior uniforme, sur le seul bloc de HOD). $F$ est l'inverse de la covariance des paramètres attendue pour une analyse non biaisée et optimale : les erreurs marginalisées sont $\sigma_i=\sqrt{(F^{-1})_{ii}}$ (tous les autres paramètres libres) et les erreurs à autres paramètres fixés $1/\sqrt{F_{ii}}$. Comparer deux statistiques revient à comparer leurs $\sigma_i$.
+
+\paragraph{Facteur de Hartlap.} La covariance est estimée à partir de $N_s$ échantillons simulés. L'inverse d'une covariance estimée est biaisé : avec du bruit, $\hat C$ a quelques valeurs propres accidentellement petites, donc $\hat C^{-1}$ est en moyenne trop grand, et les erreurs de Fisher trop petites. Pour des données gaussiennes, le biais est connu exactement, et il est supprimé par le facteur \cite{Hartlap2007}
+\begin{equation}
+\hat C^{-1}_{\rm unbiased} = \frac{N_s-N_d-2}{N_s-1}\,\hat C^{-1},
+\end{equation}
+où $N_d$ est la longueur du vecteur de données. Le facteur tend vers 1 quand $N_s\gg N_d$, et décroît rapidement quand $N_d$ s'approche de $N_s$ : avec 192 échantillons il vaut 0.72 pour $N_d=52$ mais 0.31 pour $N_d=130$, ce qui augmente aussi le bruit de la prévision. C'est pourquoi nous comprimons les vecteurs de données longs, et pourquoi 1786 boîtes indépendantes (facteur 0.99 après compression) valent bien mieux que 192 sous-volumes.
+
+\paragraph{Compression.} $\boldsymbol t = W^T\boldsymbol d$, $W=\tilde C^{-1}D$, avec $D$ les dérivées par rapport aux 18 paramètres et $\tilde C$ une covariance par rétrécissement de Ledoit--Wolf : $\boldsymbol t$ a un élément par paramètre, chacun étant une somme pondérée des données conçue pour être aussi sensible que possible à ce paramètre. Si $\tilde C=C$, $\boldsymbol t$ conserve toute l'information de Fisher de $\boldsymbol d$. Si $\tilde C$ n'est qu'une approximation, les poids ne sont pas optimaux et $\boldsymbol t$ conserve moins d'information. Cela ne peut pas biaiser la prévision vers l'optimisme : $\boldsymbol t$ est une fonction linéaire des données, ses dérivées sont $W^TD$ et sa covariance $W^TCW$ est mesurée à partir des échantillons, de sorte que sa matrice de Fisher $(W^TD)^T(W^TCW)^{-1}(W^TD)$ est exacte pour $\boldsymbol t$, et elle est toujours inférieure ou égale à celle de $\boldsymbol d$. Une mauvaise compression ne peut que rendre les erreurs plus grandes. La covariance de $\boldsymbol t$ est courte (18 éléments), donc son facteur de Hartlap est proche de l'unité.
+
+\paragraph{Bruit des dérivées.} Les dérivées estimées comme une moyenne sur $N$ paires valent $\hat D = D + \epsilon$, avec un bruit de covariance $\Sigma_D/N$. L'estimateur de Fisher standard a alors pour espérance
+\begin{equation}
+\langle \hat D^T C^{-1}\hat D\rangle = D^T C^{-1} D + \mathrm{Tr}\big(C^{-1}\Sigma_D\big)/N .
+\end{equation}
+Le second terme est un biais positif : le bruit ajoute de l'information parasite. Il est à peu près le même dans toutes les directions de l'espace des paramètres, mais n'importe que là où l'information vraie $D^TC^{-1}D$ est faible, c'est-à-dire dans les directions dégénérées ; les erreurs marginalisées, fixées par l'inverse de la matrice, sont précisément contrôlées par ces directions faibles. Nous utilisons trois tests :
+\begin{enumerate}
+\item la fraction de bruit $\mathrm{Tr}(C^{-1}\Sigma_D)/(N F_{ii})$ ; au-dessus de 20--30\%, la prévision est suspecte ;
+\item l'encadrement de \cite{CoultonWandelt2023} : l'estimateur standard est biaisé vers le haut ; un estimateur comprimé, dans lequel la moitié des simulations définit la compression et l'autre moitié mesure son information, est biaisé vers le bas. Si les deux donnent la même erreur, le bruit n'importe pas ; s'ils diffèrent de facteurs 2--10, le résultat reflète le bruit, pas la physique. Nous appelons une prévision fiable lorsqu'ils s'accordent à un facteur 1.5 près, et donnons leur moyenne géométrique, presque non biaisée ;
+\item la convergence : la prévision est recalculée avec $N/2$ paires.
+\end{enumerate}
+
+\paragraph{Volume.} Les prévisions sont calculées pour un volume de $(500\Mpch)^3$, où les erreurs absolues sont comparables aux largeurs des priors ; c'est la nature d'une comparaison de contenu en information et ce n'est pas corrigé. Les rapports $\sigma_{\rm DS}/\sigma_{\rm ASTRA}$ ne dépendent pas du volume tant que la covariance varie comme $1/V$ et que l'erreur de l'émulateur est négligeable, ce qui est vrai à ce volume.
+
+\paragraph{Perte de l'émulateur.} Avec des sorties standardisées par l'erreur statistique d'une boîte de $2\,h^{-1}$Gpc $\sigma_{\rm box}$,
+\begin{multline}
+\mathcal L = \Big\langle \frac{(f(x_i) - y_i)^2}{\sigma_{\rm box}^2}\Big\rangle \\
++ \lambda \Big\langle \frac{[(f(x_i) - f(x_j)) - (y_i - y_j)]^2}{\sigma_{ij}^2 + \epsilon^2}\Big\rangle,
+\end{multline}
+où la seconde moyenne porte sur les 2544 paires de catalogues, $\sigma_{ij}$ est l'erreur de leur différence (64 sous-volumes appariés), $\lambda=1$, $\epsilon=0.05\,\sigma_{\rm box}$.
+
+\paragraph{Régression sur les paires.} $\boldsymbol d_c(h) = \boldsymbol a_c + G\,V(h-h_0)$ pour $c=c_\pm$, avec une réponse $G$ partagée et $V$ les 3 directions principales de l'espace de HOD (vecteurs singuliers de la réponse à la HOD des 72 catalogues fiduciels) ; dérivée $(\boldsymbol a_+-\boldsymbol a_-)/(\theta_+-\theta_-)$ ; erreurs par bootstrap sur les sous-volumes.
+
+\paragraph{Inférence.} Vraisemblance gaussienne $-2\ln\mathcal L = (\boldsymbol d - \boldsymbol f(\boldsymbol\theta,\boldsymbol h))^T (C/V_{\rm f} + C_{\rm emu})^{-1}(\boldsymbol d - \boldsymbol f)$, avec $C$ la covariance officielle, $V_{\rm f}$ le volume des données en unités de $(500\Mpch)^3$ et $C_{\rm emu}$ l'erreur de l'émulateur ; priors uniformes sur l'étendue d'entraînement ; \texttt{emcee} avec 64 marcheurs et 8000 pas. La calibration est testée par la fraction d'exécutions dont la vérité se trouve à moins de $1\sigma$ de la moyenne du posterior (68\% attendus).
+
